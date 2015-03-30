@@ -95,7 +95,7 @@ while getopts ':s:p:u:d:?' opt; do
       read
       for i in $(seq 0 5); do
         echo -e "#  erasing project on halley$i"
-        rm -r /home/h$i/${prj}
+        ssh h${i} rm -r /home/h$i/${prj}
       done
       echo -e "#  ALL DONE. Exit"
       exit 0;
