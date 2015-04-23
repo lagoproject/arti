@@ -29,7 +29,7 @@ After installing dependences (needs CORSIKA, perl, make, g++ and common librarie
 
 USAGE:
 Please read LAGO technical notes about this package. 
-do_sims and do_halley are the main scripts here. 
+do_sims, do_grid and do_halley are the main scripts here. 
 Run some of them and follow instructions.
 Scripts will do what you expecto to do. If you have some doubts or suggestions,
 do not hesitate to contact me.
