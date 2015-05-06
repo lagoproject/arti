@@ -300,9 +300,9 @@ done
 
 echo "#  STATUS: Done, $t/60 input processed. Compresing..."
 mkdir ${basecrktools}/$prj
-cp $wdir/$prj/DAT*input $prj/
-tar cfz $wdir/$prj/$prj-$tim-$usr.tar.gz $prj/*
+cp -v $wdir/$prj/DAT*input $prj/
+tar cfvz $wdir/$prj/$prj-$tim-$usr.tar.gz $prj/*
 rm -r ${basecrktools}/$prj
 echo -e "#  STATUS: Done. Now upload the compressed file"
-echo -e "#  STATUS: $wdir/$prj/$prj-$tim-$usr.tgz at"
+echo -e "#  STATUS: $wdir/$prj/$prj-$tim-$usr.tar.gz at"
 echo -e "#  STATUS: https://science-gateway.chain-project.eu/run-corsika"
