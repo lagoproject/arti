@@ -1,8 +1,7 @@
-#!/bin/bash
 # /************************************************************************/
 # /*                                                                      */
 # /* Package:  CrkTools                                                   */
-# /* Module:   newprj-halley.sh                                           */
+# /* Module:   do_analysis-halley.sh                                      */
 # /*                                                                      */
 # /************************************************************************/
 # /* Authors:  Hernán Asorey                                              */
@@ -51,9 +50,7 @@
 # */
 # /************************************************************************/
 # 
-VERSION="v3r0"; # Wed Dec  4 21:53:57 COT 2013
-# first version
-
+VERSION="v3r1"; # vie may 15 17:17:15 ART 2015
 
 showhelp() {
   echo 
@@ -96,13 +93,6 @@ done
 ## YOU SHOULD NOT EDIT ANYTHING BELOW THIS LINE ##
 ##################################################
 
-h=$(hostname | awk '{if ($1=="frontend") {print 0} else {print $0}}' | sed -e 's/halley0//')
-if [ "X${h}" != "X0" ]; then
-  echo; echo -e "#  ERROR: You should run this script at halley cluster frontend (h0)"
-  showhelp
-  exit 1;
-fi
-
 if [ "X${bsn}" == "X" ]; then
   echo; echo -e "#  ERROR: You have to provide a project base name (suggested format: nnn)"
   showhelp
@@ -115,51 +105,98 @@ if [ "X${prj}" == "X" ]; then
   exit 1;
 fi
 
+# asuming you will work where you are
+h=$(hostname | awk '{if ($1=="frontend") {print 0} else {print $0}}' | sed -e 's/halley0//')
+# and them the final directory will be: 
+home=/home/h${h}/${bsn}/flux-${prj}
 
-# echo; echo -e "#  READY: Press enter to continue, <ctrl-c> to abort!"
-# read
-##############
+echo -e "#  STATUS: Working node:               halley0${h}"
+echo -e "#  STATUS: Project base name:          ${bsn}"
+echo -e "#  STATUS: Project name:               ${prj}"
+echo -e "#  STATUS: Work directory:             ${home}"
 
-echo
-# Test if all the processes ended correctly
-tst=$(for i in $(seq 0 5); do tail -q -n 1 /home/h$i/$bsn/$prj/*.lst | grep -v "END OF RUN"; done)
+echo; echo -e "#  READY: Press enter to continue, <ctrl-c> to abort!"
+read
 
-if [ "X${tst}" != "X" ]; then
-  echo "#  ERROR: Some processes failed:"
-  for i in $(seq 0 5); do 
-    tail -n 1 /home/h$i/$bsn/$prj/*.lst | grep -v "END OF RUN"
-  done
-  echo "#  ERROR: Please check"
-  exit 1
-fi
-echo -e "#  Test 1: PASS: all processes ended normally"
+mkdir ${home}
 
-tst=$(for i in $(seq 0 5); do ls -1 /home/h$i/$bsn/$prj/DAT??????; done | wc -l)
+# transfering files
+for i in $(seq 0 6); do
+  rsync -aPv h${i}:/home/h${i}/${bsn}/${prj}/DAT??????.bz2  ${home}
+  rsync -aPv h${i}:/home/h${i}/${bsn}/${prj}/*.lst* ${home}
+done
+
+tst=$(ls -1 ${home}/DAT??????.bz2 | wc -l)
 
 if [ "X${tst}" != "X60" ]; then
-  for i in $(seq 0 5); do 
-    ls -1 /home/h$i/$bsn/$prj/DAT??????
-  done
+    ls -1 ${home}/DAT??????.bz2 | wc -l
   echo "#  ERROR: There are not $tst/60 output files"
   echo "#  ERROR: Please check"
   exit 1
 fi
-echo -e "#  Test 2: PASS: There are 60 output files"
+echo -e "#  Test 1: PASS: There are 60 output files"
 
-echo
-echo -e "#  DONE"
-echo -e "#  Please run the following commands. At frontend:"
-echo
-echo -e "for i in \$(seq 0 5); do ssh h\$i; done"
+# Test if all the processes ended correctly
+tst=$(bzcat ${home}/*.lst.bz2 | tail -q -n 1 | grep -v "END OF RUN"; done)
+if [ "X${tst}" != "X" ]; then
+  echo "#  ERROR: Some processes failed:"
+  bzcat ${home}/*.lst.bz2 | tail -n 1 | grep -v "END OF RUN"
+  echo "#  ERROR: Please check"
+  exit 1
+fi
+echo -e "#  Test 2 PASS: all processes ended normally"
 
-for i in $(seq 0 5); do
-  name=$prj-$i
-  echo "cd /home/h$i/$bsn/$prj/; for i in DAT??????; do u=\$(echo \$i | sed -e 's/DAT//'); echo \$i | lagocrkread | analysis -p -v \$u ; done; rm /home/h$i/$bsn/$prj/$name.sh" > /home/h$i/$bsn/$prj/$name.sh
-  chmod 744 /home/h$i/$bsn/$prj/$name.sh
-  echo "screen -d -m -S $name /home/h$i/$bsn/$prj/$name.sh; screen -r"
+echo; echo -e "#  READY: All test passed. Press enter to continue, <ctrl-c> to abort!"
+read
+
+#similar flux separation, using 3 branchs
+cd ${home}
+mkdir ${home}/f1
+mkdir ${home}/f2
+mkdir ${home}/f3
+
+for i in 001206 001608 000703 002412 001105 002814 001407 002010 005626 000904 003216 002713 002311 004020 001909 005224 004018 004822 005525 003919 005123 003115 003517 004521; do
+  mv -v DAT${i}.bz2 ${home}/f1
 done
 
+for j in $(seq 1 4); do
+  printf -v n %02d $j
+  i=0${j}0402 
+  mv -v DAT${i}.bz2 ${home}/f1
+done
 
+for j in $(seq 1 8); do
+  printf -v n %02d $j
+  i=${n}0014
+  mv -v DAT${i}.bz2 ${home}/f1
+done
 
+for j in $(seq 9 20); do
+  printf -v n %02d $j
+  i=${n}0014
+  mv -v DAT${i}.bz2 ${home}/f2
+done
 
+for j in $(seq 21 32); do
+  printf -v n %02d $j
+  i=${n}0014
+  mv -v DAT${i}.bz2 ${home}/f3
+done
 
+# analisys
+for k in $(seq 1 3); do
+  file=f${k}
+  echo "cd ${home}/f${k}
+for i in DAT??????.bz2; do
+  j=\$(echo \$i | sed -e 's/.bz2//')
+  u=\$(echo \$j | sed -e 's/DAT//');
+  bzip2 -v -d -k \$i
+  echo \$j | lagocrkread | analysis -v \$u
+  rm \$j
+done
+cd ${home}/
+rm f${k}.sh" > f${k}.sh
+  chmod 744 f${k}.sh
+  screen -d -m -a -S flux-${k} ${home}/f${k}.sh 
+  screen -ls
+done
