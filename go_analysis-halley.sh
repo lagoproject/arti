@@ -56,22 +56,22 @@ showhelp() {
   echo 
   echo -e "$0 version $VERSION"
   echo 
-  echo -e "Note: You should run this script at halley cluster frontend h0"
-  echo 
   echo -e "USAGE $0:"
   echo
-  echo -e "  -b <project base name>         : Project base name (suggested format: nnn)"
-  echo -e "  -p <project name>              : Project name, typically nnnxx"
-  echo -e "  -?                             : Shows this help and exit."
+  echo -e "  -b <project base name>  : Project base name (suggested format: nnn)"
+  echo -e "  -p <project name>       : Project name, typically nnnxx"
+  echo -e "  -t                      : Only transfer files and perform checks"
+  echo -e "  -?                      : Shows this help and exit."
   echo
 }
 
 bsn="";
 prj="";
+ana=true;
 
 echo
 
-while getopts ':b:p:?' opt; do
+while getopts ':b:p:t?' opt; do
   case $opt in
     b)
       bsn=$OPTARG
@@ -81,7 +81,10 @@ while getopts ':b:p:?' opt; do
       prj=$OPTARG
       echo -e "#  Project name                  = $prj"
       ;;
-
+    t)
+      ana=false;
+      echo -e "#  Data analysis                 = $ana"
+      ;;
     ?)
       showhelp
       exit 1;
@@ -114,7 +117,7 @@ echo -e "#  STATUS: Working node:               halley0${h}"
 echo -e "#  STATUS: Project base name:          ${bsn}"
 echo -e "#  STATUS: Project name:               ${prj}"
 echo -e "#  STATUS: Work directory:             ${home}"
-
+echo -e "#  STATUS: Data analysis:              ${ana}"
 echo; echo -e "#  READY: Press enter to continue, <ctrl-c> to abort!"
 read
 
@@ -150,6 +153,11 @@ echo; echo -e "#  READY: All test passed. Press enter to continue, <ctrl-c> to a
 read
 
 #similar flux separation, using 3 branchs
+if [ ! $ana ]; then
+  echo -e "#  READY: Files transferred."
+  exit 0
+fi
+
 cd ${home}
 mkdir ${home}/f1
 mkdir ${home}/f2
