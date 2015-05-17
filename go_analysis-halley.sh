@@ -113,6 +113,7 @@ h=$(hostname | awk '{if ($1=="frontend") {print 0} else {print $0}}' | sed -e 's
 # and them the final directory will be: 
 home=/home/h${h}/${bsn}/flux-${prj}
 
+echo; echo -e "#  STATUS"; echo
 echo -e "#  STATUS: Working node:               halley0${h}"
 echo -e "#  STATUS: Project base name:          ${bsn}"
 echo -e "#  STATUS: Project name:               ${prj}"
@@ -124,7 +125,7 @@ read
 mkdir ${home}
 
 # transfering files
-for i in $(seq 0 6); do
+for i in $(seq 0 5); do
   rsync -aPv h${i}:/home/h${i}/${bsn}/${prj}/DAT??????.bz2  ${home}
   rsync -aPv h${i}:/home/h${i}/${bsn}/${prj}/*.lst* ${home}
 done
@@ -140,7 +141,7 @@ fi
 echo -e "#  Test 1: PASS: There are 60 output files"
 
 # Test if all the processes ended correctly
-tst=$(bzcat ${home}/*.lst.bz2 | tail -q -n 1 | grep -v "END OF RUN"; done)
+tst=$(bzcat ${home}/*.lst.bz2 | tail -q -n 1 | grep -v "END OF RUN")
 if [ "X${tst}" != "X" ]; then
   echo "#  ERROR: Some processes failed:"
   bzcat ${home}/*.lst.bz2 | tail -n 1 | grep -v "END OF RUN"
@@ -148,16 +149,17 @@ if [ "X${tst}" != "X" ]; then
   exit 1
 fi
 echo -e "#  Test 2 PASS: all processes ended normally"
+if $ana; then
+  echo -e "#  READY: Files transferred."
+else
+  echo -e "#  DONE: Files transferred."
+  exit 0
+fi
 
 echo; echo -e "#  READY: All test passed. Press enter to continue, <ctrl-c> to abort!"
 read
 
 #similar flux separation, using 3 branchs
-if [ ! $ana ]; then
-  echo -e "#  READY: Files transferred."
-  exit 0
-fi
-
 cd ${home}
 mkdir ${home}/f1
 mkdir ${home}/f2
