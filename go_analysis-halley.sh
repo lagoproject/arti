@@ -61,6 +61,7 @@ showhelp() {
   echo -e "  -b <project base name>  : Project base name (suggested format: nnn)"
   echo -e "  -p <project name>       : Project name, typically nnnxx"
   echo -e "  -t                      : Only transfer files and perform checks"
+  echo -e "  -d                      : Transfer all the files to final directory and delete the original ones."
   echo -e "  -?                      : Shows this help and exit."
   echo
 }
@@ -68,10 +69,11 @@ showhelp() {
 bsn="";
 prj="";
 ana=true;
+era=false;
 
 echo
 
-while getopts ':b:p:t?' opt; do
+while getopts ':b:p:td?' opt; do
   case $opt in
     b)
       bsn=$OPTARG
@@ -83,7 +85,11 @@ while getopts ':b:p:t?' opt; do
       ;;
     t)
       ana=false;
-      echo -e "#  Data analysis                 = $ana"
+      echo -e "#  Perform data analysis?        = $ana"
+      ;;
+    d)
+      era=true;
+      echo -e "#  Erase original files?         = $era"
       ;;
     ?)
       showhelp
@@ -118,7 +124,11 @@ echo -e "#  STATUS: Working node:               halley0${h}"
 echo -e "#  STATUS: Project base name:          ${bsn}"
 echo -e "#  STATUS: Project name:               ${prj}"
 echo -e "#  STATUS: Work directory:             ${home}"
-echo -e "#  STATUS: Data analysis:              ${ana}"
+echo -e "#  STATUS: Perform data analysis?:     ${ana}"
+echo -e "#  STATUS: Delete original files?:     ${era}"
+if ${era}; then
+echo; echo -e "#  WARNING: Delete files enabled. It can not be undone!"
+fi
 echo; echo -e "#  READY: Press enter to continue, <ctrl-c> to abort!"
 read
 
@@ -126,8 +136,13 @@ mkdir ${home}
 
 # transfering files
 for i in $(seq 0 5); do
-  rsync -aPv h${i}:/home/h${i}/${bsn}/${prj}/DAT??????.bz2  ${home}
-  rsync -aPv h${i}:/home/h${i}/${bsn}/${prj}/*.lst* ${home}
+  if ${era}; then
+    rsync -aPv h${i}:/home/h${i}/${bsn}/${prj}/* ${home}
+    rsync -aPv h${i}:/home/h${i}/${bsn}/go-${prj}*run ${home}
+  else
+    rsync -aPv h${i}:/home/h${i}/${bsn}/${prj}/DAT??????.bz2  ${home}
+    rsync -aPv h${i}:/home/h${i}/${bsn}/${prj}/*.lst* ${home}
+  fi
 done
 
 tst=$(ls -1 ${home}/DAT??????.bz2 | wc -l)
@@ -149,6 +164,16 @@ if [ "X${tst}" != "X" ]; then
   exit 1
 fi
 echo -e "#  Test 2 PASS: all processes ended normally"
+
+if ${era}; then
+  echo; echo -e "#  READY: I will delete all the original files. Press enter to continue, <ctrl-c> to abort!"
+  read
+  for i in $(seq 0 5); do
+    ssh h${i} rm -r /home/h${i}/${bsn}/${prj}/
+    ssh h${i} rm -r /home/h${i}/${bsn}/go-${prj}*run
+  done
+fi
+
 if $ana; then
   echo -e "#  READY: Files transferred."
 else
