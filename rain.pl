@@ -700,7 +700,7 @@ EXIT
     $tmp=<>;
   }
 
-  $name=sprintf("%06d-%04d-%07d",$runnr,$prmpar,$nshow);
+  $name=sprintf("%06d-%04d-%011d",$runnr,$prmpar,$nshow);
   $file="$direct/DAT$name.input";
   $binout=sprintf("$direct/DAT%06d",$runnr);
   $out="$direct/DAT$name.lst";

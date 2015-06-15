@@ -434,7 +434,7 @@ for ($i=0; $i < $prim; $i++) {
   $spc {$nshow} = "$m $z $nuc[$z] $nshow";
   $totalShowers += $nshow;
 #generating input files
-  $fil = sprintf("%06d-%06d.run", $id, $nshow);
+  $fil = sprintf("%06d-%011d.run", $id, $nshow);
   open ($fi, "> $direct/$fil") or die "Can't open file $direct/$fil\n";
   printf $fi ("1
 $wdir
@@ -466,16 +466,20 @@ F", $id, $llimit, $ulimit);
 #generating injection file
 $file = "$direct/inject";
 $altitude /=100.;
-$rig = ", and using rigidity cutoff.";
+$rig = " and using rigidity cutoff.";
 unless ($rigidity) {
-  $rig = ", and rigidity cutoff was not used.";
+  $rig = " and rigidity cutoff was not used.";
 }
 $vol=", using volumetric detector for flux calculations";
 if ($flat) {
   $vol=", using flat detector for flux calculations";
 }
+$hig=", standard energy cuts";
+if ($highsec) {
+	$hig=", high energy cuts";
+}
 open ($fh, "> $file") or die "Can't open file $direct/$file\n";
-print $fh "Flux time: $time s ($totalShowers showers, $userllimit<E<$ulimit, $tMin<q<$tMax at site $site (h=$altitude, atm=$modatm)$vol$rig\n";
+print $fh "Flux time: $time s ($totalShowers showers, $userllimit<E<$ulimit, $tMin<q<$tMax at site $site (h=$altitude, atm=$modatm)$vol$hig$rig\n";
 foreach $z (sort {$b <=> $a} keys %spc) {
   print $fh "$spc{$z}  ->  _______  \n";
 }
