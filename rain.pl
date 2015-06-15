@@ -565,12 +565,11 @@ for ($i=0; $i<$nofruns; $i++) {
 
 #LAGO ECUTS
 # @ecuts=(0.05,0.05,1E-4,1E-4);
-  @ecuts=(0.05, 0.01, 0.00005, 0.00005);
+  @ecuts=(0.05, 0.05, 0.00005, 0.00005);
   if ($highsec) {
-    @ecuts=(0.1,0.1,0.1,0.1);
+    @ecuts=(10., 10., 10., 10.); # using 10 GeV
     if ($site eq "and") {
-      @ecuts=(800,800,800,800);
-# ecuts for ANDES
+      @ecuts=(800.,800.,800.,800.); # ecuts for ANDES
     }
   }
 #true of false
