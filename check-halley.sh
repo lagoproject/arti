@@ -53,12 +53,15 @@
 VERSION="v3r0";
 proc=$1
 all=false
-if [ "X$proc" == "X" ]; then
-  proc="corsika"
-fi
-
+crk=false
 if [ "X$proc" == "Xall" ]; then
   all=true
+fi
+if ! $all; then
+  if [ "X$proc" == "X" ]; then
+    proc="corsika"
+    crk=true
+  fi
 fi
 
 st=0
@@ -72,15 +75,27 @@ if $all; then
     ssh h${i} ps -af | grep -v "grep" | grep -v "ps" | grep -v "crktools" | grep -v "bash" # | grep --colour "^halley" 
   done
 else
-for i in $nodes; do
-  echo -n "halley0$i: "
-  ssh h${i} ps -af | grep "${proc}" | grep -v "grep" | grep -v "crktools" > tmp
-  loc=$(cat tmp | wc -l)
-  echo "$loc sessions running"
-  cat tmp
-  tot=$[ $tot + $loc ]
-  echo 
-done
-echo "TOTAL: $tot sessions running"
-rm tmp
+  if $crk; then
+    for i in $nodes; do
+      echo -n "halley0$i: "
+      ssh h${i} ps -af | grep "${proc}" | grep -v "grep" | grep -v "crktools" > tmp
+      loc=$(cat tmp | wc -l)
+      echo "$loc sessions running"
+      cat tmp
+      tot=$[ $tot + $loc ]
+      echo
+    done
+    echo "TOTAL: $tot sessions running"
+    rm tmp
+  else
+    for i in $nodes; do
+      echo "halley0$i: "
+      echo
+      ssh h${i} ls /home/h${i}/${proc}/run* | awk 'BEGIN{FS="/"}{print $5}' | awk 'BEGIN{FS="-"}{print $2, $3}' | tee -a sessions
+      echo
+    done
+    echo -n "Total for project ${proc}: "
+    wc -l sessions
+    rm sessions
+  fi
 fi
