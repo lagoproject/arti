@@ -58,11 +58,16 @@ showhelp() {
   echo 
   echo -e "USAGE $0:"
   echo
-  echo -e "  -b <project base name>  : Project base name (suggested format: nnn)"
-  echo -e "  -p <project name>       : Project name, typically nnnxx"
+  echo -e "  -b <project base name>  : Project base name (suggested format: aaa)"
+  echo -e "  -p <project name>       : Project name, typically aaann"
   echo -e "  -t                      : Only transfer files and perform checks"
-  echo -e "  -d                      : Transfer all the files to final directory and delete the original ones."
+  echo -e "  -d                      : Transfer all the files to final directory"
+  echo -e "                            and delete the original ones."
   echo -e "  -?                      : Shows this help and exit."
+  echo 
+  echo -e "Suggested way is first use option -t, perform all the checks, "
+  echo -e "and when you are sure everything is fine, re-run but using "
+  echo -e "option -d instead of -t"
   echo
 }
 
