@@ -65,7 +65,11 @@ showhelp() {
   echo -e "                            and delete the original ones."
   echo -e "  -?                      : Shows this help and exit."
   echo 
-  echo -e "Suggested way is first use option -t, perform all the checks, "
+  echo -e "The scrip will create the working directory at:"
+  echo -e "    /home/hN/aaa/flux-aaann/"
+  echo -e "where hN is the node you are working on, and where all the files "
+  echo -e "will be placed and the analysis will be performed."
+  echo -e " Suggested way is first use option -t, perform all the checks, "
   echo -e "and when you are sure everything is fine, re-run but using "
   echo -e "option -d instead of -t"
   echo
@@ -150,25 +154,28 @@ for i in $(seq 0 5); do
   fi
 done
 
+echo -n "#  Test 1:"
 tst=$(ls -1 ${home}/DAT??????.bz2 | wc -l)
-
 if [ "X${tst}" != "X60" ]; then
     ls -1 ${home}/DAT??????.bz2 | wc -l
+  echo " FAILED."
   echo "#  ERROR: There are not $tst/60 output files"
   echo "#  ERROR: Please check"
   exit 1
 fi
-echo -e "#  Test 1: PASS: There are 60 output files"
+echo -e " PASS: There are 60 output files"
 
 # Test if all the processes ended correctly
+echo -n "#  Test 2"
 tst=$(bzcat ${home}/*.lst.bz2 | tail -q -n 1 | grep -v "END OF RUN")
 if [ "X${tst}" != "X" ]; then
+  echo " FAILED."
   echo "#  ERROR: Some processes failed:"
   bzcat ${home}/*.lst.bz2 | tail -n 1 | grep -v "END OF RUN"
   echo "#  ERROR: Please check"
   exit 1
 fi
-echo -e "#  Test 2 PASS: all processes ended normally"
+echo -e " PASS: all processes ended normally"
 
 if ${era}; then
   echo; echo -e "#  READY: I will delete all the original files. Press enter to continue, <ctrl-c> to abort!"
