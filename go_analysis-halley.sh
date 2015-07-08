@@ -201,6 +201,7 @@ cd ${home}
 mkdir ${home}/f1
 mkdir ${home}/f2
 mkdir ${home}/f3
+mkdir ${home}/secs
 
 for i in 001206 001608 000703 002412 001105 002814 001407 002010 005626 000904 003216 002713 002311 004020 001909 005224 004018 004822 005525 003919 005123 003115 003517 004521; do
   mv -v DAT${i}.bz2 ${home}/f1
@@ -242,7 +243,11 @@ for i in DAT??????.bz2; do
   rm \$j
 done
 cd ${home}/
-rm f${k}.sh" > f${k}.sh
+mv -v ${home}/f${k}/DAT*.bz2 ${home}/
+mv -v ${home}/f${k}/*.sec.bz2 ${home}/secs/
+rmdir f${k}
+rm f${k}.sh
+" > f${k}.sh
   chmod 744 f${k}.sh
   screen -d -m -a -S flux-${k} ${home}/f${k}.sh 
   screen -ls
