@@ -94,7 +94,7 @@ showhelp() {
   echo -e "  -e                             : Enable CHERENKOV mode"
   echo -e "  -d                             : Enable DEBUG mode"
   echo -e "  -a                             : Enable high energy cuts for secondaries"
-  echo -e "  -k <altitude>                  : Fix altitude, even for predefined sites"
+  echo -e "  -k <altitude, in cm>           : Fix altitude, even for predefined sites"
   echo -e "  -l <cluster user name>         : Enable OAR cluster compatibility, use \$USER"
   echo -e "  -?                             : Shows this help and exit."
   echo
