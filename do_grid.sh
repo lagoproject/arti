@@ -93,7 +93,7 @@ showhelp() {
   echo -e "  -y                             : Select volumetric detector mode (default=flat array)"
   echo -e "  -d                             : Enable DEBUG mode"
   echo -e "  -a                             : Enable high energy cuts for secondaries"
-  echo -e "  -k <altitude>                  : Fix altitude, even for predefined sites"
+  echo -e "  -k <altitude, in cm>           : Fix altitude, even for predefined sites"
   echo -e "  -?                             : Shows this help and exit."
   echo
 }
