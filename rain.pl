@@ -90,7 +90,7 @@ $tmp = "";
 $batch = 0;
 $runmode = 0;
 $wdir = "x";
-$crk_ver = "73500";
+$crk_ver = "74005";
 $heim = "QGSII";
 $debug = 0;
 $help = 0;
@@ -216,7 +216,11 @@ while ($_ = $ARGV[0]) {
   }
 }
 
+
 $package="corsika".$crk_ver."Linux_".$heim."_gheisha";
+if ($ithin) {
+  $package= $package . "_thin";
+}
 
 $usage="
        $0 $VERSION\n
@@ -229,7 +233,7 @@ $usage="
        -d                                  Debug mode: only shows what it should do. Don't start simulation
        -r  <working directory>             Specify where corsika bin files are located
        -v  <version>                       Corsika version number
-       -h  <high energy interaction model> High energy interaction model used for compilation of CORSIKA (EPOS|QGSII)
+       -h  <high energy interaction model> High energy interaction model used for compilation of CORSIKA (EPOS|QGSII|SIBYLL)
        -l  <cluster user name>             Enables OAR cluster compatibility (UIS style), use -l \$USER
        -t  <EFRCTHN> <WMAX> <RMAX>         Enables THIN Mode (see manual for pg 62 for values)
        -th <THINRAT> <WEITRAT>             If THIN Mode, select different thining levels for Hadronic (THINH) ...
@@ -407,7 +411,7 @@ for ($i=0; $i<$nofruns; $i++) {
   }
   unless ($monoq) {
     $tlow=get("Low edge of zenith angle (THETAP) [deg]", 0, "THETPR(1)");
-    $thigh=get("High edge of zenith angle (THETAP) [deg]", 88, "THETPR(2)");
+    $thigh=get("High edge of zenith angle (THETAP) [deg]", 90, "THETPR(2)");
   }
   else {
     $tlow = $thigh = $monot;
@@ -579,7 +583,7 @@ for ($i=0; $i<$nofruns; $i++) {
     print "###################################################################\n";
   }
 
-  $muaddi=get("Get additional info for muons",'F',"MUADDI");
+  $muaddi=get("Get additional info for muons, EM and neutrinos",'F',"MUADDI, EMADDI, NUADDI");
   $plotsh=get("Write add- files for track plot of secondaries",'F',"PLOTSH");
   $datbas=get("Write .dbase file",'T',"DATBAS");
   $llongi=get("Track longitudinal development of secondaries (LONGI)", 'F',"LLONGI");
@@ -602,6 +606,9 @@ for ($i=0; $i<$nofruns; $i++) {
   }
   unless ($halley) {
     $plotshs="PLOTSH      $plotsh";
+  }
+  if ($plotsh eq "F") {
+    $plotshs="";
   }
   if ($cherenkov) {
     $cards="RUNNR         $runnr
@@ -671,10 +678,13 @@ ECUTS       $ecuts[0] $ecuts[1] $ecuts[2] $ecuts[3]
 
 $curvout
 MUADDI      $muaddi
+EMADDI      $muaddi
+NUADDI      $muaddi
+
 MUMULT      T
 MAXPRT      0
 ELMFLG      F   T
-LONGI       $llongi  20.  T  T
+LONGI       $llongi  10.  T  T
 ECTMAP      1.E3
 
 $plotshs
