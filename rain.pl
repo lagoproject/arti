@@ -241,7 +241,7 @@ $usage="
        -a                                  Enables high energy cuts for ECUTS - for now, hardcoded
        -z                                  Enables CHERENKOV mode
        -g                                  Enables GRID mode
-       -s <site>                           Choice site for simulation (some predefined sites: hess|sac|etn|ber|bga|mge|and )
+       -s <site>                           Choice site for simulation (some predefined sites: hess|sac|etn|ber|bga|lim|glr|mch|mge|and|mpc|cha|cid|mor|ccs)
        -m <energy>                         Defines energy (in GeV) for monoenergetic showers (CHERENKOV)
        -q <theta>                          Defines zenith angle (in degs) for fixed angle showers (CHERENKOV)
        -p <prmpar>                         Defines primary particle (see table 4 pg 87) (CHERENKOV)
@@ -472,7 +472,20 @@ for ($i=0; $i<$nofruns; $i++) {
         $bz=-0.046;
         $arrang="0";
       }
-
+    case "glr" {
+        $modatm=get("Atmospheric model selection ", "E1", "ATMOSPHERE");
+        $altitude=4276e2;
+        $bx=27.0750;
+        $bz=11.7728;
+        $arrang="0";
+      }
+    case "mch" {
+        $modatm=get("Atmospheric model selection ", "E1", "ATMOSPHERE");
+        $altitude=2650e2;
+        $bx=27.1762;
+        $bz=14.6184;
+        $arrang="0";
+      }
     case "mge" {
         $modatm=get("Atmospheric model selection ", "19", "$atmcrd");
         $altitude=1400e2;
@@ -572,6 +585,8 @@ for ($i=0; $i<$nofruns; $i++) {
   @ecuts=(0.05, 0.05, 0.00005, 0.00005);
   if ($highsec) {
     @ecuts=(10., 10., 10., 10.); # using 10 GeV
+	# if you want to use your own cuts, please add a site and use an if like
+	# the one show below for andes:
     if ($site eq "and") {
       @ecuts=(800.,800.,800.,800.); # ecuts for ANDES
     }

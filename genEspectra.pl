@@ -152,7 +152,7 @@ Options:
   -p <project name>     name of the project
   -t <time in sec>      Flux time
   -k <altitude>         Fix altitude even for predefined sites
-  -s <site>             Predefined sites parameters (sac|hess|sic|brc|cha)
+  -s <site>             Choice site for simulation (some predefined sites: hess|sac|etn|ber|bga|lim|glr|mch|mge|and|mpc|cha|cid|mor|ccs)
   -y                    Enable volumetric detector for flux calculations (Default: flat)
   -g                    Enable grid mode
   -l <cluster username> Enable OAR cluster compatibility (UIS style), use -l \$USER
@@ -281,6 +281,20 @@ switch ($site) {
     $bx=25.28;
     $bz=-0.046;
   }
+  case "glr" {
+      $modatm=get("Atmospheric model selection ", "E1", "ATMOSPHERE");
+      $altitude=4276e2;
+      $bx=27.0750;
+      $bz=11.7728;
+      $arrang="0";
+    }
+  case "mch" {
+      $modatm=get("Atmospheric model selection ", "E1", "ATMOSPHERE");
+      $altitude=2650e2;
+      $bx=27.1762;
+      $bz=14.6184;
+      $arrang="0";
+    }
   case "bga" {
     $modatm="E1";
     #get("Atmospheric model selection ", "E1", "$atmcrd");
