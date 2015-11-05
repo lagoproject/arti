@@ -591,6 +591,7 @@ for ($i=0; $i<$nofruns; $i++) {
       @ecuts=(800.,800.,800.,800.); # ecuts for ANDES
     }
   }
+
 #true of false
   unless ($batch) {
     print "###################################################################\n";
@@ -598,7 +599,14 @@ for ($i=0; $i<$nofruns; $i++) {
     print "###################################################################\n";
   }
 
-  $muaddi=get("Get additional info for muons, EM and neutrinos",'F',"MUADDI, EMADDI, NUADDI");
+# MUADDI. For v<7.4005, EMADDI AND NUADDI does not work, only MUADDI
+  $muaddi="";
+  if ($crk_ver eq "73500") {
+    $muaddi=get("Get additional info for muons",'F',"MUADDI");
+  } else {
+    $muaddi=get("Get additional info for muons, EM and neutrinos",'F',"MUADDI, EMADDI, NUADDI");
+  }
+
   $plotsh=get("Write add- files for track plot of secondaries",'F',"PLOTSH");
   $datbas=get("Write .dbase file",'T',"DATBAS");
   $llongi=get("Track longitudinal development of secondaries (LONGI)", 'F',"LLONGI");
@@ -651,7 +659,14 @@ SEED          $s3   0   0
 SEED          $s4   0   0
 ECUTS         $ecuts[0] $ecuts[1] $ecuts[2] $ecuts[3]
 
-MUADDI        $muaddi
+MUADDI      $muaddi";
+unless ($crk_ver eq "73500") {
+  $cards = $cards . "
+EMADDI      $muaddi
+NUADDI      $muaddi
+";
+}
+$cards = $cards . "
 MUMULT        T
 MAXPRT        0
 ELMFLG        F   T
@@ -692,10 +707,14 @@ SEED        $s4   0   0
 ECUTS       $ecuts[0] $ecuts[1] $ecuts[2] $ecuts[3]
 
 $curvout
-MUADDI      $muaddi
+MUADDI      $muaddi";
+unless ($crk_ver eq "73500") {
+  $cards = $cards . "
 EMADDI      $muaddi
 NUADDI      $muaddi
-
+";
+}
+$cards = $cards . "
 MUMULT      T
 MAXPRT      0
 ELMFLG      F   T
