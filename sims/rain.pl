@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 # /************************************************************************/
 # /*                                                                      */
-# /* Package:  CrkTools                                                   */
+# /* Package:  ARTI                                                       */
 # /* Module:   rain.pl                                                    */
 # /*                                                                      */
 # /************************************************************************/
@@ -51,39 +51,7 @@
 # */
 # /************************************************************************/
 
-$VERSION="v3r1";
-#
-# History log
-# ===========
-#
-# v3r1: Compact mode compatibility was elimated. Binary output are compressed by default
-# Wed Feb 19 09:19:26 COT 2014
-# v3r0: Wed Oct  9 15:14:14 COT 2013
-# changes in genEspectra.pl and showers.cc. Including geomagnetic effects.
-#
-# v2r4 (Fri Aug  2 15:52:48 COT 2013)
-# Now ctarain functionality is included here. ctarain.pl usage is deprecated. Using -z option to enable CHERENKOV mode
-# Now it includes site selection within rain.pl (using same values as in genEspectra.pl)
-# New options:
-# -m monoenergetic showers
-# -q monoangular showers
-# -p defines primary particle from cmd line
-# -s site (as in genEspectra.pl)
-# -z enable CHERENKOV mode
-# v2r3 (Fri May 31 15:40:00 COT 2013)
-# added option -i to rain for compatibility with cluster mode (COMPACT and PLOTSH are optional now)
-# v2r2 (Fri May 10 09:39:30 COT 2013)
-# Major realease of full package.
-# v2r1 (Tue Apr 16 17:17:12 COT 2013)
-# More changes added, for cluster usage optimization. Now allows to run up to
-# four independent process in one single run
-# v2r0 (Fri Apr 12 15:10:36 COT 2013)
-# This version is compatible with OAR clusters, by using the -l option 
-# Enabled high energy mode for secondaries, -a option added
-# v1r2 (Tue Sep 20 16:17:15 ART 2011)
-# Now we read and process files using c++. This new version produces a different script, and includes also the main directory in the script name.
-# v1r1 (Thu Apr 14 10:45:42 ART 2011)
-# * -r option added: if you have input files, then no ask for options
+$VERSION="v1r0";
 
 use Switch;
 $tmp = "";
@@ -225,7 +193,7 @@ if ($ithin) {
 $usage="
        $0 $VERSION\n
        A simple input files generator for CORSIKA
-       (C) 2013 - H. Asorey - asoreyh\@gmail.com
+       (C) 2013 - H. Asorey - asoreyh\@cab.cnea.gov.ar
        Usage: See ./rain.pl -?  - If you enjoy it, please send me an email\n
        $0\n
        -b                                  Activates batch mode
@@ -305,13 +273,13 @@ if ($ithinh) {
 $nofruns = 1;
 
 unless ($monoe || $monoq) {
-# XXX Could be a problem with genspectra XXX
+# XXX Could be a problem with generate_spectra.pl XXX
   $nofruns=get("Number of runs", $nofruns, "RUNS");
 }
 
 
 if ($wdir eq "x") {
-  $wdirtmp="/work/asoreyh/corsika-$crk_ver/run"
+  $wdirtmp="./run"
 }
 else {
   $wdirtmp=$wdir
@@ -329,7 +297,7 @@ if (int($monoe) || $monoq) {
 }
 $prj=get("Project name (Results will go into $wdir/<project> dir)", "$defprj", "DIRECT");
 
-$user=get("User name", "hasorey", "USER");
+$user=get("User name", "LAGO", "USER");
 if ($cluster) {
   $user=$clsname;
 }
@@ -619,6 +587,13 @@ for ($i=0; $i<$nofruns; $i++) {
   if ($grid) {
     $direct2 = "."
   }
+  $muadditxt="MUADDI      $muaddi
+EMADDI      $muaddi
+NUADDI      $muaddi";
+  if ($crk_ver*1.0 < 74005) {
+	  $muadditxt = "";
+  }
+
   unless ($halley) {
     $plotshs="PLOTSH      $plotsh";
   }
@@ -651,7 +626,7 @@ SEED          $s3   0   0
 SEED          $s4   0   0
 ECUTS         $ecuts[0] $ecuts[1] $ecuts[2] $ecuts[3]
 
-MUADDI        $muaddi
+$muadditxt
 MUMULT        T
 MAXPRT        0
 ELMFLG        F   T
@@ -692,9 +667,7 @@ SEED        $s4   0   0
 ECUTS       $ecuts[0] $ecuts[1] $ecuts[2] $ecuts[3]
 
 $curvout
-MUADDI      $muaddi
-EMADDI      $muaddi
-NUADDI      $muaddi
+$muadditxt
 
 MUMULT      T
 MAXPRT      0

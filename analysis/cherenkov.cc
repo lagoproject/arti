@@ -1,6 +1,6 @@
 /************************************************************************/
 /*                                                                      */
-/* Package:  CrkTools                                                   */
+/* Package:  ARTI                                                       */
 /* Module:   cherenkov.cc                                               */
 /*                                                                      */
 /************************************************************************/
@@ -49,7 +49,7 @@ official policies, either expressed or implied, of Lab DPR.
 
 */
 /************************************************************************/
-#define VERSION "v3r0"
+#define VERSION "v1r0"
 
 #define _FILE_OFFSET_BITS 64
 #include <string.h>
@@ -95,7 +95,7 @@ int Open(char *nfi) {
 }
 
 void Usage(char *prog, int verbose=0) {
-  cout << endl << "analysis.cc, from CrkTools version " << VERSION << endl<< endl;
+  cout << endl << "analysis.cc, from ARTI     version " << VERSION << endl<< endl;
   cout << "  Read ascii files containing Corsika Cherenkov outputs (CER) and produce a histogram" << endl; 
   cout << "  of photon density as a function of distance to core." << endl; 
   cout << "  Usage: " << prog << " [flags] raw_file" << endl;
@@ -235,7 +235,7 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   fprintf(sec, "# # # hst\n");
-  fprintf(sec, "# # This is the histogram of radial distribution of cherenkov phontons - CrkTools %s\n", VERSION);
+  fprintf(sec, "# # This is the histogram of radial distribution of cherenkov phontons - ARTI     %s\n", VERSION);
   fprintf(sec, "# # Array characteristics: Nx= %d columns; Ny= %d rows; Dx= %.3f m; Dy= %.3f m; Rx= %.3f m; Ry= %.3f m\n", nx, ny, dx*cmtom, dy*cmtom, rx*cmtom, ry*cmtom);
   fprintf(sec, "# # 4 column format is:\n");
   fprintf(sec, "# # x y photons hits\n");

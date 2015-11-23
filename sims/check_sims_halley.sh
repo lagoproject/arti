@@ -1,16 +1,17 @@
 #!/bin/bash
+
 # /************************************************************************/
 # /*                                                                      */
-# /* Package:  CrkTools                                                   */
-# /* Module:   install-corsika.sh                                         */
+# /* Package:  ARTI                                                       */
+# /* Module:   check_sims_halley.sh                                       */
 # /*                                                                      */
 # /************************************************************************/
 # /* Authors:  Hernán Asorey                                              */
 # /* e-mail:   asoreyh@cab.cnea.gov.ar                                    */
 # /*                                                                      */
 # /************************************************************************/
-# /* Comments: install libraries and fix dependencies needed for CORISKA  */
-# /*                                                                      */
+# /* Comments: This module analyze corsika status in non-clusterized      */
+# /*           halley array of nodes                                      */ 
 # /*                                                                      */
 # /************************************************************************/
 # /* 
@@ -48,17 +49,52 @@
 # those of the authors and should not be interpreted as representing
 # official policies, either expressed or implied, of Lab DPR.
 # 
-# */
-# /************************************************************************/
-VERSION="v3r0"
+VERSION="v1r0";
+proc=$1
+all=false
+crk=false
+if [ "X$proc" == "Xall" ]; then
+  all=true
+fi
+if ! $all; then
+  if [ "X$proc" == "X" ]; then
+    proc="corsika"
+    crk=true
+  fi
+fi
 
-sudo apt-get install build-essential gfortran-4.4 gcc-4.4 libgd2-xpm libgd2-xpm-dev
+st=0
+en=5
+tot=0
+nodes='0 1 2 3 4 5'
 
-sudo rm /usr/bin/gfortran
-sudo ln -s /usr/bin/gfortran-4.4 /usr/bin/gfortran
-
-sudo rm /usr/bin/gcc
-sudo ln -s /usr/bin/gcc-4.4 /usr/bin/gcc
-
-sudo rm /usr/bin/g++
-sudo ln -s /usr/bin/g++-4.4 /usr/bin/g++
+if $all; then
+  for i in $nodes; do
+    echo; echo "halley0$i: "; echo 
+    ssh h${i} ps -af | grep -v "grep" | grep -v "ps" | grep -v "arti" | grep -v "bash" 
+  done
+else
+  if $crk; then
+    for i in $nodes; do
+      echo -n "halley0$i: "
+      ssh h${i} ps -af | grep "${proc}" | grep -v "grep" | grep -v "arti" > tmp
+      loc=$(cat tmp | wc -l)
+      echo "$loc sessions running"
+      cat tmp
+      tot=$[ $tot + $loc ]
+      echo
+    done
+    echo "TOTAL: $tot sessions running"
+    rm tmp
+  else
+    for i in $nodes; do
+      echo "halley0$i: "
+      echo
+      ssh h${i} ls /home/h${i}/${proc}/run* | awk 'BEGIN{FS="/"}{print $5}' | awk 'BEGIN{FS="-"}{print $2, $3}' | tee -a sessions
+      echo
+    done
+    echo -n "Total for project ${proc}: "
+    wc -l sessions
+    rm sessions
+  fi
+fi

@@ -1,7 +1,7 @@
 c /************************************************************************/
 c /*                                                                      */
-c /* Package:  CrkTools                                                   */
-c /* Module:   lagocrkread.f                                              */
+c /* Package:  ARTI                                                       */
+c /* Module:   onlysecs.f                                                 */
 c /*                                                                      */
 c /************************************************************************/
 c /* Authors:  Hernán Asorey                                              */
@@ -9,7 +9,7 @@ c /* e-mail:   asoreyh@cab.cnea.gov.ar                                    */
 c /*                                                                      */
 c /************************************************************************/
 c /* Comments: Read corsika output (DAT files, full mode, not compact)    */
-c /*           and print block to stdout and info data to stderr          */
+c /*           and only print datablock to stdout (and info to stderr)    */
 c /*           gfortran -fbounds-check lagocrkread.f -o lagocrkread       */
 c /************************************************************************/
 c /* 
@@ -61,7 +61,7 @@ c     each block consists of 21 subblocks of 273 words.
 c----------------------------------------------------------------------
 c     J.Oehlschlaeger, D. Heck, 01 Sep 2011 
 c=======================================================================
-c     VERSION=v3r0
+c     VERSION=v1r0
       PROGRAM LAGOCRKREAD
       CHARACTER CHV(5733)*4,CIDENT*4,CDAT*70,CBLK*70
       DIMENSION PDATA(5733)
@@ -84,8 +84,8 @@ C--READ FILE NAME-------------------------------------------------------
   431 CONTINUE
       IREC = IREC + 1
       READ(UNIT=3,ERR=434,END=433) PDATA
-      if ( mod(irec,100) .eq. 0 ) 
-     +   WRITE(0,*)'         HAVE READ RECORD NR.',IREC,'AT EVENT',IEVT
+c      if ( mod(irec,100) .eq. 0 ) 
+c     +   WRITE(0,*)'         HAVE READ RECORD NR.',IREC,'AT EVENT',IEVT
 C-----------loop over subblocks-----------------------------------------
       DO    LIA=1,5733,273
         CIDENT(1:1) = CHV(LIA)(1:1)
@@ -95,28 +95,28 @@ C-----------loop over subblocks-----------------------------------------
         IF (PDATA(LIA).GE.211284.0.AND.
      +      PDATA(LIA).LE.211286.0) THEN
           CIDENT = 'RUNH'
-          WRITE(0,*)'RUNH'
+c          WRITE(0,*)'RUNH'
         ENDIF
         IF (PDATA(LIA).GE.217432.0.AND.
      +      PDATA(LIA).LE.217434.0) THEN
           CIDENT = 'EVTH'
           IEVT = IEVT + 1
-          WRITE(0,*)'     EVTH',IEVT
+c          WRITE(0,*)'     EVTH',IEVT
         ENDIF
         IF (PDATA(LIA).GE. 52814.0.AND.
      +      PDATA(LIA).LE. 52816.0) THEN
           CIDENT = 'LONG'
-          WRITE(0,*)'LONG'
+c          WRITE(0,*)'LONG'
         ENDIF
         IF (PDATA(LIA).GE.  3396.0.AND.
      +      PDATA(LIA).LE.  3398.0) THEN
           CIDENT = 'EVTE'
-          WRITE(0,*)'     EVTE', IEVT
+c          WRITE(0,*)'     EVTE', IEVT
         ENDIF
         IF (PDATA(LIA).GE.  3300.0.AND.
      +      PDATA(LIA).LE.  3302.0) THEN
           CIDENT = 'RUNE'
-          WRITE(0,*)'RUNE'
+c          WRITE(0,*)'RUNE'
         ENDIF
 C-----------which kind of block is it?----------------------------------
         IF ( CIDENT.EQ.'RUNH' .OR. CIDENT.EQ.'RUNE' .OR. 
@@ -127,31 +127,31 @@ C-----------which kind of block is it?----------------------------------
 C----------------subblock run header------------------------------------
              PDATA(LIA) = 11111111.
              DO    IL=LIA,LIA+272,7
-               WRITE(6,'(1P,7E13.5)') (PDATA(II+IL),II=0,6)
+C               WRITE(6,'(1P,7E13.5)') (PDATA(II+IL),II=0,6)
              ENDDO
           ELSEIF ( CIDENT .EQ. 'EVTH' ) THEN
 C----------------subblock event header----------------------------------
              PDATA(LIA) = 33333333.
              DO    IL=LIA,LIA+272,7
-               WRITE(6,'(1P,7E13.5)') (PDATA(II+IL),II=0,6)
+C               WRITE(6,'(1P,7E13.5)') (PDATA(II+IL),II=0,6)
              ENDDO
 C----------------subblock longitudinal data-----------------------------
           ELSEIF ( CIDENT .EQ. 'LONG' ) THEN
              PDATA(LIA) = 55555555.
              DO    IL=LIA,LIA+272,7
-               WRITE(6,'(1P,7E13.5)') (PDATA(II+IL),II=0,6)
+C               WRITE(6,'(1P,7E13.5)') (PDATA(II+IL),II=0,6)
              ENDDO
 C----------------subblock event end-------------------------------------
           ELSEIF ( CIDENT .EQ. 'EVTE' ) THEN
              PDATA(LIA) = 77777777.
              DO    IL=LIA,LIA+272,7
-               WRITE(6,'(1P,7E13.5)') (PDATA(II+IL),II=0,6)
+C               WRITE(6,'(1P,7E13.5)') (PDATA(II+IL),II=0,6)
              ENDDO
 C----------------subblock run end---------------------------------------
           ELSEIF ( CIDENT .EQ. 'RUNE' ) THEN
              PDATA(LIA) = 99999999.
              DO    IL=LIA,LIA+272,7
-               WRITE(6,'(1P,7E13.5)') (PDATA(II+IL),II=0,6)
+C               WRITE(6,'(1P,7E13.5)') (PDATA(II+IL),II=0,6)
              ENDDO
              GOTO 929
           ENDIF
@@ -167,11 +167,11 @@ C-----------subblock with particle data---------------------------------
  
 C--END OF TEST----------------------------------------------------------
   433 CONTINUE
-      WRITE(0,*)'         LAST RECORD ',irec-1
+c      WRITE(0,*)'         LAST RECORD ',irec-1
       CLOSE(UNIT=3)
       STOP
   434 CONTINUE
-      WRITE(0,*)'         READ ERROR ON UNIT 3 (', IR, ') ON FILE ',CDAT
+c      WRITE(0,*)'         READ ERROR ON UNIT 3 (', IR, ') ON FILE ',CDAT
       IR=IR+1;
       IF ( IR < 100 ) THEN
         GOTO 431
@@ -180,9 +180,9 @@ C--END OF TEST----------------------------------------------------------
         STOP
       ENDIF
   439 CONTINUE
-      WRITE(0,*)'         READ ERROR ON STANDARD INPUT'
+c      WRITE(0,*)'         READ ERROR ON STANDARD INPUT'
       GOTO 429
   440 CONTINUE
-      WRITE(0,*)'         READ END ON STANDARD INPUT'
+c      WRITE(0,*)'         READ END ON STANDARD INPUT'
       STOP
       END

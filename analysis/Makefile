@@ -1,5 +1,5 @@
 # CRKTools Makefile
-# v3r0
+# v1r0
 
 CC = g++
 CFLAGS = -Wall

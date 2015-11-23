@@ -1,6 +1,6 @@
 /************************************************************************/
 /*                                                                      */
-/* Package:  CrkTools                                                   */
+/* Package:  ARTI                                                       */
 /* Module:   analysis.cc                                                */
 /*                                                                      */
 /************************************************************************/
@@ -49,7 +49,7 @@ official policies, either expressed or implied, of Lab DPR.
 
 */
 /************************************************************************/
-#define VERSION "v3r0"
+#define VERSION "v1r0"
 
 #define _FILE_OFFSET_BITS 64
 #include <string.h>
@@ -194,7 +194,7 @@ inline double deg2rad (double deg) {
 }
 
 void Usage(char *prog, int verbose=0) {
-  cout << endl << "analysis.cc, from CrkTools version " << VERSION << endl<< endl;
+  cout << endl << "analysis.cc, from ARTI     version " << VERSION << endl<< endl;
   cout << "  Read ascii files containing Corsika Outputs and produce different files" << endl; 
   cout << "  containing secondaries, injection spectra, etc, acoording to options" << endl; 
   cout << "  selected by user." << endl; 
@@ -286,7 +286,7 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   fprintf(sec, "# # # sec\n");
-  fprintf(sec, "# # This is the Secondaries file - CrkTools %s\n", VERSION);
+  fprintf(sec, "# # This is the Secondaries file - ARTI     %s\n", VERSION);
   fprintf(sec, "# # 12 column format is:\n");
   fprintf(sec, "# # CorsikaId px py pz x y t shower_id prm_id prm_energy prm_theta prm_phi\n");
   if (iforce)
@@ -299,7 +299,7 @@ int main(int argc, char *argv[]) {
       exit(1);
     }
     fprintf(pri, "# # # pri\n");
-    fprintf(pri, "# # This is the Primaries file - CrkTools %s\n", VERSION);
+    fprintf(pri, "# # This is the Primaries file - ARTI     %s\n", VERSION);
     fprintf(pri, "# # 10 column format is:\n");
     fprintf(pri, "# # prm_Crk_id prm_energy prm_x0 prm_theta prm_phi ph_obs_lev el_obs_lev hd_obs_lev mu_obs_lev tot_obs_lev\n");
   }

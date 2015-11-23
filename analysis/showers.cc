@@ -1,6 +1,6 @@
 /************************************************************************/
 /*                                                                      */
-/* Package:  CrkTools                                                   */
+/* Package:  ARTI                                                       */
 /* Module:   showers.cc                                                 */
 /*                                                                      */
 /************************************************************************/
@@ -49,7 +49,7 @@ official policies, either expressed or implied, of Lab DPR.
 
 */
 /************************************************************************/
-#define VERSION "v3r0"
+#define VERSION "v1r0"
 
 #define _FILE_OFFSET_BITS 64
 #include <string.h>
@@ -102,7 +102,7 @@ int Open(char *nfi) {
 }
 
 void Usage(char *prog, int iverbose=0) {
-  cout << endl << "shower.cc, from CrkTools version " << VERSION << endl<< endl;
+  cout << endl << "shower.cc, from ARTI     version " << VERSION << endl<< endl;
   cout << "  Check secondaries file and change shower Id. This allows to process secondaries" << endl << "  within the detector simulation and handle mini showers." << endl;
   cout << "  Usage: " << prog << " [flags] raw_file" << endl;
   cout << "    If 'raw_file' does not exits, switch to STDIN and use raw_file as" << endl;
@@ -322,7 +322,7 @@ int main (int argc, char *argv[]) {
   if (igeo)
     fprintf(shw, "# # Geomagnetic effects were included: %d values were read from column %d of file %s\n", iGeoN, cGeoC+1, nfg);
 
-  fprintf(shw, "# # This is the Secondaries file - CrkTools %s\n", VERSION);
+  fprintf(shw, "# # This is the Secondaries file - ARTI     %s\n", VERSION);
   fprintf(shw, "# # 12 column format is:\n");
   if (icurve)
     fprintf(shw, "# # CorsikaId px py pz x y z shower_id prm_id prm_energy prm_theta prm_phi\n");
@@ -336,7 +336,7 @@ int main (int argc, char *argv[]) {
       fprintf(hst, "# # CURVED mode is ENABLED and observation level is %.0lf m a.s.l.\n", h/100.);
     if (igeo)
       fprintf(hst, "# # Geomagnetic effects were included: %d values were read from file %s\n", iGeoN, nfg);
-    fprintf(hst, "# # This is the Histogram of secondary energy file - CrkTools %s\n", VERSION);
+    fprintf(hst, "# # This is the Histogram of secondary energy file - ARTI     %s\n", VERSION);
     fprintf(hst, "# # Logaritmic energy scale. Resolution used: %d bins per energy decade\n", int(resolution));
     if (inorm)
       fprintf(hst, "# # Number of particles are divided by detector area (%.4f m^2) and flux time (%.2f s)\n", area, fluxTime);
@@ -352,7 +352,7 @@ int main (int argc, char *argv[]) {
       fprintf(dst, "# # CURVED mode is ENABLED and observation level is %.0lf m a.s.l.\n", h/100.);
     if (igeo)
       fprintf(dst, "# # Geomagnetic effects were included: %d values were read from file %s\n", iGeoN, nfg);
-    fprintf(dst, "# # This is the Histogram of secondary distance file - CrkTools %s\n", VERSION);
+    fprintf(dst, "# # This is the Histogram of secondary distance file - ARTI     %s\n", VERSION);
     fprintf(dst, "# # Logaritmic distance scale. Resolution used: %d bins per distance decade\n", int(resolution));
     if (inorm)
       fprintf(dst, "# # Number of particles are divided by detector area (%.4f m^2) and flux time (%.2f s)\n", area, fluxTime);

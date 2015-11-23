@@ -1,8 +1,8 @@
 #!/bin/bash
 # /************************************************************************/
 # /*                                                                      */
-# /* Package:  CrkTools                                                   */
-# /* Module:   newprj-halley.sh                                           */
+# /* Package:  ARTI                                                       */
+# /* Module:   new_project_halley.sh                                      */
 # /*                                                                      */
 # /************************************************************************/
 # /* Authors:  Hernán Asorey                                              */
@@ -51,13 +51,13 @@
 # */
 # /************************************************************************/
 # 
-VERSION="v3r0"; # Wed Dec  4 21:53:57 COT 2013
+VERSION="v1r0"; # Wed Dec  4 21:53:57 COT 2013
 # first version
 
 
 showhelp() {
   echo 
-  echo -e "$0 version $VERSION"
+  echo -e "$0 $VERSION"
   echo 
   echo -e "Note: You should run this script at halley cluster frontend h0"
   echo 
@@ -161,5 +161,5 @@ echo
 echo -e "#  DONE: Project ${prj} has been created. You can access the project folder"
 echo -e "#        by just typing ${prj} anywhere."
 echo -e "#"
-echo -e "#        Run do_halley.sh to continue"
+echo -e "#        Run do_sims_halley.sh to continue"
 echo

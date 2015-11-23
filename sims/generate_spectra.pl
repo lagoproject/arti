@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 # /************************************************************************/
 # /*                                                                      */
-# /* Package:  CrkTools                                                   */
-# /* Module:   genEspectra.pl                                             */
+# /* Package:  ARTI                                                       */
+# /* Module:   generate_spectrum.pl                                       */
 # /*                                                                      */
 # /************************************************************************/
 # /* Authors:  Hernán Asorey                                              */
@@ -51,35 +51,7 @@
 # */
 # /************************************************************************/
 #
-$VERSION="v3r0";
-
-# History log
-# v3r0 Wed Oct  9 14:36:39 COT 2013
-# Now calculates rigidities using particle momentum instead of particle energy
-# Include masses calculated using mass.pl, included in crktools since this version.
-#
-# v2r4 Tue Aug  6 15:43:52 COT 2013
-# More sites added. Now ctarain is deprecated. All the stuff in rain.pl, option -z
-#
-# v2r3 Fri Jun 14 09:45:11 COT 2013
-# Two new sites added: ber (Paramo de Berlin), and bga (Bucaramanga)
-# Change in maxtheta: 88 deg -> 90 deg
-#
-# v2r2 (Fri May 10 09:39:30 COT 2013)
-# Major realease of full package CrkTools
-# v2r0 (Sat Abr 13 07:14:58 COT 2013)
-# OAR Cluster compatibility added, -l option
-
-# v1r9 (Sat Mar 23 10:23:13 ART 2013)
-# New option -s: enables cherenkov output oriented to CTA studies
-
-# v1r8 (Thu Jan 24 22:19:15 ART 2013)
-# More fun added. Now includes -h help and usage
-
-# v1r0 (Mon Jan 30 10:02:14 ART 2012)
-# new version based on v1r0. Include some extra questions for
-# common options
-# include -f option to ask for a different spectra file (default: genspectra.dat)
+$VERSION="v1r0";
 
 # defaults
 use Switch;
@@ -91,10 +63,10 @@ $time=3600;
 $tp=0;
 $prj="brc";
 $pp=0;
-$file = "genEspectra.dat";
+$file = "spectra.dat";
 $area=1e4;
 #cm2
-$wdir="/work/asoreyh/corsika-73500/run";
+$wdir="";
 $wp=0;
 $user="";
 $cluster=0;
@@ -128,11 +100,11 @@ sub get {
   return $tmp;
 }
 $help="
-genspectra.pl $VERSION
+ $0 $VERSION
 
 A simple meta script to generate input files (through rain.pl)
 for a complete set of nuclei to define the comple spectra
-Read spectra data from genspectra.dat
+Read spectra data from file spectra.dat unless other provided 
 (C) 2013 - H. Asorey
 
 Usage: ./genspectra.pl options

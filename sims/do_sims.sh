@@ -1,7 +1,7 @@
 #!/bin/bash
 # /************************************************************************/
 # /*                                                                      */
-# /* Package:  CrkTools                                                   */
+# /* Package:  ARTI                                                       */
 # /* Module:   do_sims.sh                                                */
 # /*                                                                      */
 # /************************************************************************/
@@ -51,27 +51,8 @@
 # */
 # /************************************************************************/
 # 
-VERSION="v3r0";
+VERSION="v1r0";
 
-# v3r0: Wed Oct  9 15:14:14 COT 2013
-# changes in genEspectra.pl and showers.cc. Including geomagnetic effects
-# v2r4 Tue Aug  6 15:43:52 COT 2013
-# rain.pl now includes ctarain functionality. ctarain.pl usage is now deprecated
-
-# v2r3 Fri Jun 14 09:45:11 COT 2013
-# New realease for do_halley.sh
-
-# v2r2 (Fri May 10 09:39:30 COT 2013)
-# Major release of full crktools package
-# -y option added for volumetric of flat detector flux calculations in genEspectra.pl
-# v2r1 (Tue Apr 16 17:17:12 COT 2013) 
-# OAR server usage improved. Run up to $procs (4, should be divisor of 60) simultaneously in 
-# a single OAR node. Produces a script that produces 15 scrips to run 15*4=60 showers. 
-
-# v2r0
-# OAR server compatibilities, and other new features. See showhelp()
-
-# lot's of new features
 
 showhelp() {
   echo 
@@ -99,7 +80,7 @@ debug=false
 highsec=false
 cluster=false
 sites=false
-usr="HgAsorey";
+usr="LAGO";
 vol=false
 
 echo
@@ -255,9 +236,9 @@ fi
 if $vol; then
   options=${options}"-y "
 fi
-options=${options}"-f genEspectra.dat"
+options=${options}"-f spectra.dat"
 
-./genEspectra.pl $options
+./generate_spectra.pl $options
 ##############
 
 a=$(echo $prj)
@@ -267,10 +248,10 @@ a=$(echo $prj)
 # cluster mode
 if $cluster; then
   if $cta; then
-    cp $home/crktools/rain.pl $home
+    cp $home/arti/rain.pl $home
     rain="$home/rain.pl -z -l ${usr}"
   else
-    cp $home/crktools/rain.pl $home
+    cp $home/arti/rain.pl $home
     rain="$home/rain.pl -l ${usr}"
   fi
   if $sites; then
@@ -347,13 +328,13 @@ else
   if $cta; then
     for i in $(seq 3 6); do 
       u=$(echo $wdir | sed -e "s/tep6/tep${i}/")
-      cp /work/asoreyh/crktools/rain.pl $u/
+      cp $home/arti/rain.pl $u/
       rain="./rain.pl -z"
     done
   else
     for i in $(seq 3 6); do 
       u=$(echo $wdir | sed -e "s/tep6/tep${i}/")
-      cp /work/asoreyh/crktools/rain.pl $u/
+      cp $home/arti/rain.pl $u/
       rain="./rain.pl "
     done
   fi
