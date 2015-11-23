@@ -54,6 +54,8 @@
 $VERSION="v1r0";
 
 use Switch;
+use Cwd;
+
 $tmp = "";
 $batch = 0;
 $runmode = 0;
@@ -194,7 +196,7 @@ $usage="
        $0 $VERSION\n
        A simple input files generator for CORSIKA
        (C) 2013 - H. Asorey - asoreyh\@cab.cnea.gov.ar
-       Usage: See ./rain.pl -?  - If you enjoy it, please send me an email\n
+       Usage: See $0 -?  - If you enjoy it, please send me an email\n
        $0\n
        -b                                  Activates batch mode
        -i                                  Halley mode
@@ -279,7 +281,7 @@ unless ($monoe || $monoq) {
 
 
 if ($wdir eq "x") {
-  $wdirtmp="./run"
+  $wdirtmp=getcwd() . "/run";
 }
 else {
   $wdirtmp=$wdir

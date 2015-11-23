@@ -107,7 +107,7 @@ for a complete set of nuclei to define the comple spectra
 Read spectra data from file spectra.dat unless other provided 
 (C) 2013 - H. Asorey
 
-Usage: ./genspectra.pl options
+Usage: $0 options
 
 Options:
   -f <file>             Use file to calculate nuclei spectra, asuming a flux of the
