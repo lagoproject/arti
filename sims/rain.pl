@@ -79,6 +79,7 @@ $monot = 0.;
 $monop = 0;
 $cherenkov = 0;
 $grid = 0;
+$imuaddi = 0;
 
 sub get {
   my $question = $_[0];
@@ -162,8 +163,11 @@ while ($_ = $ARGV[0]) {
   if (/-d$/i) {
     $debug++;
   }
+  if (/-mu$/i) {
+    $debug++;
+  }
   if (/-g$/i) {
-    $grid++;
+    $imuaddi=1;
   }
   if (/-\?$/i) {
     $help++;
@@ -185,7 +189,6 @@ while ($_ = $ARGV[0]) {
     shift;
   }
 }
-
 
 $package="corsika".$crk_ver."Linux_".$heim."_gheisha";
 if ($ithin) {
@@ -210,6 +213,7 @@ $usage="
        -te <THINRAT> <WEITRAT>             ... and electromagnetic particles (THINEM)
        -a                                  Enables high energy cuts for ECUTS - for now, hardcoded
        -z                                  Enables CHERENKOV mode
+       -mu                                 Enables additional information from muons and EM particles
        -g                                  Enables GRID mode
        -s <site>                           Choice site for simulation (some predefined sites: hess|sac|etn|ber|bga|lim|glr|mch|mge|and|mpc|cha|cid|mor|ccs)
        -m <energy>                         Defines energy (in GeV) for monoenergetic showers (CHERENKOV)
@@ -571,10 +575,12 @@ for ($i=0; $i<$nofruns; $i++) {
 
 # MUADDI. For v<7.4005, EMADDI AND NUADDI does not work, only MUADDI
   $muaddi="";
-  if ($crk_ver eq "73500") {
-    $muaddi=get("Get additional info for muons",'F',"MUADDI");
-  } else {
-    $muaddi=get("Get additional info for muons, EM and neutrinos",'F',"MUADDI, EMADDI, NUADDI");
+  if ($imuaddi) {
+    if ($crk_ver eq "73500") {
+      $muaddi=get("Get additional info for muons",'F',"MUADDI");
+    } else {
+      $muaddi=get("Get additional info for muons, EM and neutrinos",'F',"MUADDI, EMADDI, NUADDI");
+    }
   }
 
   $plotsh=get("Write add- files for track plot of secondaries",'F',"PLOTSH");
@@ -597,11 +603,14 @@ for ($i=0; $i<$nofruns; $i++) {
   if ($grid) {
     $direct2 = "."
   }
-  $muadditxt="MUADDI      $muaddi
+  $muadditxt=""; 
+  if ($imuaddi) {
+    $muadditxt="MUADDI      $muaddi
 EMADDI      $muaddi
 NUADDI      $muaddi";
-  if ($crk_ver*1.0 < 74005) {
-	  $muadditxt = "";
+    if ($crk_ver*1.0 < 74005) {
+  	  $muadditxt = "";
+    }
   }
 
   unless ($halley) {

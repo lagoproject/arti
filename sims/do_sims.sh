@@ -70,7 +70,7 @@ showhelp() {
   echo -e "  -y                             : Select volumetric detector mode (default=flat array)"
   echo -e "  -e                             : Enable CHERENKOV mode"
   echo -e "  -d                             : Enable DEBUG mode"
-  echo -e "  -a                             : Enable high energy cuts for secondaries"
+  echo -e "  -a                             : Enable high energy cuts for secondaries. Do not use for usual fluence calculations."
   echo -e "  -l <cluster user name>         : Enable OAR cluster compatibility, use \$USER"
   echo -e "  -?                             : Shows this help and exit."
   echo
