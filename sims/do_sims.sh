@@ -180,7 +180,7 @@ fi
 
 
 if [ "X$ver" == "X" ]; then
-  ver="73500"
+  ver="75600"
   echo -e "#  WARNING: CORSIKA version was not provided. Using default: $ver"
 fi
 
