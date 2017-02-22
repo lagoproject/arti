@@ -158,7 +158,9 @@ C               WRITE(6,'(1P,7E13.5)') (PDATA(II+IL),II=0,6)
         ELSE
 C-----------subblock with particle data---------------------------------
            DO    IL=LIA,LIA+272,7
-              WRITE(6,'(1P,7E13.5)') (PDATA(II+IL),II=0,6)
+              IF (PDATA(IL)>0.) THEN
+                 WRITE(6,'(1P,7E13.5)') (PDATA(II+IL),II=0,6)
+              ENDIF
            ENDDO
         ENDIF
       ENDDO
