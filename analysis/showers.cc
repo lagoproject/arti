@@ -316,7 +316,7 @@ int main (int argc, char *argv[]) {
 
   fprintf(shw, "# # # shw\n");
   if (icurve)
-    fprintf(shw, "# # CURVED mode is ENABLED and observation level is %.0lf m a.s.l.\n", h/100.);
+    fprintf(shw, "# # CURVED mode is ENABLED and observation level is %.0lf m a.s.l.\n", hInM);
   if (ifilter)
     fprintf(shw, "# # FILTER mode is ENABLED and only shows COMPONENT %d\n", particle);
   if (igeo)
@@ -333,7 +333,7 @@ int main (int argc, char *argv[]) {
     if (iforce)
       fprintf(hst, "# # # WARNING: force mode is enable. Analysis done in FLAT mode.\n");
     if (icurve)
-      fprintf(hst, "# # CURVED mode is ENABLED and observation level is %.0lf m a.s.l.\n", h/100.);
+      fprintf(hst, "# # CURVED mode is ENABLED and observation level is %.0lf m a.s.l.\n", hInM);
     if (igeo)
       fprintf(hst, "# # Geomagnetic effects were included: %d values were read from file %s\n", iGeoN, nfg);
     fprintf(hst, "# # This is the Histogram of secondary energy file - ARTI     %s\n", VERSION);
@@ -349,7 +349,7 @@ int main (int argc, char *argv[]) {
     if (iforce)
       fprintf(dst, "# # # WARNING: force mode is enable. Analysis done in FLAT mode.\n");
     if (icurve)
-      fprintf(dst, "# # CURVED mode is ENABLED and observation level is %.0lf m a.s.l.\n", h/100.);
+      fprintf(dst, "# # CURVED mode is ENABLED and observation level is %.0lf m a.s.l.\n", hInM);
     if (igeo)
       fprintf(dst, "# # Geomagnetic effects were included: %d values were read from file %s\n", iGeoN, nfg);
     fprintf(dst, "# # This is the Histogram of secondary distance file - ARTI     %s\n", VERSION);

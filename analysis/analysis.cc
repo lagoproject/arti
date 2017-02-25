@@ -81,8 +81,10 @@ int bad_block  = 0;
 double chk_block[5] = {0.00000e+00, 1.11111e+07, 3.33333e+07, 7.77778e+07, 1.00000e+08};
 bool events = true, data = true;
 
-int iverbose = 0, iprim = 0, idegub = 0, iinclude = 0, iforce = 0;
-
+int iverbose = 0, iprim = 0, idegub = 0, iinclude = 0, iforce = 0, icurve = 0;
+double r_earth=637131500.;
+double cm2m=0.01;
+double x, y, z, h, hInM;
 
 char line[256];
 
@@ -147,6 +149,17 @@ int ReadBlock(double *block, int type) {
   return read_no_error;
 }
 
+void curved(double xp, double yp) {
+	double d = r_earth + h;
+	double t = sqrt(xp*xp + yp*yp)/d;
+	double f = atan2(yp,xp);
+	z = (d*cos(t) - r_earth)*cm2m;
+	d *= sin(t);
+	x = d*cos(f)*cm2m;
+	y = d*sin(f)*cm2m;
+}
+
+
 int ReadDataBlock(double *block, int blk) {
   int read_line_error = 0, check = 0, read_no_error=1;
   for (int row=0; row<block_rows; row++) {
@@ -204,6 +217,7 @@ void Usage(char *prog, int verbose=0) {
   cout << "    flags:"<<endl;
   cout << "      -p: create a separate file with information from all primaries"<<endl; 
   cout << "      -i: include headers and footers as comments in secondaries file"<<endl;
+  cout << "      -c <obs_lev>    : Enable curved mode: x'y' will be converted to local coordinates xys\n                        WARNING! Should not be used if showers will be used after analysis, as it could introduce errors."<<endl;
   cout << "      -d: debug mode: print headers and footers in stdout. Handle with care. *"<<endl;
   cout << "      -v: enable verbose outputs"<<endl; 
   cout << "      -f: force analysis (overide file sanity checks and continue. Handle with care)"<<endl; 
@@ -241,6 +255,12 @@ int main(int argc, char *argv[]) {
         case 'i':
           iinclude=1;
           break;
+        case 'c':
+		  icurve=1;
+		  i++;
+		  h=(double)(atof(argv[i])*100.); // calculation is in cm...
+		  hInM=h*cm2m;
+		  break;
         case '?':
         default:
           Usage(argv[0]);
@@ -287,8 +307,13 @@ int main(int argc, char *argv[]) {
   }
   fprintf(sec, "# # # sec\n");
   fprintf(sec, "# # This is the Secondaries file - ARTI     %s\n", VERSION);
+  if (icurve)
+	  fprintf(sec, "# # Curve mode was enabled and observation level is %.0lf m a.s.l. XYZ is printed instead of x'y't\n",hInM);
   fprintf(sec, "# # 12 column format is:\n");
-  fprintf(sec, "# # CorsikaId px py pz x y t shower_id prm_id prm_energy prm_theta prm_phi\n");
+  if (icurve)
+	  fprintf(sec, "# # CorsikaId px py pz x y z shower_id prm_id prm_energy prm_theta prm_phi\n");
+  else
+	  fprintf(sec, "# # CorsikaId px py pz x' y' t shower_id prm_id prm_energy prm_theta prm_phi\n");
   if (iforce)
     cerr << "WARNING! Force mode is enabled. Consistency checks will be ignorated\n";
   //primaries
@@ -365,15 +390,20 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Reading block: %08d\r", block);
         if (data_block[i*block_cols]) {
           if (data_block[i*block_cols]>0) {
+			  x = data_block[i*block_cols+4];
+			  y = data_block[i*block_cols+5];
+			  z = data_block[i*block_cols+6];
+			  if (icurve)
+				curved(data_block[i*block_cols+4], data_block[i*block_cols+5]);
             fprintf (
               sec, "%04d %+.5E %+.5E %+.5E %+.5E %+.5E %+.5E %08ld %04d %+.5E %+07.3lf %+08.3lf\n",
               int(data_block[i*block_cols+0]/1000.),
               data_block[i*block_cols+1], 
               data_block[i*block_cols+2], 
               data_block[i*block_cols+3], 
-              data_block[i*block_cols+4], 
-              data_block[i*block_cols+5], 
-              data_block[i*block_cols+6],
+              x,
+			  y,
+			  z,
               shower_id,
               int(evt_header[2]),
               evt_header[3],
