@@ -1,6 +1,6 @@
 #!/bin/bash
-#   lago-anna.sh 
-#	define LAGO_ANNA and modify .bashrc
+#   lago-arti.sh 
+#	define LAGO_ARTI and modify .bashrc
 #   Copyright (C) 2012-TODAY The LAGO Project, http://lagoproject.org, lago-pi@lagoproject.org
 #   Original authors: Hernán Asorey
 #   e-mail: asoreyh@cab.cnea.gov.ar  (asoreyh@gmail.com)
