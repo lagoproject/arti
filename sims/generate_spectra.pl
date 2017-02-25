@@ -280,6 +280,12 @@ switch ($site) {
     $bx=20.4367;
     $bz=-11.8217;
   }
+  case "brc" {
+    $modatm=get("Atmospheric model selection ", "E3", "$atmcrd");
+    $altitude=800e2;
+    $bx=19.234;
+    $bz=-17.068;
+  }
   case "and" {
     $modatm=get("Atmospheric model selection ", "19", "$atmcrd");
     $altitude=5800e2;

@@ -12,7 +12,8 @@ DESCRIPTION:
 Set of scrips, perl, fortran and C/C++ codes to run and analyze corsika generated showers. 
 
 CONTRIBUTORS:
-If you want to contribute to this project please send me an email (asoreyh@gmail.com) and remember this guidelines:
+If you want to contribute to this project please send us an email
+(asoreyh@gmail.com or lago@lagoproject.org) and remember this guidelines:
 
 FILE ENCODING:  UTF8 (please use iconv -f YOUR_ENCODING -t UTF-8 file_to_convert > converted_file before to push)
 LANGUAGE:       English (preferred)
@@ -25,11 +26,12 @@ VERSIONING:     Sequence-based identifiers, v<version>r<release>. First public r
 TAGGING:        Please don't tag over our repo.
 
 INSTALL:
-After installing dependences (needs CORSIKA, perl, make, g++ and common libraries), just run make.
+After installing dependences (needs CORSIKA, perl, make, g++ and common
+libraries, see the LAGO wiki page), just run make.
 
 USAGE:
 Please read LAGO technical notes about this package. 
 do_sims, do_grid and do_halley are the main scripts here. 
 Run some of them and follow instructions.
 Scripts will do what you expecto to do. If you have some doubts or suggestions,
-do not hesitate to contact me.
+do not hesitate to contact us.

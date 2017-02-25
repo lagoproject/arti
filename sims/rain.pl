@@ -202,7 +202,7 @@ $usage="
        Usage: See $0 -?  - If you enjoy it, please send me an email\n
        $0\n
        -b                                  Activates batch mode
-       -i                                  Halley mode
+       -i                                  Disable PLOTSH and PLOTSH2 modes (usual simms production)
        -d                                  Debug mode: only shows what it should do. Don't start simulation
        -r  <working directory>             Specify where corsika bin files are located
        -v  <version>                       Corsika version number
@@ -465,6 +465,13 @@ for ($i=0; $i<$nofruns; $i++) {
         $altitude=1400e2;
         $bx=20.4367;
         $bz=-11.8217;
+        $arrang="0";
+      }
+    case "brc" {
+        $modatm=get("Atmospheric model selection ", "E3", "$atmcrd");
+        $altitude=800e2;
+        $bx=19.234;
+        $bz=-17.068;
         $arrang="0";
       }
     case "and" {
