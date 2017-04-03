@@ -2,7 +2,7 @@
 # /************************************************************************/
 # /*                                                                      */
 # /* Package:  ARTI                                                       */
-# /* Module:   do_sims.sh                                                 */
+# /* Module:   do_ iafe.sh                                                 */
 # /*                                                                      */
 # /************************************************************************/
 # /* Authors:  Hernan Asorey                                              */
@@ -248,7 +248,7 @@ codename=$(echo $wdir | sed -e 's/\/home\/sdasso\/corsika\/pruebas_sep2016\/run_
 
 home=$wdir
 direct=$home/$prj
-basecrktools=/home/sdasso/arti/sims/
+basecrktools=${HOME}/arti/sims/
 
 ##############
 options="-w ${wdir} -t ${tim} -p ${prj} "
@@ -266,9 +266,9 @@ if $alt; then
   options=${options}"-k $altitude "
 fi
   
-options=${options}"-f $basecrktools/genEspectra.dat"
+options=${options}"-f $basecrktools/spectra.dat"
 
-$basecrktools/genEspectra.pl ${options}
+$basecrktools/generate_spectra.pl ${options}
 
 ##############
 
