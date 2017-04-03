@@ -31,7 +31,7 @@ echo "
 ## Changes added by the LAGO ARTI suite on $date
 #
 export LAGO_ARTI=\"${LAGO_ARTI}\"
-export PATH=\"\${LAGO_ARTI}:\$PATH\"
+export PATH=\"\${LAGO_ARTI}/sims/:\${LAGO_ARTI}/analysis:\$PATH\"
 " >> ${HOME}/.bashrc
 echo "Done. Now open a new terminal or execute"
 echo "source .bashrc"
