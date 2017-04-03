@@ -124,7 +124,7 @@ Options:
   -p <project name>     name of the project
   -t <time in sec>      Flux time
   -k <altitude>         Fix altitude even for predefined sites
-  -s <site>             Choice site for simulation (some predefined sites: hess|sac|etn|ber|bga|lim|glr|mch|mge|and|mpc|cha|cid|mor|ccs|lsc)
+  -s <site>             Choice site for simulation (some predefined sites: hess|sac|etn|ber|bga|lim|glr|mch|mge|and|mpc|cha|cid|mor|ccs|lsc|mbo)
   -y                    Enable volumetric detector for flux calculations (Default: flat)
   -g                    Enable grid mode
   -l <cluster username> Enable OAR cluster compatibility (UIS style), use -l \$USER
@@ -329,6 +329,13 @@ switch ($site) {
     $altitude=28e2;
     $bx=20.29;
     $bz=-11.74;
+  }
+  case "mbo" {
+    # Base Marambio
+    $modatm="E5";
+    $altitude=196e2;
+    $bx=19.6571;
+    $bz=-30.5809;
   }
   case "ccs" {
     #Caracas, data provided by Jose Antonio López, UCV, 10.486004N -66.894461W

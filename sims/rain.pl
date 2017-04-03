@@ -215,7 +215,7 @@ $usage="
        -z                                  Enables CHERENKOV mode
        -mu                                 Enables additional information from muons and EM particles
        -g                                  Enables GRID mode
-       -s <site>                           Choice site for simulation (some predefined sites: hess|sac|etn|ber|bga|lim|glr|mch|mge|and|mpc|cha|cid|mor|ccs|lsc)
+       -s <site>                           Choice site for simulation (some predefined sites: hess|sac|etn|ber|bga|lim|glr|mch|mge|and|mpc|cha|cid|mor|ccs|lsc|mbo)
        -m <energy>                         Defines energy (in GeV) for monoenergetic showers (CHERENKOV)
        -q <theta>                          Defines zenith angle (in degs) for fixed angle showers (CHERENKOV)
        -p <prmpar>                         Defines primary particle (see table 4 pg 87) (CHERENKOV)
@@ -515,6 +515,13 @@ for ($i=0; $i<$nofruns; $i++) {
         $altitude=28e2;
         $bx=20.29;
         $bz=-11.74;
+      }
+    case "mbo" {
+# Base Marambio
+        $modatm=get("Atmospheric model selection ", "E5", "$atmcrd");
+        $altitude=196e2;
+        $bx=19.6571;
+        $bz=-30.5809;
       }
     case "ccs" {
 #Caracas, data provided by Jose Antonio López, UCV, 10.486004N -66.894461W
