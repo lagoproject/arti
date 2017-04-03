@@ -1,16 +1,16 @@
 #!/bin/bash
 # /************************************************************************/
 # /*                                                                      */
-# /* Package:  CrkTools                                                   */
-# /* Module:   do_halley.sh                                               */
+# /* Package:  ARTI                                                       */
+# /* Module:   do_sims.sh                                                 */
 # /*                                                                      */
 # /************************************************************************/
-# /* Authors:  Hernán Asorey                                              */
+# /* Authors:  Hernan Asorey                                              */
 # /* e-mail:   asoreyh@cab.cnea.gov.ar                                    */
 # /*                                                                      */
 # /************************************************************************/
 # /* Comments: Main script to automatize secondary flux calculations and  */
-# /*           run simulations in semi-cluster configuration (halley)     */
+# /*           run simulations in Soleil IAFE cluster                     */
 # /*                                                                      */
 # /************************************************************************/
 # /* 
