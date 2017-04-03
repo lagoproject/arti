@@ -112,7 +112,7 @@ void Usage(char *prog, int iverbose=0) {
   cout << "      -a <n>          : Energy distribution of secondaries per type, with <n> bins per decade."<<endl;
   cout << "      -d <n>          : Distance distribution of secondaries per type, with <n> bins per decade."<<endl;
   cout << "      -n <a> <t>      : Normalize energy distribution in particles/(m2 s bin), <a>=detector area (m2), <t> = flux time (s)." <<endl;
-  cout << "      -c <obs_lev>    : Enable curved mode: x'y' will be converted to local coordinates xy"<<endl;
+  cout << "      -c <obs_lev in m>: Enable curved mode: x'y' will be converted to local coordinates xy"<<endl;
   cout << "                        Observation level (<obs_lev>) should be given in m a.s.l." << endl;
   cout << "      -g <file> <col> : Include geomagentic effects. Read  rigidities from column <R> of <file>. Default R= " << cGeoCdef <<endl;
   cout << "                        3=R_U, 4=R_C 5=R_L"<<endl;
