@@ -217,7 +217,7 @@ void Usage(char *prog, int verbose=0) {
   cout << "    flags:"<<endl;
   cout << "      -p: create a separate file with information from all primaries"<<endl; 
   cout << "      -i: include headers and footers as comments in secondaries file"<<endl;
-  cout << "      -c <obs_lev>    : Enable curved mode: x'y' will be converted to local coordinates xys\n                        WARNING! Should not be used if showers will be used after analysis, as it could introduce errors."<<endl;
+  cout << "      -c <obs_lev in m>  : Enable curved mode: x'y' will be converted to local coordinates xys\n                        WARNING! Should not be used if showers will be used after analysis, as it could introduce errors."<<endl;
   cout << "      -d: debug mode: print headers and footers in stdout. Handle with care. *"<<endl;
   cout << "      -v: enable verbose outputs"<<endl; 
   cout << "      -f: force analysis (overide file sanity checks and continue. Handle with care)"<<endl; 
