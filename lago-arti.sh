@@ -33,5 +33,3 @@ echo "
 export LAGO_ARTI=\"${LAGO_ARTI}\"
 export PATH=\"\${LAGO_ARTI}:\$PATH\"
 " >> ${HOME}/.bashrc
-echo "Done. Now open a new terminal or execute"
-echo "source .bashrc"

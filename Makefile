@@ -36,8 +36,8 @@ clean:
 
 check-lago:
 ifndef LAGO_ARTI
-$(info LAGO_ARTI is not set.)
-$(info I will define it to $PWD, and modify the .bashrc)
-$(shell $(PWD)/lago-arti.sh)
-LAGO_ANNA=$(PWD)
+	$(info LAGO_ARTI is not set.)
+	$(info I will define it to $PWD, and modify the .bashrc)
+	$(shell $(PWD)/lago-arti.sh)
+	$(info Done. Now open a new terminal or execute source $(HOME)/.bashrc)
 endif
