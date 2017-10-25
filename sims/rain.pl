@@ -80,6 +80,7 @@ $monop = 0;
 $cherenkov = 0;
 $grid = 0;
 $imuaddi = 0;
+$nofruns = 1;
 
 sub get {
   my $question = $_[0];
@@ -164,10 +165,10 @@ while ($_ = $ARGV[0]) {
     $debug++;
   }
   if (/-mu$/i) {
-    $debug++;
+    $imuaddi=1;
   }
   if (/-g$/i) {
-    $imuaddi=1;
+    $grid=1;
   }
   if (/-\?$/i) {
     $help++;
@@ -276,7 +277,7 @@ if ($ithinh) {
   $thinh="THINH       $thinrath $weitrath\n";
 }
 
-$nofruns = 1;
+## ready to start
 
 unless ($monoe || $monoq) {
 # XXX Could be a problem with generate_spectra.pl XXX
@@ -323,6 +324,7 @@ unless ($cluster or $grid) {
     die "\n\nERROR: Couldn't find corsika at $bin. Please check\n$usage\n";
   }
 }
+
 system("clear");
 
 unless ($batch) {
