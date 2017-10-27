@@ -13,25 +13,25 @@
 # /*           run simulations in LAGO-GRID                               */
 # /*                                                                      */
 # /************************************************************************/
-# /* 
-#  
+# /*
+#
 # Copyright 2013
 # Hernán Asorey
 # Lab DPR (CAB-CNEA), Argentina
 # Grupo Halley (UIS), Colombia
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
 # met:
-# 
+#
 #    1. Redistributions of source code must retain the above copyright
 #       notice, this list of conditions and the following disclaimer.
-# 
+#
 #    2. Redistributions in binary form must reproduce the above copyright
 #       notice, this list of conditions and the following disclaimer in the
 #       documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS OR IMPLIED
 # WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 # MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
@@ -43,11 +43,11 @@
 # STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 # The views and conclusions contained in the software and documentation are
 # those of the authors and should not be interpreted as representing
 # official policies, either expressed or implied, of Lab DPR.
-# 
+#
 # */
 # /************************************************************************/
 #
@@ -59,6 +59,7 @@ showhelp() {
   echo
   echo -e "USAGE $0:"
   echo
+  echo -e "  -w <working dir>               : Working directory, where bin (run) files are located"
   echo -e "  -p <project name>              : Project name (suggested format: NAMEXX)"
   echo -e "  -t <flux time>                 : Flux time (in seconds) for simulations"
   echo -e "  -v <CORSIKA version>           : CORSIKA version"
@@ -83,8 +84,12 @@ altitude=0.;
 echo
 wdir="${HOME}/grid"
 
-while getopts ':k:p:t:v:u:h:s:?ayd' opt; do
+while getopts ':w:k:p:t:v:u:h:s:?ayd' opt; do
   case $opt in
+    w)
+      wdir=$OPTARG
+      echo -e "#  Working dir                   = $wdir"
+      ;;
     p)
       prj=$OPTARG
       echo -e "#  Project name                  = $prj"
@@ -155,6 +160,12 @@ if [ "X$prj" == "X" ]; then
   exit 1;
 fi
 
+if [ "X$wdir" == "X" ]; then
+  echo; echo -e "ERROR: You have to set the working directory (where corsika bin files are located)"
+  showhelp
+  exit 1;
+fi
+
 if [ "X$tim" == "X" ]; then
   tim=3600
   echo -e "#  WARNING: Time was not provided. Using default time: $tim s"
@@ -181,8 +192,9 @@ fi
 echo; echo -e "#  WARNING: I will create the directory $wdir/$prj where the grid files will be created."; echo
 
 #codename=$(echo $wdir | sed -e 's/\/home\/h0\///' | sed -e 's/\///')
-#home=$wdir
-#direct=$home/$prj
+home=$wdir
+direct=$home/$prj
+
 basecrktools=${PWD}
 if ! [ -f $basecrktools/spectra.dat ]; then
   echo
@@ -206,7 +218,7 @@ fi
 if $alt; then
    options=${options}"-k $altitude "
 fi
-options=${options}"-f $basecrktools/spectra.dat" 
+options=${options}"-f $basecrktools/spectra.dat"
 $basecrktools/generate_spectra.pl ${options}
 ##############
 
