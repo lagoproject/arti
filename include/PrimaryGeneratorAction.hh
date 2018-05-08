@@ -44,7 +44,5 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     G4ParticleGun* fParticleGun;
     PrimaryGeneratorMessenger* fGunMessenger;
 
-    //PrimarySpectrum parPosDir;
-    //PrimarySpectrum parPosDir;
 };
 #endif

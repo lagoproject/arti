@@ -27,7 +27,7 @@
 
 PrimarySpectrum::PrimarySpectrum():
 	pi(3.14159265358979323846),
-	Ro(12.36),//4.3),//33.85),
+	Ro(13.8), //12.36),//4.3),//33.85),
 	initx(0.),
 	inity(0.),
 	initz(2.61),
@@ -42,10 +42,10 @@ PrimarySpectrum::PrimarySpectrum():
 	particleDirection
 		= G4ThreeVector(0., 0., -1.);
 
-  //inputFile = new char();
-  //inputFile = "tmpMachin24h.shw.bz2";
+  inputFile = new char();
+  inputFile = "tmpMachin24h.shw.bz2";
 	
-	//openFile(inputFile);
+	openFile(inputFile);
 }
 
 
