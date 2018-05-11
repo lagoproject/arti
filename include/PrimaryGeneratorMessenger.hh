@@ -59,6 +59,7 @@ class PrimaryGeneratorMessenger: public G4UImessenger
     PrimaryGeneratorAction* fAction;
     G4UIdirectory*                  fGunDir;
     G4UIcmdWithADoubleAndUnit*      fPolarCmd;
+    G4UIcmdWithADoubleAndUnit* valueForTest;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

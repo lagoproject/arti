@@ -19,11 +19,11 @@ PrimaryGeneratorMessenger::
     fAction(Gun)
 {
    G4cout << "...PrimaryGeneratorMessenger..." << G4endl;
-  fGunDir = new G4UIdirectory("//gun/");
+  fGunDir = new G4UIdirectory("/gun/");
   fGunDir->SetGuidance("PrimaryGenerator control");
 
   fPolarCmd =
-           new G4UIcmdWithADoubleAndUnit("//gun/optPhotonPolar",this);
+           new G4UIcmdWithADoubleAndUnit("/gun/optPhotonPolar",this);
   fPolarCmd->SetGuidance("Set linear polarization");
   fPolarCmd->SetGuidance("  angle w.r.t. (k,n) plane");
   fPolarCmd->SetParameterName("angle",true);
@@ -31,6 +31,10 @@ PrimaryGeneratorMessenger::
   fPolarCmd->SetDefaultValue(-360.0);
   fPolarCmd->SetDefaultUnit("deg");
   fPolarCmd->AvailableForStates(G4State_Idle);
+
+  valueForTest = new G4UIcmdWithADoubleAndUnit("/gun/testVal", this);
+  valueForTest->SetGuidance("Just for learning how this class works");
+  valueForTest->SetDefaultUnit("MeV");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -39,6 +43,7 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 {
   delete fPolarCmd;
   delete fGunDir;
+  delete valueForTest;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -54,6 +59,13 @@ void PrimaryGeneratorMessenger::SetNewValue(
          fAction->SetOptPhotonPolar(angle);
       }
   }
+  
+  if( command == valueForTest )
+  {
+    G4cout << "Testing Messenger Class" << G4endl;
+    G4cout << valueForTest->GetNewDoubleValue(newValue) << G4endl;
+  } 
+
 }
 
 
