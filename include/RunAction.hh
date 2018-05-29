@@ -16,8 +16,6 @@
 #include "histosRun.hh"
 
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 class G4Timer;
 class G4Run;
 
@@ -54,7 +52,4 @@ class RunAction : public G4UserRunAction
     int coulombOk = 0;
     int histRunOk = 1;
 };
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 #endif /*RunAction_h*/
