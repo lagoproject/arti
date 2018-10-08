@@ -1,9 +1,9 @@
 /control/verbose 0
 /tracking/verbose 1
 #
-#/gun/particle mu-
-#/gun/energy 1. GeV
-#/gun/position 121. 5. 0. cm
+/gun/particle mu-
+/gun/energy 1. GeV
+/gun/position 121. 5. 0. cm
 #/gun/direction 0. -1. 0.
 #/gun/position 0. 20. 60. cm # For wcdMute Detector.
 #/gun/position 0. 150. 45. cm # For wcdMute Detector.
@@ -12,9 +12,9 @@
 #/gun/momentum 1.0 0. 0. MeV
 /wcd/phys/verbose 0
 #
-/gun/testVal 500. MeV
+#/gun/testVal 500. MeV
 
-/control/cout/ignoreThreadsExcept 1
-/control/cout/setCoutFile coutFileName
+#/control/cout/ignoreThreadsExcept 1
+#/control/cout/setCoutFile coutFileName
 
 /run/beamOn 1

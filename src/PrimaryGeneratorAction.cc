@@ -31,7 +31,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(PrimarySpectrum* crkPart)
 
   //default kinematic
   //
-/*  G4ParticleTable* particleTable 
+  G4ParticleTable* particleTable 
     = G4ParticleTable::GetParticleTable();
 
   primaryId = "mu-";
@@ -44,7 +44,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(PrimarySpectrum* crkPart)
     ->SetParticlePosition(G4ThreeVector(30.*cm, 30.*cm, 70.*cm));//.0*cm, 61.0*cm, 0.*cm));//61.0*cm));
   fParticleGun
     ->SetParticleMomentumDirection(G4ThreeVector(0., 0., -1.));
-    */
+    
 }
 
 

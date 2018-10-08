@@ -150,8 +150,8 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
           fEventAction->fRunAction->histRun->meanPulse(4, trackTime);
         }
 
-        fEventAction->fRunAction->histRun->cerenPhoElect(5);
-        fEventAction->fRunAction->histRun->meanPulse(5, trackTime);
+      fEventAction->fRunAction->histRun->cerenPhoElect(5);
+      fEventAction->fRunAction->histRun->meanPulse(5, trackTime);
       }
   
       track->SetTrackStatus(fStopAndKill);
