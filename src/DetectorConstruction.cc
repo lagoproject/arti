@@ -69,8 +69,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   groundBase->DefineMaterials();
   groundBase->buildDetector(expHall->getLogVolume(), &checkOverlaps);
 
-  G4double wcdRadius = 48.*cm;
-  G4double wcdHight = 62.*cm;
+  G4double wcdRadius = 48.*cm; // Effective tank radius
+  G4double wcdHight = 62.*cm; // Effective tank hight
 
   wcdCont->DefineMaterials();
   wcdCont->buildDetector(groundBase->getLogVolume(), &checkOverlaps, wcdRadius, wcdHight);
@@ -79,7 +79,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   wcdCalo->buildDetector(wcdCont->getLogVolume(), wcdCont->getPhysVolume(), &checkOverlaps, wcdRadius, wcdHight);
 
   pmt_det->DefineMaterials();
-  pmt_det->buildDetector(wcdCalo->getLogVolume(), &checkOverlaps);
+  pmt_det->buildDetector(wcdCalo->getLogVolume(), wcdHight ,&checkOverlaps);
  
   fwaterVolume = wcdCalo->getPhysVolume();
 

@@ -19,7 +19,7 @@ class wcdpmt
     wcdpmt();
     virtual ~wcdpmt();
     void DefineMaterials();
-    void buildDetector(G4LogicalVolume* log_mother, G4bool* overLaps);
+    void buildDetector(G4LogicalVolume* log_mother, G4double postZ, G4bool* overLaps);
     G4VPhysicalVolume* getPhysVolume();
 
   private:

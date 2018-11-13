@@ -39,7 +39,7 @@ void wcdpmt::DefineMaterials()
     = nist->FindOrBuildMaterial("G4_AIR");
 }
 
-void wcdpmt::buildDetector(G4LogicalVolume* log_mother, G4bool* overLaps)
+void wcdpmt::buildDetector(G4LogicalVolume* log_mother, G4double postZ, G4bool* overLaps)
 {
   G4double pxSemiAxis = 10.1*cm;
   G4double pySemiAxis = 10.1*cm;
@@ -64,7 +64,7 @@ void wcdpmt::buildDetector(G4LogicalVolume* log_mother, G4bool* overLaps)
 
   pmt_phy
     =  new G4PVPlacement(0,
-      G4ThreeVector (0.*cm, 0.*cm, 31.*cm), //60.*cm),//45.*cm),//80.*cm),//295.*cm),//60.*cm),
+      G4ThreeVector (0.*cm, 0.*cm, postZ/2.), //60.*cm),//45.*cm),//80.*cm),//295.*cm),//60.*cm),
       pmt_log,
       pmt_log->GetName(),
       log_mother,
