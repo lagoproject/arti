@@ -61,7 +61,10 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
   G4Track* track = step->GetTrack();
   volumName = step->GetPostStepPoint()->GetPhysicalVolume()->GetName();
 
-  if ( volumName == "expHall" )
+  if( track->GetParentID() == 0 && volumName == "Ground_geo" )
+    track->SetTrackStatus(fStopAndKill);
+
+  if ( volumName == "expHall" || volumName == "Ground_geo" )
     track->SetTrackStatus(fStopAndKill);
 
 
@@ -163,7 +166,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
 
   if( track->GetParentID() == 0 && volumName == "watervol" )
   {
-    lengthStep = step->GetStepLength(); 
+    lengthStep = step->GetStepLength();
 
     if ( fEventAction->muonOk )
       fEventAction->fRunAction->histRun->trackLengthDetec(0, lengthStep);

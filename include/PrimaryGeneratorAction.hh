@@ -43,6 +43,5 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     //G4double enerPart;
     G4ParticleGun* fParticleGun;
     PrimaryGeneratorMessenger* fGunMessenger;
-
 };
 #endif

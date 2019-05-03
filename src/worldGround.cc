@@ -37,7 +37,7 @@ void worldGround::DefineMaterials()
 
 void worldGround::buildDetector(G4LogicalVolume* log_mother, G4bool* overLaps)
 {
-  worldGround_size = 20.*m;
+  worldGround_size = 50.*m;
 
   worldGround_geo =
     new G4Box("worldGround",

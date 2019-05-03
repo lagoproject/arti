@@ -79,3 +79,8 @@ G4VPhysicalVolume* wcdpmt::getPhysVolume()
 {
   return pmt_phy;
 }
+
+G4LogicalVolume* wcdpmt::getLogVolume()
+{
+  return pmt_log;
+}

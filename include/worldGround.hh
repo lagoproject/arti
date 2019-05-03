@@ -27,13 +27,13 @@ class worldGround
     G4VPhysicalVolume* getPhysVolume();
     G4LogicalVolume* getLogVolume();
 
+    G4double worldGround_size;
+
   private:
 
     G4Material* worldGround_matter;
     G4Box* worldGround_geo;
     G4LogicalVolume* worldGround_log;
     G4VPhysicalVolume* worldGround_phys;
-
-    G4double worldGround_size;
 };
 #endif

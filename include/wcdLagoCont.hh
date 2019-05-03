@@ -27,6 +27,7 @@ class wcdLagoCont
     G4VPhysicalVolume* getPhysVolume();
     G4LogicalVolume* getLogVolume();
 
+
   private:
 
     G4Material* tank_steel;
@@ -34,6 +35,9 @@ class wcdLagoCont
     G4Tubs* tank_geo;
     G4LogicalVolume* tank_log;
     G4VPhysicalVolume* tank_phys;
+
+    G4double wcdRad;
+    G4double wcdHig;
 };
 #endif
 

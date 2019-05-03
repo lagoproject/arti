@@ -84,5 +84,4 @@ void PrimaryGeneratorMessenger::SetParticleMomentum(G4ThreeVector direction)
 
   testCmd->SetGuidance(momentum.c_str());
 //  testCmd->SetGuidance("100 MeV");
-  G4cout << "msd messenger: " << momentum << G4endl;
 }

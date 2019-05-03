@@ -19,6 +19,9 @@
 #include <iomanip>
 
 
+class PrimarySpectrumMessenger;
+
+
 class PrimarySpectrum
 {
 	public:
@@ -32,11 +35,16 @@ class PrimarySpectrum
 		G4String parId;
 
 		void primaryMomento();
+    std::string inputFile; //[] = "tmpMachin24h.shw.bz2";
+		int openFile(std::string name);
+    void setInitPosZ(G4double zz);
+    void setRoArea(G4double rr);
+    G4double Ro;
 
 
 	private:
 		G4double pi;
-		G4double Ro;
+		//G4double Ro;
 		G4double initx;
 		G4double inity;
 		G4double initz;
@@ -56,8 +64,7 @@ class PrimarySpectrum
 		G4double prmThe;
 		G4double prmPhi;
 
-		int openFile(std::string name);
 		FILE *inFile = NULL;
-    std::string inputFile; //[] = "tmpMachin24h.shw.bz2"; 
+    PrimarySpectrumMessenger* fSpectMessenger;
 };
 #endif

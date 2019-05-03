@@ -16,7 +16,6 @@
 
 // Local Libraries
 //
-//#include "wcdDetector.hh"
 #include "wcdLagoCont.hh"
 
 
@@ -29,6 +28,10 @@ wcdLagoCont::wcdLagoCont()
   tank_geo = NULL;
   tank_log = NULL;
   tank_phys = NULL;
+
+  wcdRad = 80*cm;
+  wcdHig = 30*cm;
+
 }
 
 

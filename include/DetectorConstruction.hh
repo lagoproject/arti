@@ -24,9 +24,11 @@
 #include "wcdLagoCalo.hh"
 #include "wcdpmt.hh"
 #include "worldGround.hh"
+#include "grdFloor.hh"
 
 
 class G4LogicalVolume; 
+class DetectorMessenger;
 
 
 class DetectorConstruction : public G4VUserDetectorConstruction
@@ -34,6 +36,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   public:
     DetectorConstruction();
     virtual ~DetectorConstruction();
+
 
   public:
     virtual G4VPhysicalVolume* Construct();
@@ -48,6 +51,12 @@ class DetectorConstruction : public G4VUserDetectorConstruction
       return expHall->getPhysVolume();
     }
 
+    G4double wcdRadius;
+    G4double wcdHight;
+
+    void setWcdRadius( G4double wcdR );
+    void setWcdHight( G4double wcdH );
+
 
   private:
 
@@ -56,11 +65,17 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     // -----------------
     world* expHall;
     worldGround* groundBase;
+    grdFloor* grd;
 
     wcdLagoCont* wcdCont;
     wcdLagoCalo* wcdCalo;
     wcdpmt* pmt_det;
 
     G4VPhysicalVolume* fwaterVolume;
+    G4VPhysicalVolume* ConstructDetector();
+
+    DetectorMessenger* detecMess;
+
+    G4bool checkOverlaps;
 };
 #endif

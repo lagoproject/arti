@@ -39,16 +39,17 @@ void EventAction::BeginOfEventAction(const G4Event* event)
   nPhotons = 0.;
   cerenkovPhontons = 0;
   totalLength = 0.;
-  G4cout << "Begin Event: " << cerenkovPhontons << " " << event->GetEventID() << G4endl;
+  //G4cout << "Begin Event: " << cerenkovPhontons << " " << event->GetEventID() << G4endl;
 
   muonOk = 0;
   elecOk = 0;
   gammOk = 0;
-  neutOk = 0;
+  neutOk = 0; 
 
   partId = fPriGenAction->primaryId;
   fRunAction->histRun->postInject(fPriGenAction->position.x() / cm, fPriGenAction->position.y()/ cm);
 
+ 
   if ( partId == "mu-" || partId == "mu+" )
   {
     muonOk = 1;
@@ -128,7 +129,6 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
 void EventAction::countingCerenkovs(G4int cphoton)
 {
-  G4cout << "here msd" << G4endl;
   cerenkovPhontons += cphoton;
 }
 

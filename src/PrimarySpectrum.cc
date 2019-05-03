@@ -11,6 +11,7 @@
 //
 #include "PrimarySpectrum.hh"
 #include "EventAction.hh"
+#include "PrimarySpectrumMessenger.hh"
 
 
 // c++ libraries
@@ -26,26 +27,29 @@
 
 
 PrimarySpectrum::PrimarySpectrum():
-	pi(3.14159265358979323846),
-	Ro(13.8), //12.36),//4.3),//33.85),
-	initx(0.),
-	inity(0.),
-	initz(2.61),
-	r(0.),
-  theta(0.),
-	px(0.),
-	py(0.),
-	pz(0.)
+	pi(3.14159265358979323846)
 {
 	particlePosition 
 		= G4ThreeVector(0.,0.,360.);
 	particleDirection
 		= G4ThreeVector(0., 0., -1.);
 
+
+  fSpectMessenger= new PrimarySpectrumMessenger(this);
   inputFile = new char();
-  inputFile = "tmpMachin24h.shw.bz2";
+  inputFile = "pao-fluxSec-dec2006.shw.bz2";
 	
 	openFile(inputFile);
+
+  Ro = 0.35*m; //1.4*m
+  initx = 0.*m;
+  inity = 0.*m;
+  initz = 1.5*m;
+  r = 0.;
+  theta = 0.;
+  px = 0.*GeV;
+  py = 0.*GeV;
+  pz = 0.*GeV;
 }
 
 
@@ -170,6 +174,17 @@ void PrimarySpectrum::primaryPosition()
   inity = r*sin( theta );
 
   particlePosition
-    = G4ThreeVector(initx*m, inity*m, initz*m);
+    = G4ThreeVector(initx, inity, initz);
 }
 
+
+void PrimarySpectrum::setInitPosZ(G4double zz)
+{
+  this->initz = zz;
+}
+
+
+void PrimarySpectrum::setRoArea(G4double rr)
+{
+  this->Ro = rr;
+}
