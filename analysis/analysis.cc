@@ -388,13 +388,13 @@ int main(int argc, char *argv[]) {
       for (int i=0; i<block_rows; i++) {
       if (iverbose)
         fprintf(stderr, "Reading block: %08d\r", block);
-        if (data_block[i*block_cols]) {
-          if (data_block[i*block_cols]>0) {
-			  x = data_block[i*block_cols+4];
-			  y = data_block[i*block_cols+5];
-			  z = data_block[i*block_cols+6];
-			  if (icurve)
-				curved(data_block[i*block_cols+4], data_block[i*block_cols+5]);
+      if (data_block[i*block_cols]) {
+        if (data_block[i*block_cols]>0) {
+			x = data_block[i*block_cols+4];
+			y = data_block[i*block_cols+5];
+			z = data_block[i*block_cols+6];
+			if (icurve)
+			  curved(data_block[i*block_cols+4], data_block[i*block_cols+5]);
             fprintf (
               sec, "%04d %+.5E %+.5E %+.5E %+.5E %+.5E %+.5E %08ld %04d %+.5E %+07.3lf %+08.3lf\n",
               int(data_block[i*block_cols+0]/1000.),
@@ -412,16 +412,16 @@ int main(int argc, char *argv[]) {
             ); 
             fflush(sec);
             counter++;
-          }
         }
-        else { // no more particles
+      }
+      else { // no more particles
           if (iverbose)
             fprintf(stderr,"\nNo more particles for this event.\n");
           data=false;
           break;
-        }
       }
-      block++;
+    }
+    block++;
     }
     if (!evt_footer[0])
       if (!ReadBlock(evt_footer, 3) || bad_block)
