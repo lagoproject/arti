@@ -478,7 +478,7 @@ for ($i=0; $i<$nofruns; $i++) {
       }
     case "and" {
         $modatm=get("Atmospheric model selection ", "19", "$atmcrd");
-        $altitude=5800e2;
+        $altitude=4200e2;
         $bx=19.6922;
         $bz=-14.2420;
         $arrang="0";
