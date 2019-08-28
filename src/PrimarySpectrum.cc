@@ -37,9 +37,9 @@ PrimarySpectrum::PrimarySpectrum():
 
   fSpectMessenger= new PrimarySpectrumMessenger(this);
   inputFile = new char();
-  inputFile = "pao-fluxSec-dec2006.shw.bz2";
+  //inputFile = "pao-fluxSec-dec2006.shw.bz2";
 	
-	openFile(inputFile);
+	//openFile(inputFile);
 
   Ro = 0.35*m; //1.4*m
   initx = 0.*m;
