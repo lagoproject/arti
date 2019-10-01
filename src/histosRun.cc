@@ -195,7 +195,7 @@ void histosRun::fillCerenPhoPmt(int optFillPhoPmt)
       histCerenPhoPmtHadr->Fill(cHadrPhoPmt);
       break;
     case 5:
-      histCerenPhoPmtAll->Fill(cHadrPhoPmt);
+      histCerenPhoPmtAll->Fill(cAllPhoPmt);
       break;
   }
 
