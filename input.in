@@ -19,6 +19,8 @@
 /detect/radio 45. cm
 /detect/hight 120. cm # No more than 4.5 m
 
+/outroot/outname testOut.root # Name for output root file
+
 #
 #/gun/testVal 500. MeV 
 

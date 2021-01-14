@@ -17,7 +17,7 @@ class TH2D;
 
 // Local Libraries
 //
-
+#include "histosMessenger.hh"
 
 
 class histosRun
@@ -55,11 +55,15 @@ class histosRun
     void distInject(int part);
     void postInject(double partPosX, double partPosY);
 
+    void setOutFileName(G4String name);
+
+
 
   private:
 
     // ===================
     // *** Output File ***
+    histosMessenger* histoRunMess;
     TFile* histosOutput;
 
     // ===================

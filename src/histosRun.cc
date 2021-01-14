@@ -7,6 +7,7 @@
 // Local Libraries
 //
 #include "histosRun.hh"
+#include "histosMessenger.hh"
 
 
 // Root Libraries
@@ -21,7 +22,7 @@
 histosRun::histosRun()
 {
    G4cout << "...histosRun..." << G4endl;
-   histosOutput = new TFile("histosOutput.root", "RECREATE");
+   histoRunMess = new histosMessenger(this);
 }
 
 
@@ -367,4 +368,9 @@ void histosRun::distInject(int part)
 void histosRun::postInject(double partPosX, double partPosY)
 {
   histPostInject->Fill(partPosX, partPosY);
+}
+
+void histosRun::setOutFileName( G4String name )
+{
+  histosOutput = new TFile(name, "RECREATE");
 }
