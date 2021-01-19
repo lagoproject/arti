@@ -51,7 +51,7 @@
 # */
 # /************************************************************************/
 #
-$VERSION="v1r0";
+$VERSION="v1r1";
 
 # defaults
 use Switch;
@@ -59,15 +59,12 @@ $pi=3.1415927;
 
 $site="unk";
 
-$time=3600;
-$tp=0;
-$prj="brc";
-$pp=0;
+$time=0;
+$prj="";
 $file = "spectra.dat";
 $area=1e4;
 #cm2
 $wdir="";
-$wp=0;
 $user="";
 $cluster=0;
 $clsname="";
@@ -77,6 +74,15 @@ $batch=1;
 $flat=1;
 $fixalt=0.;
 $ifixalt=0;
+#ajrm vars
+$fixmodatm=0;
+$ifixmodatm=0;
+$tMin = 0;
+$tMax = 0;
+$llimit = 0.;
+$ulimit = 0.;
+$rigidity = 0.;
+$usedefaults=0;
 
 # masses from stderr output of mass.pl
 @mid = (0, 14, 402, 703, 904, 1105, 1206, 1407, 1608, 1909, 2010, 2311, 2412, 2713, 2814, 3115, 3216, 3517, 3919, 4018, 4020, 4521, 4822, 5123, 5224, 5525, 5626);
@@ -90,15 +96,23 @@ sub get {
   my $question = $_[0];
   my $default = $_[1];
   my $param = $_[2];
-  if ($batch) {
-    print "$question?\n<$param $default>: ";
+  my $var = $_[3];
+  
+  # '' string and 0 should return false
+  unless ($var || $usedefaults){
+    if ($batch) {
+        print "$question?\n<$param $default>: ";
+    }
+    chomp (my $tmp = <STDIN>);
+    $var = $tmp;
   }
-  chomp (my $tmp = <>);
-  if ($tmp eq "") {
-    $tmp=$default;
+  if (!$var) {
+    $var=$default;
   }
-  return $tmp;
+  print "Fixed param: $param $var\n";
+  return $var;
 }
+
 $help="
  $0 $VERSION
 
@@ -109,26 +123,44 @@ Read spectra data from file spectra.dat unless other provided
 
 Usage: $0 options
 
-Options:
-  -f <file>             Use file to calculate nuclei spectra, asuming a flux of the
-                        form: j(E) = j0 * E^(-gamma), where j0=a0 x 10^-e0.
-                        Format (See genspectra.dat):
-                        first line: number of nuclei to process. Then, for each
-                        nuclei 4 lines should be included:
-                          1) corsika particle id
-                          2) a0 for this nuclei
-                          3) e0 for this nuclei
-                          4) gamma for this nuclei
-  -u <user name>        For CORSIKA simulation
+Mandatory:
   -w <working dir>      Where corsika run files are located
-  -p <project name>     name of the project
-  -t <time in sec>      Flux time
-  -k <altitude>         Fix altitude even for predefined sites
-  -s <site>             Choice site for simulation (some predefined sites: hess|sac|etn|ber|bga|lim|glr|mch|mge|and|mpc|cha|cid|mor|ccs|lsc|mbo)
+  -p <project name>     name of the project 
+Recommended:
+  -f <file>             Use file to calculate nuclei spectra, asuming a flux of the form: 
+                             j(E) = j0 * E^(-gamma), where j0=a0 x 10^-e0.
+                        Format (See genspectra.dat):
+                          - First line: number of nuclei to process. 
+                          - Then, for each nuclei 4 lines should be included:
+                             1) corsika particle id
+                             2) a0 for this nuclei
+                             3) e0 for this nuclei
+                             4) gamma for this nuclei
+Optional:
+  -u <user name>        For CORSIKA simulation (Default: none)
+  -t <time in sec>      Flux time ( Default: 3600s)
+  -s <site>             Choice predefined site for simulation (Default: unknow)
+                          - Predefined sites: hess|sac|etn|ber|bga|lim|glr|mch|mge|and|mpc|cha|cid|mor|ccs|lsc|mbo)
+                          - Predefined parameters: altitude, BX, BZ, and Atmospheric Model.
+  -k <altitude>         Fix altitude even for predefined sites (It cannot be 0)
+  -c <Atmosph. Model>   Fix Atmospheric Model even for predefined sites. 
+                           (Note: Start number with 'E' to use external atmospheres module)
   -y                    Enable volumetric detector for flux calculations (Default: flat)
+  -a                    Enable high energy cuts for secondaries
+  -b <rigidity cutoff>  0 = disabled; value in GV = enabled (Default: 5.)
+  -m                    Low edge of zenith angle (THETAP) [deg] (Default: 0)
+  -n                    High edge of zenith angle (THETAP) [deg] (Default: 90)
+  -r                    Lower limit of the primary particle energy (ERANGE) [GeV] (Default: 5e0) 
+  -v                    Upper limit of the primary particle energy (ERANGE) [GeV] (Default: 1e6)
+Fix parameters for unknow sites:
+  -o <BX>               Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT], see values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM 
+  -q <BZ>               Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT], see values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM  
+Run modes:
   -g                    Enable grid mode
   -l <cluster username> Enable OAR cluster compatibility (UIS style), use -l \$USER
                         (and override -u)
+Other:
+  -x                    Enable defaults (It doesn't prompt user for unset parameters)
   -?                    Shows this help and exits
 ";
 
@@ -144,12 +176,10 @@ while (defined($_ = $ARGV[0]) && $_ =~ /^-/) {
   }
   if (/-w$/i) {
     $wdir = $ARGV[0];
-    $wp++;
     shift;
   }
   if (/-t$/i) {
     $time = $ARGV[0];
-    $tp++;
     shift;
   }
   if (/-s$/i) {
@@ -161,24 +191,59 @@ while (defined($_ = $ARGV[0]) && $_ =~ /^-/) {
     $ifixalt++;
     shift;
   }
+  if (/-c$/i) {
+    $fixmodatm = $ARGV[0];
+    $ifixmodatm++;
+    shift;
+  }
   if (/-p$/i) {
     $prj = "$ARGV[0]";
-    $pp++;
     shift;
+  }
+  if (/-y$/i) {
+    $flat=0;
   }
   if (/-a$/i) {
     $highsec++;
   }
+  if (/-b$/i) {
+    $rigidity = $ARGV[0];
+    shift;
+  }
+  if (/-m$/i) {
+    $tMin = $ARGV[0];
+    shift;
+  }
+  if (/-n$/i) {
+    $tMax = $ARGV[0];
+    shift;
+  }
+  if (/-r$/i) {
+    $llimit = $ARGV[0];
+    shift;
+  }
+  if (/-v$/i) {
+    $ulimit = $ARGV[0];
+    shift;
+  }
+  if (/-o$/i) {
+    $bx = $ARGV[0];
+    shift;
+  }
+  if (/-q$/i) {
+    $bz = $ARGV[0];
+    shift;
+  }  
   if (/-g$/i) {
     $grid++;
-  }
-  if (/-y$/i) {
-    $flat=0;
   }
   if (/-l$/i) {
     $clsname = "$ARGV[0]";
     $cluster++;
     shift;
+  }
+  if (/-x$/i) {
+    $usedefaults++;
   }
   if (/-\?$/i) {
     print "$help";
@@ -187,121 +252,125 @@ while (defined($_ = $ARGV[0]) && $_ =~ /^-/) {
 }
 
 # Asking for options
+print STDERR "\n### GENERATE SPECTRA ###\n\n\n";
+$file=get("Spectra file","","(file)",$file);
 
-unless ($tp && $wp && $pp) {
+unless ($time && $wdir && $prj) {
   print STDERR "\n### Project parameters ###\n\n";
 }
-unless ($pp) {
-  $prj=get("Project name",$prj,"");
-}
-unless ($wp) {
-  $wdir=get("Project name",$wdir,"");
-}
-unless ($tp) {
-  $time=get("Flux time [s]",$time,"");
-}
-
+$prj=get("Project name","","(prj)",$prj);
+$wdir=get("Project parent dir","","(wdir)",$wdir);
+$time=get("Flux time [s] ",3600,"(time)", $time);
 $direct="$wdir/$prj";
 $home = $wdir;
+
+$user=get("User ORCID or local user","","(user)",$user);
 if ($cluster) {
   $wdir="/opt/corsika-73500/run";
   $user=$clsname;
   $home = "/home/$user";
   $direct="$home/$prj";
 }
-$atmcrd = "ATMOSPHERE";
 
-print STDERR "\n### Shower parameters ###\n\n";
-$tMin = get("Low edge of zenith angle (THETAP) [deg]", 0, "THETPR(1)");
-$tMax = get("High edge of zenith angle (THETAP) [deg]", 90, "THETPR(2)");
-$llimit = get("Lower limit of the primary particle energy (ERANGE) [GeV]", 5e0, "LLIMIT");
-$ulimit = get("Upper limit of the primary particle energy (ERANGE) [GeV]", 1e6, "ULIMIT");
-print STDERR "\n### Site parameters ###\n\n";
-$rigidity = get("Use rigidity cutoff? (0=no, Rigidity value=yes [GV])",5.,"");
+
+unless ($usedefaults) {
+    print STDERR "\n### Shower parameters ###\n\n";
+}
+
+$tMin = get("Low edge of zenith angle (THETAP) [deg]", 0, "THETPR(1)", $tMin);
+$tMax = get("High edge of zenith angle (THETAP) [deg]", 90, "THETPR(2)", $tMax);
+$llimit = get("Lower limit of the primary particle energy (ERANGE) [GeV]", 5e0, "LLIMIT", $llimit);
+$ulimit = get("Upper limit of the primary particle energy (ERANGE) [GeV]", 1e6, "ULIMIT", $ulimit);
+
+unless ($rigidity && $modatm) {
+    print STDERR "\n### Site parameters ###\n\n";
+}
+$rigidity = get("Use rigidity cutoff? (0=no, Rigidity value=yes [GV])",5.,"", $rigidity);
 $userllimit=$llimit;
 
+
+#all predefined sites seems to be ATMOSPHERE as default mode
+$atmcrd = "ATMOSPHERE";
 switch ($site) {
   case "hess" {
-    $modatm=get("Atmospheric model selection ($site)", "E10", "$atmcrd");
+    $modatm="E10";
     $altitude=1800e2;
     $bx=12.5;
     $bz=-25.9;
   }
   case "sac" {
-    $modatm=get("Atmospheric model selection (E30=wi,E31=sp,E32=su,E33=au)", "E32", "$atmcrd");
+    #$modatm="E32";  ###  OJO ajrm no funciona "ATMOSPHERE E32" , de hecho ATMOSPHERE no parece que le guste mucho
+    $modatm="10";  ### OJO ajrm si pongo esto funciona y me lo cambia a "ATMOD 10" no sé donde 
     $altitude=3700e2;
     $bx=20.94;
     $bz=-8.91;
   }
   case "etn" {
-    $modatm=get("Atmospheric model selection ", "E2", "$atmcrd");
+    $modatm="E2";
     $altitude=3000e2;
     $bx=27.7623;
     $bz=36.0667;
   }
   case "ber" {
     $modatm="E1";
-    #get("Atmospheric model selection ", "E1", "$atmcrd");
     $altitude=3450e2;
     $bx=26.9814;
     $bz=17.1054;
   }
   case "lim" {
     $modatm="E2";
-    #get("Atmospheric model selection ", "E1", "$atmcrd");
     $altitude=168e2;
     $bx=25.28;
     $bz=-0.046;
   }
   case "glr" {
-      $modatm=get("Atmospheric model selection ", "E1", "ATMOSPHERE");
-      $altitude=4276e2;
-      $bx=27.0750;
-      $bz=11.7728;
-      $arrang="0";
-    }
+    $modatm="E1";
+    $altitude=4276e2;
+    $bx=27.0750;
+    $bz=11.7728;
+    $arrang="0";
+  }
   case "mch" {
-      $modatm=get("Atmospheric model selection ", "E1", "ATMOSPHERE");
-      $altitude=2650e2;
-      $bx=27.1762;
-      $bz=14.6184;
-      $arrang="0";
-    }
+    $modatm="E1";
+    $altitude=2650e2;
+    $bx=27.1762;
+    $bz=14.6184;
+    $arrang="0";
+  }
   case "bga" {
     $modatm="E1";
-    #get("Atmospheric model selection ", "E1", "$atmcrd");
     $altitude=950e2;
     $bx=27.0263;
     $bz=17.1760;
   }
   case "mge" {
-    $modatm=get("Atmospheric model selection ", "19", "$atmcrd");
+    $modatm="19";
     $altitude=1400e2;
     $bx=20.4367;
     $bz=-11.8217;
   }
   case "brc" {
-    $modatm=get("Atmospheric model selection ", "E3", "$atmcrd");
+    $modatm="E3";
     $altitude=800e2;
     $bx=19.234;
     $bz=-17.068;
   }
   case "and" {
-    $modatm=get("Atmospheric model selection ", "19", "$atmcrd");
+    $modatm="19";
     $altitude=4200e2;
     $bx=19.6922;
     $bz=-14.2420;
   }
   case "mpc" {
     # Marcapomacocha
-    $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
+    $modatm="E1";
     $altitude=4500e2;
     $bx=24.9599;
     $bz=0.4124;
   }
   case "cha" {
     # Chacaltaya
-    $modatm=get("Atmospheric model selection ", "E2", "$atmcrd");
+    $modatm="E2";
     $altitude=5230e2;
     $bx=23.0386;
     $bz=-3.9734;
@@ -309,7 +378,6 @@ switch ($site) {
   case "cid" {
     # CIDA
     $modatm="E1";
-    #get("Atmospheric model selection ", "E1", "$atmcrd");
     $altitude=3600e2;
     $bx=26.8464;
     $bz=+18.1604;
@@ -317,7 +385,6 @@ switch ($site) {
   case "mor" {
     # Mordor
     $modatm="E1";
-    #get("Atmospheric model selection ", "E1", "$atmcrd");
     $altitude=4400e2;
     $bx=26.8340;
     $bz=+18.2004;
@@ -325,7 +392,6 @@ switch ($site) {
   case "lsc" {
     # La Serena
     $modatm="E2";
-    #get("Atmospheric model selection ", "E1", "$atmcrd");
     $altitude=28e2;
     $bx=20.29;
     $bz=-11.74;
@@ -340,34 +406,38 @@ switch ($site) {
   case "ccs" {
     #Caracas, data provided by Jose Antonio López, UCV, 10.486004N -66.894461W
     $modatm="E1";
-    #get("Atmospheric model selection ", "E1", "$atmcrd");
     $altitude=900E2;
     $bx=26.7364;
     $bz=+18.6777;
   }
-  else {
-    $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module", 19, "ATMOD");
-    unless ($ifixalt) {
-      $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
-      while (!$altitude) {
-        print STDERR "ERROR: Observation level is mandatory\n";
-        $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
-      }
-    }
-    $bx=get("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM",0,"BX");
-    while (!$bx) {
-      print STDERR "ERROR: BX is mandatory\n";
-      $bx=get("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM",0,"BX");
-    }
-    $bz=get("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]",0,"BZ");
-    while (!$bz) {
-      print STDERR "ERROR: BZ is mandatory\n";
-      $bz=get("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]",0,"BZ");
-    }
-  }
+}#switch
+  
+unless ($ifixmodatm) {
+    $modatm = get("Atmospheric model selection (ATMOD). Start number with 'E' to use external atmospheres module (ATMOSPHERE), examples: E30=wi,E31=sp,E32=su,E33=au)", $modatm, "$atmcrd", $modatm);
 }
+
+unless ($ifixalt) {
+    while (!$altitude) {
+        $altitude = get("Observation level above sea level [cm]",0,"OBSLEV", $altitude);
+        if (!$altitude) { print STDERR "ERROR: Observation level is mandatory > 0\n"; }
+      }
+}
+
+while (!$bx) {
+    $bx=get("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM",0,"BX", $bx);
+    if (!$bx) { print STDERR "ERROR: BX is mandatory\n"; }
+}
+
+while (!$bz) {
+    $bz=get("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]",0,"BZ", $bz);
+    if (!$bz) { print STDERR "ERROR: BZ is mandatory\n"; }
+}
+
 if ($ifixalt && $fixalt) {
   $altitude=$fixalt;
+}
+if ($ifixmodatm && $fixmodatm) {
+  $modatm=$fixmodatm;
 }
 $modatm=uc($modatm);
 # just in case :)

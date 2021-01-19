@@ -72,6 +72,7 @@ showhelp() {
   echo -e "  -d                             : Enable DEBUG mode"
   echo -e "  -a                             : Enable high energy cuts for secondaries"
   echo -e "  -k <altitude, in cm>           : Fix altitude, even for predefined sites"
+  echo -e "  -x                             : Enable other defaults (It doesn't prompt user for unset parameters)"
   echo -e "  -?                             : Shows this help and exit."
   echo
 }
@@ -84,8 +85,9 @@ vol=false
 alt=false
 altitude=0.
 procs=4
+defaults=false
 echo
-while getopts ':w:k:p:t:v:u:h:s:j:?ayde' opt; do
+while getopts ':w:k:p:t:v:u:h:s:j:?aydex' opt; do
   case $opt in
     w)
       wdir=$OPTARG
@@ -139,6 +141,9 @@ while getopts ':w:k:p:t:v:u:h:s:j:?ayde' opt; do
     d)
       debug=true
       ;;
+    x)
+      defaults=true
+      ;;
     ?)
       showhelp
       exit 1;
@@ -184,6 +189,10 @@ fi
 
 if $debug; then
   echo -e "#  WARNING: You are running in DEBUG mode."
+fi
+
+if $defaults; then
+  echo -e "#  WARNING: You are using some default vaules that will not be prompted."
 fi
 
 if $cta; then
@@ -233,6 +242,9 @@ if $vol; then
 fi
 if $alt; then
   options=${options}"-k $altitude "
+fi
+if $defaults; then
+  options=${options}"-x "
 fi
   
 options=${options}"-f $basearti/sims/spectra.dat"
