@@ -77,6 +77,7 @@ showhelp() {
   echo -e "  -m <Low edge zenith angle>                            : Low edge of zenith angle."
   echo -e "  -n <High edge zenith angle>                            : High edge of zenith angle."
   echo -e "  -r  <Low primary particle energy>                           : Lower limit of the primary particle energy."
+  echo -e "  -i  <Upper primary particle energy>                           : Upper limit of the primary particle energy."
   echo -e "  -o <BX>                        : Horizontal comp. of the Earth's mag. field."
   echo -e "  -q <BZ>                        : Vertical comp. of the Earth's mag. field."
   echo -e "  -x                             : Enable other defaults (It doesn't prompt user for unset parameters)"
@@ -97,11 +98,12 @@ rig=false
 lez=false
 hez=false
 lppe=false
+uppe=false
 BXcomp=false
 BZcomp=false
 defaults=false
 echo
-while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:o:q:?aydex' opt; do
+while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?aydex' opt; do
   case $opt in
     w)
       wdir=$OPTARG
@@ -165,6 +167,11 @@ while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:o:q:?aydex' opt; do
       lppe=true
       lowppe=$OPTARG
       echo -e "#  <Low primary particle energy>                   = $lowppe"
+      ;;
+    i)
+      uppe=true
+      upperppe=$OPTARG
+      echo -e "#  <High primary particle energy>                   = $upperppe"
       ;;
     o)
       BXcomp=true
@@ -261,6 +268,11 @@ if [ "X$lowppe" == "X" ]; then
   echo -e "#  WARNING: Low primary particle energy was not provided. Using default: $lowppe"
 fi
 
+if [ "X$upperppe" == "X" ]; then
+  upperppe="1e4"
+  echo -e "#  WARNING: Low primary particle energy was not provided. Using default: $upperppe"
+fi
+
 if [ "X$BX" == "X" ]; then
   BX="12.5"
   echo -e "#  WARNING: Horizontal comp. Earth's mag. field was not provided. Using default: $BX"
@@ -341,6 +353,9 @@ if $hez; then
 fi
 if $lppe; then
   options=${options}"-r $lowppe "
+fi
+if $uppe; then
+  options=${options}"-r $upperppe "
 fi
 if $BXcomp; then
   options=${options}"-o $BX "

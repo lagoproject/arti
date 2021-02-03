@@ -151,7 +151,7 @@ Optional:
   -m                    Low edge of zenith angle (THETAP) [deg] (Default: 0)
   -n                    High edge of zenith angle (THETAP) [deg] (Default: 90)
   -r                    Lower limit of the primary particle energy (ERANGE) [GeV] (Default: 5e0) 
-  -v                    Upper limit of the primary particle energy (ERANGE) [GeV] (Default: 1e6)
+  -i                    Upper limit of the primary particle energy (ERANGE) [GeV] (Default: 1e6)
 Fix parameters for unknow sites:
   -o <BX>               Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT], see values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM 
   -q <BZ>               Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT], see values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM  
@@ -222,7 +222,7 @@ while (defined($_ = $ARGV[0]) && $_ =~ /^-/) {
     $llimit = $ARGV[0];
     shift;
   }
-  if (/-v$/i) {
+  if (/-i$/i) {
     $ulimit = $ARGV[0];
     shift;
   }
