@@ -143,15 +143,15 @@ Optional:
                           - Predefined sites: hess|sac|etn|ber|bga|lim|glr|mch|mge|and|mpc|cha|cid|mor|ccs|lsc|mbo)
                           - Predefined parameters: altitude, BX, BZ, and Atmospheric Model.
   -k <altitude>         Fix altitude even for predefined sites (It cannot be 0)
-  -c <Atmosph. Model>   Fix Atmospheric Model even for predefined sites. 
+  -c <modatm>   Fix Atmospheric Model even for predefined sites. 
                            (Note: Start number with 'E' to use external atmospheres module)
   -y                    Enable volumetric detector for flux calculations (Default: flat)
   -a                    Enable high energy cuts for secondaries
-  -b <rigidity cutoff>  0 = disabled; value in GV = enabled (Default: 5.)
-  -m                    Low edge of zenith angle (THETAP) [deg] (Default: 0)
-  -n                    High edge of zenith angle (THETAP) [deg] (Default: 90)
-  -r                    Lower limit of the primary particle energy (ERANGE) [GeV] (Default: 5e0) 
-  -i                    Upper limit of the primary particle energy (ERANGE) [GeV] (Default: 1e6)
+  -b <rigidity>  0 = disabled; value in GV = enabled (Default: 5.)
+  -m <tMin>                  Low edge of zenith angle (THETAP) [deg] (Default: 0)
+  -n  <tMax>                  High edge of zenith angle (THETAP) [deg] (Default: 90)
+  -r <llimit>                   Lower limit of the primary particle energy (ERANGE) [GeV] (Default: 5e0) 
+  -i <ulimit>                   Upper limit of the primary particle energy (ERANGE) [GeV] (Default: 1e6)
 Fix parameters for unknow sites:
   -o <BX>               Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT], see values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM 
   -q <BZ>               Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT], see values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM  

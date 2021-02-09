@@ -72,12 +72,12 @@ showhelp() {
   echo -e "  -d                             : Enable DEBUG mode"
   echo -e "  -a                             : Enable high energy cuts for secondaries"
   echo -e "  -k <altitude, in cm>           : Fix altitude, even for predefined sites"
-  echo -e "  -c <atm_model>                 : Fix Atmospheric Model even for predefined sites."
+  echo -e "  -c <modatm>                 : Fix Atmospheric Model even for predefined sites."
   echo -e "  -b <rigidity cutoff>           : Rigidity cutoff; 0 = disabled; value in GV = enabled."
-  echo -e "  -m <Low edge zenith angle>                            : Low edge of zenith angle."
-  echo -e "  -n <High edge zenith angle>                            : High edge of zenith angle."
-  echo -e "  -r  <Low primary particle energy>                           : Lower limit of the primary particle energy."
-  echo -e "  -i  <Upper primary particle energy>                           : Upper limit of the primary particle energy."
+  echo -e "  -m <tMin>                            : Low edge of zenith angle."
+  echo -e "  -n <tMax>                            : High edge of zenith angle."
+  echo -e "  -r  <llimit>                           : Lower limit of the primary particle energy."
+  echo -e "  -i  <ulimit>                           : Upper limit of the primary particle energy."
   echo -e "  -o <BX>                        : Horizontal comp. of the Earth's mag. field."
   echo -e "  -q <BZ>                        : Vertical comp. of the Earth's mag. field."
   echo -e "  -x                             : Enable other defaults (It doesn't prompt user for unset parameters)"
@@ -145,8 +145,8 @@ while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?aydex' opt; do
       ;;
     c)
       atm_m=true
-      atm_model=$OPTARG
-      echo -e "#  <atm_model>                   = $atm_model"
+      modatm=$OPTARG
+      echo -e "#  <modatm>                   = $modatm"
       ;;
     b)
       rig=true
@@ -155,23 +155,23 @@ while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?aydex' opt; do
       ;;
     m)
       lez=true
-      lowez=$OPTARG
-      echo -e "#  <Low edge of zenith angle>                   = $lowez"
+      tMin=$OPTARG
+      echo -e "#  <Low edge of zenith angle>                   = $tMin"
       ;;
     n)
       hez=true
-      highez=$OPTARG
-      echo -e "#  <High edge of zenith angle>                   = $highez"
+      tMax=$OPTARG
+      echo -e "#  <High edge of zenith angle>                   = $tMax"
       ;;
     r)
       lppe=true
-      lowppe=$OPTARG
-      echo -e "#  <Low primary particle energy>                   = $lowppe"
+      llimit=$OPTARG
+      echo -e "#  <Low primary particle energy>                   = $llimit"
       ;;
     i)
       uppe=true
-      upperppe=$OPTARG
-      echo -e "#  <High primary particle energy>                   = $upperppe"
+      ulimit=$OPTARG
+      echo -e "#  <High primary particle energy>                   = $ulimit"
       ;;
     o)
       BXcomp=true
@@ -243,9 +243,9 @@ if [ "X$hig" == "X" ]; then
   echo -e "#  WARNING: High energy interaction model was not provided. Using default: $hig"
 fi
 
-if [ "X$atm_model" == "X" ]; then
-  atm_model="E1"
-  echo -e "#  WARNING: Atmospheric Model was not provided. Using default: $atm_model"
+if [ "X$modatm" == "X" ]; then
+  modatm="E1"
+  echo -e "#  WARNING: Atmospheric Model was not provided. Using default: $modatm"
 fi
 
 if [ "X$rigididy" == "X" ]; then
@@ -253,24 +253,24 @@ if [ "X$rigididy" == "X" ]; then
   echo -e "#  WARNING: Rigidity cutoff was not provided. Using default (disabled): $rigididy"
 fi
 
-if [ "X$lowez" == "X" ]; then
-  lowez="10"
-  echo -e "#  WARNING: Low edge of zenith angle was not provided. Using default: $lowez"
+if [ "X$tMin" == "X" ]; then
+  tMin="10"
+  echo -e "#  WARNING: Low edge of zenith angle was not provided. Using default: $tMin"
 fi
 
-if [ "X$highez" == "X" ]; then
-  highez="80"
-  echo -e "#  WARNING: High edge of zenith angle was not provided. Using default: $highez"
+if [ "X$tMax" == "X" ]; then
+  tMax="80"
+  echo -e "#  WARNING: High edge of zenith angle was not provided. Using default: $tMax"
 fi
 
-if [ "X$lowppe" == "X" ]; then
-  lowppe="1e3"
-  echo -e "#  WARNING: Low primary particle energy was not provided. Using default: $lowppe"
+if [ "X$llimit" == "X" ]; then
+  llimit="1e3"
+  echo -e "#  WARNING: Low primary particle energy was not provided. Using default: $llimit"
 fi
 
-if [ "X$upperppe" == "X" ]; then
-  upperppe="1e4"
-  echo -e "#  WARNING: Low primary particle energy was not provided. Using default: $upperppe"
+if [ "X$ulimit" == "X" ]; then
+  ulimit="1e4"
+  echo -e "#  WARNING: Low primary particle energy was not provided. Using default: $ulimit"
 fi
 
 if [ "X$BX" == "X" ]; then
@@ -340,22 +340,22 @@ if $alt; then
   options=${options}"-k $altitude "
 fi
 if $atm_m; then
-  options=${options}"-c $atm_model "
+  options=${options}"-c $modatm "
 fi
 if $rig; then
   options=${options}"-b $rigididy "
 fi
 if $lez; then
-  options=${options}"-m $lowez "
+  options=${options}"-m $tMin "
 fi
 if $hez; then
-  options=${options}"-n $highez "
+  options=${options}"-n $tMax "
 fi
 if $lppe; then
-  options=${options}"-r $lowppe "
+  options=${options}"-r $llimit "
 fi
 if $uppe; then
-  options=${options}"-r $upperppe "
+  options=${options}"-r $ulimit "
 fi
 if $BXcomp; then
   options=${options}"-o $BX "
