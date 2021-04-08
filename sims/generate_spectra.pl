@@ -140,7 +140,7 @@ Optional:
   -u <user name>        For CORSIKA simulation (Default: none)
   -t <time in sec>      Flux time ( Default: 3600s)
   -s <site>             Choice predefined site for simulation (Default: unknow)
-                          - Predefined sites: hess|sac|etn|ber|bga|lim|glr|mch|mge|and|mpc|cha|cid|mor|ccs|lsc|mbo)
+                          - Predefined sites: check the code)
                           - Predefined parameters: altitude, BX, BZ, and Atmospheric Model.
   -k <altitude>         Fix altitude even for predefined sites (It cannot be 0)
   -c <Atmosph. Model>   Fix Atmospheric Model even for predefined sites. 
@@ -291,124 +291,172 @@ $userllimit=$llimit;
 
 #all predefined sites seems to be ATMOSPHERE as default mode
 $atmcrd = "ATMOSPHERE";
+# New set of LAGO sites in preparation for EOSC challenge. 
+# For pre-challenge we will simulate some of this new sites. 
+# HA - Apr 08, 2021
+
 switch ($site) {
-  case "hess" {
-    $modatm="E10";
-    $altitude=1800e2;
-    $bx=12.5;
-    $bz=-25.9;
+  case "sawb" {
+      $modatm="E5";
+      $altitude=20000;
+      $bx=19.366;
+      $bz=-30.222;
   }
-  case "sac" {
-    #$modatm="E32";  ###  OJO ajrm no funciona "ATMOSPHERE E32" , de hecho ATMOSPHERE no parece que le guste mucho
-    $modatm="10";  ### OJO ajrm si pongo esto funciona y me lo cambia a "ATMOD 10" no sé donde 
-    $altitude=3700e2;
-    $bx=20.94;
-    $bz=-8.91;
-  }
-  case "etn" {
-    $modatm="E2";
-    $altitude=3000e2;
-    $bx=27.7623;
-    $bz=36.0667;
-  }
-  case "ber" {
-    $modatm="E1";
-    $altitude=3450e2;
-    $bx=26.9814;
-    $bz=17.1054;
-  }
-  case "lim" {
-    $modatm="E2";
-    $altitude=168e2;
-    $bx=25.28;
-    $bz=-0.046;
-  }
-  case "glr" {
-    $modatm="E1";
-    $altitude=4276e2;
-    $bx=27.0750;
-    $bz=11.7728;
-    $arrang="0";
-  }
-  case "mch" {
-    $modatm="E1";
-    $altitude=2650e2;
-    $bx=27.1762;
-    $bz=14.6184;
-    $arrang="0";
-  }
-  case "bga" {
-    $modatm="E1";
-    $altitude=950e2;
-    $bx=27.0263;
-    $bz=17.1760;
-  }
-  case "mge" {
-    $modatm="19";
-    $altitude=1400e2;
-    $bx=20.4367;
-    $bz=-11.8217;
+  case "mapi" {
+      $modatm="E5";
+      $altitude=1000;
+      $bx=19.309;
+      $bz=-28.693;
   }
   case "brc" {
-    $modatm="E3";
-    $altitude=800e2;
-    $bx=19.234;
-    $bz=-17.068;
+      $modatm="E3";
+      $altitude=86500;
+      $bx=18.952;
+      $bz=-17.05;
   }
-  case "and" {
-    $modatm="19";
-    $altitude=4200e2;
-    $bx=19.6922;
-    $bz=-14.2420;
+  case "bue" {
+      $modatm="E2";
+      $altitude=1000;
+      $bx=17.09;
+      $bz=-14.673;
   }
-  case "mpc" {
-    # Marcapomacocha
-    $modatm="E1";
-    $altitude=4500e2;
-    $bx=24.9599;
-    $bz=0.4124;
-  }
-  case "cha" {
-    # Chacaltaya
-    $modatm="E2";
-    $altitude=5230e2;
-    $bx=23.0386;
-    $bz=-3.9734;
-  }
-  case "cid" {
-    # CIDA
-    $modatm="E1";
-    $altitude=3600e2;
-    $bx=26.8464;
-    $bz=+18.1604;
-  }
-  case "mor" {
-    # Mordor
-    $modatm="E1";
-    $altitude=4400e2;
-    $bx=26.8340;
-    $bz=+18.2004;
+  case "kna" {
+      $modatm="E2";
+      $altitude=34700;
+      $bx=19.56;
+      $bz=-13.333;
   }
   case "lsc" {
-    # La Serena
-    $modatm="E2";
-    $altitude=28e2;
-    $bx=20.29;
-    $bz=-11.74;
+      $modatm="E2";
+      $altitude=2800;
+      $bx=19.975;
+      $bz=-11.826;
   }
-  case "mbo" {
-    # Base Marambio
-    $modatm="E5";
-    $altitude=196e2;
-    $bx=19.6571;
-    $bz=-30.5809;
+  case "tuc" {
+      $modatm="E2";
+      $altitude=43000;
+      $bx=19.487;
+      $bz=-10.647;
   }
-  case "ccs" {
-    #Caracas, data provided by Jose Antonio López, UCV, 10.486004N -66.894461W
-    $modatm="E1";
-    $altitude=900E2;
-    $bx=26.7364;
-    $bz=+18.6777;
+  case "asu" {
+      $modatm="E1";
+      $altitude=13600;
+      $bx=18.233;
+      $bz=-11.73;
+  }
+  case "sao" {
+      $modatm="E1";
+      $altitude=76000;
+      $bx=16.484;
+      $bz=-14.48;
+  }
+  case "vcp" {
+      $modatm="E1";
+      $altitude=64000;
+      $bx=16.751;
+      $bz=-14.104;
+  }
+  case "lpb" {
+      $modatm="E2";
+      $altitude=363000;
+      $bx=22.362;
+      $bz=-4.708;
+  }
+  case "cha" {
+      $modatm="E2";
+      $altitude=523000;
+      $bx=22.38;
+      $bz=-4.62;
+  }
+  case "cuz" {
+      $modatm="E1";
+      $altitude=340000;
+      $bx=23.676;
+      $bz=-2.02;
+  }
+  case "lim" {
+      $modatm="E1";
+      $altitude=16800;
+      $bx=24.723;
+      $bz=-0.476;
+  }
+  case "cpv" {
+      $modatm="E1";
+      $altitude=55000;
+      $bx=21.174;
+      $bz=-12.612;
+  }
+  case "serb" {
+      $modatm="E1";
+      $altitude=275000;
+      $bx=26.577;
+      $bz=8.499;
+  }
+  case "QUIE" {
+      $modatm="E1";
+      $altitude=285000;
+      $bx=26.717;
+      $bz=9.971;
+  }
+  case "bga" {
+      $modatm="E1";
+      $altitude=95000;
+      $bx=26.793;
+      $bz=16.055;
+  }
+  case "pam" {
+      $modatm="E1";
+      $altitude=234200;
+      $bx=26.743;
+      $bz=15.955;
+  }
+  case "gua" {
+      $modatm="E1";
+      $altitude=149000;
+      $bx=27.532;
+      $bz=24.932;
+  }
+  case "tac" {
+      $modatm="E1";
+      $altitude=406000;
+      $bx=27.53;
+      $bz=25.353;
+  }
+  case "chia" {
+      $modatm="E2";
+      $altitude=52200;
+      $bx=27.405;
+      $bz=27.024;
+  }
+  case "sng" {
+      $modatm="E2";
+      $altitude=455000;
+      $bx=27.358;
+      $bz=28.038;
+  }
+  case "and" {
+      $modatm="E2";
+      $altitude=420000;
+      $bx=19.658;
+      $bz=-11.951;
+  }
+  case "mge" {
+      $modatm="E2";
+      $altitude=145000;
+      $bx=18.987;
+      $bz=-14.326;
+  }
+  case "ber" {
+      $modatm="E1";
+      $altitude=345000;
+      $bx=26.751;
+      $bz=16.029;
+  }
+  case "sac" {
+      $modatm="E2";
+      $altitude=482000;
+      $bx=20.06;
+      $bz=-9.616;
   }
 }#switch
   

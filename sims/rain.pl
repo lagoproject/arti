@@ -53,6 +53,7 @@
 
 $VERSION="v1r0";
 
+use strict;
 use Switch;
 use Cwd;
 
