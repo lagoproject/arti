@@ -8,14 +8,22 @@
   make -jN // Where N number of cores
 
 2. Edit input.in file:
-   - /spectrum/readfile "file name" > Corsika .shw file with the secondaries.
-   - /spectrum/iniposZ "X cm" > Start position at Z from which secondaries will propagate. 
+
+   * /spectrum/readfile "file name" > Corsika .shw file with the secondaries.
+
+   * /spectrum/iniposZ "X cm" > Start position at Z from which secondaries will propagate.
     This value can not be more than 45 m.
-   - /spectrum/radArea "X m" > The circumference radius where secondaries will be distribute. 
+
+   * /spectrum/radArea "X m" > The circumference radius where secondaries will be distribute.
     This value can not be more than 45 m.
-   - /detect/radio > WCD radius.
-   - /detect/hight > WCD hight. This value can not be more than 4.5 m
-   - /run/beamOn "X" > Number of secondaries to propagate.
+
+   * /detect/radio > WCD radius.
+
+   * /detect/hight > WCD hight. This value can not be more than 4.5 m
+
+	 * /outroot/outname > Set the name for the Root output filie. 
+
+   * /run/beamOn "X" > Number of secondaries to propagate.
    
    If you need values bigger than 45 m or 4.5 cm write to mauricio.suarez@saber.uis.edu.co
 
