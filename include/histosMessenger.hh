@@ -19,7 +19,7 @@ class histosMessenger: public G4UImessenger
     virtual ~histosMessenger();
  
     virtual void SetNewValue(G4UIcommand*, G4String);
-    
+ 
   
   private:
     histosRun* fhistoRun;

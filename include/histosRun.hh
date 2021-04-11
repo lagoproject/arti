@@ -58,7 +58,6 @@ class histosRun
     void setOutFileName(G4String name);
 
 
-
   private:
 
     // ===================

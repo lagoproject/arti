@@ -40,7 +40,7 @@ RunAction::RunAction()
   if( histRunOk )
   {
     histRun = new histosRun();
-    histRun->initHistos();
+    //histRun->initHistos();
   }
 }
 

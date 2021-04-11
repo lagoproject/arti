@@ -34,6 +34,8 @@ histosMessenger::~histosMessenger()
 void histosMessenger::SetNewValue(
     G4UIcommand* command, G4String newValue)
 {
-  if ( command == outname )
+  if ( command == outname ) {
     fhistoRun->setOutFileName(newValue);
+		fhistoRun->initHistos();
+	}
 }
