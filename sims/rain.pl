@@ -53,7 +53,6 @@
 
 $VERSION="v1r0";
 
-use strict;
 use Switch;
 use Cwd;
 
@@ -193,6 +192,7 @@ while ($_ = $ARGV[0]) {
 }
 
 $package="corsika".$crk_ver."Linux_".$heim."_gheisha";
+
 if ($ithin) {
   $package= $package . "_thin";
 }
