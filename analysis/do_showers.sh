@@ -51,7 +51,7 @@
 # */
 # /************************************************************************/
 # 
-        
+
 VERSION="v1r0" # mar 20 abr 2021 11:00:00 CEST
 wdir="."
 arti_path="${LAGO_ARTI}"
@@ -62,6 +62,7 @@ filter=0
 time=0
 prj=""
 cmd="showers"
+manual=0
 
 showhelp() {
   echo
@@ -77,11 +78,12 @@ showhelp() {
   echo -e "  -k <site altitude, in m>  : For curved mode (default), site altitude in m a.s.l. (mandatory)"
   echo -e "  -s <type>                 : Filter secondaries by type: 1: EM, 2: MU, 3: HD"
   echo -e "  -t <time>                 : Normalize energy distribution in particles/(m2 s bin), S=1 m2; <t> = flux time (s)."
+  echo -e "  -m                        : Enable manual (not batch) mode. Will wait before to start."
   echo -e "  -?                        : Shows this help and exit."
   echo
 }
 echo
-while getopts ':r:w:e:p:d:k:s:t:?' opt; do
+while getopts ':r:w:e:p:d:k:s:t:m?' opt; do
   case $opt in
     r)
       arti_path=$OPTARG
@@ -114,6 +116,10 @@ while getopts ':r:w:e:p:d:k:s:t:?' opt; do
     t)
       time=$OPTARG
       echo -e "#  Normalize flux, S=1 m2; time  = $time"
+      ;;
+	m)
+	  manual=1
+      echo -e "#  Manual mode.                  = $manual"
       ;;
     ?)
       showhelp
@@ -176,9 +182,16 @@ fi
 
 cmd+=" $prj"
 ## finally...
-# echo $cmd
-# read -n 1 -s -r -p "Ready. Press any key to continue"
-# echo
+if [ $manual -gt 0 ]; then
+	echo $cmd
+	read -n 1 -s -r -p "Ready. Press any key to continue"
+	echo
+fi
+loc=$PWD
+pass=1
+if [ "X$loc" == "X$wdir" ]; then
+	pass=0
+fi
 
 # primaries and secondaries
 for i in $wdir/DAT??????.bz2; do
@@ -187,9 +200,13 @@ for i in $wdir/DAT??????.bz2; do
  	bzip2 -d -k $i
  	echo $j | $arti_path/analysis/lagocrkread | $arti_path/analysis/analysis -p $u
  	rm $j
- 	mv *.bz2 $wdir/
+	if [ $pass -gt 0 ]; then
+		mv -v $loc/*bz2 $wdir
+	fi
 done
 
 # showers
 bzcat $wdir/*.sec.bz2 | $arti_path/analysis/${cmd} $prj
-mv $prj* $wdir/
+if [ $pass -gt 0 ]; then
+	mv $loc/$prj* $wdir/
+fi
