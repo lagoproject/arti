@@ -64,8 +64,9 @@ filter=0
 time=0
 prj=""
 cmd="showers"
-manual=0
+loc=0
 parallel=0
+N=4	   # number of simultaneous process for paralllel local processing
 
 showhelp() {
   echo
@@ -81,53 +82,43 @@ showhelp() {
   echo -e "  -k <site altitude, in m>  : For curved mode (default), site altitude in m a.s.l. (mandatory)"
   echo -e "  -s <type>                 : Filter secondaries by type: 1: EM, 2: MU, 3: HD"
   echo -e "  -t <time>                 : Normalize energy distribution in particles/(m2 s bin), S=1 m2; <t> = flux time (s)."
-  echo -e "  -j                        : Produce a batch file for parallel processing. Not compatible with manual mode"
-  echo -e "  -m                        : Enable manual (not batch) mode. Will wait before to start. Not compatible with parallel mode"
+  echo -e "  -j                        : Produce a batch file for parallel processing. Not compatible with local (-l)"
+  echo -e "  -l                        : Enable parallel execution locally ($N procs). Not compatible with parallel (-j)"
   echo -e "  -?                        : Shows this help and exit."
   echo
 }
 echo
-while getopts ':r:w:e:p:d:k:s:t:mj?' opt; do
+while getopts ':r:w:e:p:d:k:s:t:lj?' opt; do
   case $opt in
     r)
       arti_path=$OPTARG
-	  echo -e "#  Path to ARTI directory        = $arti_path"
       ;;
     w)
       wdir=$OPTARG
-      echo -e "#  Path to DAT files             = $wdir"
       ;;
     p)
       prj=$OPTARG
-      echo -e "#  Project base_name             = $prj"
       ;;
     e)
       energy_bins=$OPTARG
-      echo -e "#  Energy bins                   = $energy_bins"
       ;;
     d)
       distance_bins=$OPTARG
-      echo -e "#  Distance bins                 = $distance_bins"
       ;;
     k)
       altitude=$OPTARG
-      echo -e "#  Altitude                      = $altitude"
       ;;
     s)
       filter=$OPTARG
-      echo -e "#  Filtering by type             = $filter"
       ;;
     t)
       time=$OPTARG
-      echo -e "#  Normalize flux, S=1 m2; time  = $time"
       ;;
-	m)
-	  manual=1
-      echo -e "#  Manual mode.                  = $manual"
+	l)
+	  loc=1
       ;;
 	j)
 	  parallel=1
-      echo -e "#  Parallel mode.                = $parallel"
       ;;
     ?)
       showhelp
@@ -171,13 +162,11 @@ if [ "X$prj" == "X" ]; then
   exit 1
 fi
 
-if [ $parallel -gt 0 ]; then
-	if [ $manual -gt 0 ]; then
-		echo; echo -e "#  ERROR: parallel mode is not compatible with manual mode."
-		echo
-		showhelp
-		exit 1
-	fi
+if [ $parallel -gt 0 -a $loc -gt 0 ]; then
+  echo; echo -e "#  ERROR: Parallel and local modes are not compatible. Look for -j or -l options."
+  echo
+  showhelp
+  exit 1
 fi
 
 # command
@@ -198,40 +187,61 @@ if [ $filter -gt 0 ]; then
 fi
 
 cmd+=" $prj"
-## finally...
-if [ $manual -gt 0 ]; then
-	echo $cmd
-	read -n 1 -s -r -p "Ready. Press any key to continue"
-	echo
-fi
-loc=$PWD
+
 pass=1
-if [ "X$loc" == "X$wdir" ]; then
+if [ "X$PWD" == "X$wdir" ]; then
 	pass=0
+else
+	echo; echo -e "#  WARNING: Not running where DAT files are located. At the end will move all files to $wdir"
 fi
 
-# primaries and secondaries
+## finally...
+echo
+echo -e "#  Path to ARTI directory        = $arti_path"
+echo -e "#  Path to DAT files             = $wdir"
+echo -e "#  Project base_name             = $prj"
+echo -e "#  Energy bins                   = $energy_bins"
+echo -e "#  Distance bins                 = $distance_bins"
+echo -e "#  Altitude                      = $altitude"
+echo -e "#  Filtering by type             = $filter"
+echo -e "#  Normalize flux, S=1 m2; time  = $time"
+echo -e "#  Parallel mode (local)         = $loc"
+echo -e "#  Parallel mode (remote)        = $parallel"
+
+# primaries
 for i in $wdir/DAT??????.bz2; do
-  j=$(echo $i | sed -e 's/.bz2//')
+	j=$(echo $i | sed -e 's/.bz2//')
  	u=$(echo $j | sed -e 's/DAT//')
  	run="bzip2 -d -k $i; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm ${j}"
-	if [ $parallel -gt 0 ]; then 
-		echo $run >> $prj.run
-	else
-		eval $run
-		if [ $pass -gt 0 ]; then
-			mv -v $loc/*bz2 $wdir
-		fi
-	fi
+	echo $run >> $prj.run
 done
+nl=$(cat $prj.run | wc -l)
+if [ $parallel -gt 0 ]; then
+	# parallel mode, just produce the shower analysis file and exit
+    echo "bzcat ${wdir}/*.sec.bz2 | ${arti_path}/analysis/${cmd}" > $prj.shw.run
+	exit 0
+elif [ $loc -gt 0 ]; then
+	# parallel and local
+	while IFS= read -r line; do
+		((nr++))
+		((n=n%N)); ((n++==0)) && wait
+		echo $nr/$nl
+		eval ${line} &>> $nr.log &
+	done < $prj.run
+else
+	# it's local and not parallel
+	while IFS= read -r line; do 
+		((nr++))
+		echo $nr/$nl
+		eval ${line} &>> $nr.log
+	done < $prj.run
+fi
 
 # showers
 run="bzcat ${wdir}/*.sec.bz2 | ${arti_path}/analysis/${cmd}"
-if [ $parallel -gt 0 ]; then
-	echo ${run} > $prj.shw.run
-else
-	eval ${run}
-	if [ $pass -gt 0 ]; then
-		mv $loc/$prj* $wdir/
-	fi
+eval ${run}
+if [ $pass -gt 0 ]; then
+	mv $PWD/$prj* $wdir/
 fi
+rm $prj.run
+rm *.log
