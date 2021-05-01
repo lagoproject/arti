@@ -66,7 +66,7 @@ prj=""
 cmd="showers"
 loc=0
 parallel=0
-N=4	   # number of simultaneous process for paralllel local processing
+N=6	   # number of simultaneous process for paralllel local processing
 
 showhelp() {
   echo
@@ -148,7 +148,7 @@ if [ ! -f "$file" ]; then
   exit 1;
 fi
 
-if [ $altitude -eq 0 ]; then
+if [ ${altitude} -eq 0 ]; then
   echo; echo -e "#  ERROR: Altitude was not provided. It is mandatory for automatic analysis (curved mode)"
   echo
   showhelp
@@ -162,7 +162,7 @@ if [ "X$prj" == "X" ]; then
   exit 1
 fi
 
-if [ $parallel -gt 0 -a $loc -gt 0 ]; then
+if [ $parallel -gt 0 ] && [ $loc -gt 0 ]; then
   echo; echo -e "#  ERROR: Parallel and local modes are not compatible. Look for -j or -l options."
   echo
   showhelp
@@ -209,9 +209,9 @@ echo -e "#  Parallel mode (local)         = $loc"
 echo -e "#  Parallel mode (remote)        = $parallel"
 
 # primaries
-for i in $wdir/DAT??????.bz2; do
-	j=$(echo $i | sed -e 's/.bz2//')
- 	u=$(echo $j | sed -e 's/DAT//')
+for i in ${wdir}/DAT??????.bz2; do
+	j=${i/.bz2/}
+ 	u=${j/DAT/}
  	run="bzip2 -d -k $i; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm ${j}"
 	echo $run >> $prj.run
 done
@@ -236,6 +236,13 @@ else
 		eval ${line} &>> $nr.log
 	done < $prj.run
 fi
+echo "Wait for parallel execution end..."
+while true; do
+	f=$(find . -iname 'DAT??????' | wc -l)
+	if [ $f -eq 0 ]; then
+		break
+	fi
+done
 
 # showers
 run="bzcat ${wdir}/*.sec.bz2 | ${arti_path}/analysis/${cmd}"
