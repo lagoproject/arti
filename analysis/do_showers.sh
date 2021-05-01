@@ -52,7 +52,9 @@
 # /************************************************************************/
 # 
 
-VERSION="v1r0" # mar 20 abr 2021 11:00:00 CEST
+VERSION="v1r0" # First release, mar 20 abr 2021 11:00:00 CEST
+VERSION="v1r1" # parallel analysis, jue 29 abr 2021 12:52:12 CEST
+
 wdir="."
 arti_path="${LAGO_ARTI}"
 energy_bins=20
@@ -63,6 +65,7 @@ time=0
 prj=""
 cmd="showers"
 manual=0
+parallel=0
 
 showhelp() {
   echo
@@ -78,12 +81,13 @@ showhelp() {
   echo -e "  -k <site altitude, in m>  : For curved mode (default), site altitude in m a.s.l. (mandatory)"
   echo -e "  -s <type>                 : Filter secondaries by type: 1: EM, 2: MU, 3: HD"
   echo -e "  -t <time>                 : Normalize energy distribution in particles/(m2 s bin), S=1 m2; <t> = flux time (s)."
-  echo -e "  -m                        : Enable manual (not batch) mode. Will wait before to start."
+  echo -e "  -j                        : Produce a batch file for parallel processing. Not compatible with manual mode"
+  echo -e "  -m                        : Enable manual (not batch) mode. Will wait before to start. Not compatible with parallel mode"
   echo -e "  -?                        : Shows this help and exit."
   echo
 }
 echo
-while getopts ':r:w:e:p:d:k:s:t:m?' opt; do
+while getopts ':r:w:e:p:d:k:s:t:mj?' opt; do
   case $opt in
     r)
       arti_path=$OPTARG
@@ -120,6 +124,10 @@ while getopts ':r:w:e:p:d:k:s:t:m?' opt; do
 	m)
 	  manual=1
       echo -e "#  Manual mode.                  = $manual"
+      ;;
+	j)
+	  parallel=1
+      echo -e "#  Parallel mode.                = $parallel"
       ;;
     ?)
       showhelp
@@ -163,6 +171,15 @@ if [ "X$prj" == "X" ]; then
   exit 1
 fi
 
+if [ $parallel -gt 0 ]; then
+	if [ $manual -gt 0 ]; then
+		echo; echo -e "#  ERROR: parallel mode is not compatible with manual mode."
+		echo
+		showhelp
+		exit 1
+	fi
+fi
+
 # command
 cmd+=" -a $energy_bins"
 cmd+=" -d $distance_bins"
@@ -197,16 +214,24 @@ fi
 for i in $wdir/DAT??????.bz2; do
   j=$(echo $i | sed -e 's/.bz2//')
  	u=$(echo $j | sed -e 's/DAT//')
- 	bzip2 -d -k $i
- 	echo $j | $arti_path/analysis/lagocrkread | $arti_path/analysis/analysis -p $u
- 	rm $j
-	if [ $pass -gt 0 ]; then
-		mv -v $loc/*bz2 $wdir
+ 	run="bzip2 -d -k $i; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm ${j}"
+	if [ $parallel -gt 0 ]; then 
+		echo $run >> $prj.run
+	else
+		eval $run
+		if [ $pass -gt 0 ]; then
+			mv -v $loc/*bz2 $wdir
+		fi
 	fi
 done
 
 # showers
-bzcat $wdir/*.sec.bz2 | $arti_path/analysis/${cmd} $prj
-if [ $pass -gt 0 ]; then
-	mv $loc/$prj* $wdir/
+run="bzcat ${wdir}/*.sec.bz2 | ${arti_path}/analysis/${cmd}"
+if [ $parallel -gt 0 ]; then
+	echo ${run} > $prj.shw.run
+else
+	eval ${run}
+	if [ $pass -gt 0 ]; then
+		mv $loc/$prj* $wdir/
+	fi
 fi
