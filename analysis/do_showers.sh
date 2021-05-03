@@ -83,7 +83,7 @@ showhelp() {
   echo -e "  -k <site altitude, in m>  : For curved mode (default), site altitude in m a.s.l. (mandatory)"
   echo -e "  -s <type>                 : Filter secondaries by type: 1: EM, 2: MU, 3: HD"
   echo -e "  -t <time>                 : Normalize energy distribution in particles/(m2 s bin), S=1 m2; <t> = flux time (s)."
-  echo -e "  -m <bins per decade>      : Produce files with the energy distribution of the primary flux per nuclei. Not compatible with parallel"
+  echo -e "  -m <bins per decade>      : Produce files with the energy distribution of the primary flux per nuclei."
   echo -e "  -j                        : Produce a batch file for parallel processing. Not compatible with local (-l)"
   echo -e "  -l                        : Enable parallel execution locally ($N procs). Not compatible with parallel (-j)"
   echo -e "  -?                        : Shows this help and exit."
@@ -174,13 +174,6 @@ if [ $parallel -gt 0 ] && [ $loc -gt 0 ]; then
   exit 1
 fi
 
-if [ $parallel -gt 0 ] && [ $prims -gt 0 ]; then
-  echo; echo -e "#  ERROR: Parallel and primaries analysis are not compatible. Look for -j or -m options."
-  echo
-  showhelp
-  exit 1
-fi
-
 # command
 cmd+=" -a $energy_bins"
 cmd+=" -d $distance_bins"
@@ -236,6 +229,7 @@ nl=$(cat $prj.run | wc -l)
 if [ $parallel -gt 0 ]; then
 	# parallel mode, just produce the shower analysis file and exit
     echo "bzcat ${wdir}/*.sec.bz2 | ${arti_path}/analysis/${cmd}" > $prj.shw.run
+	echo "primaries.sh -w ${wdir} -r ${arti_path} -m ${prims}" > $prj.pri.run
 	exit 0
 elif [ $loc -gt 0 ]; then
 	# parallel and local
@@ -253,31 +247,26 @@ else
 		eval ${line} &>> $nr.log
 	done < $prj.run
 fi
-echo "Wait for parallel execution end..."
+echo "Wait for parallel execution termination..."
 while true; do
 	f=$(find . -iname 'DAT??????' | wc -l)
 	if [ $f -eq 0 ]; then
 		break
 	fi
 done
-
+echo "Shower analysis ..."
 # showers
-run="bzcat ${wdir}/*.sec.bz2 | ${arti_path}/analysis/${cmd}"
-eval ${run}
-if [ $pass -gt 0 ]; then
-	mv $PWD/$prj* $wdir/
-fi
+bzcat ${wdir}/*.sec.bz2 | ${arti_path}/analysis/${cmd}
 
 # primaries histograms
 if [ $prims -gt 0 ]; then
-    ids=$(for i in *.pri.bz2; do j=${i/.pri.bz2/}; k=${j:2}; echo $k; done | sort | uniq)
-    echo ${ids}
-    echo
-    for i in $ids; do
-        echo -n "${i} "
-        bzcat ??${i}.pri.bz2 | grep -v "#" | awk '{print log($2)/log(10.)}' | sort -g |	awk -v bins=${prims} -v id=${i} 'BEGIN{n=0; mine=100000; maxe=-100000; bins = bins * 1.}{t[int($1*bins)]++; n++; if ($1 < mine) mine=$1; if ($1 > maxe) maxe=$1;}END{printf("# # # prt\n");printf("# # Primary energy histogram for %06d using %d bins per decade\n", id, bins);printf("# # Three column format is:\n# # energy_bin total_per_bin fraction_per_bin\n"); for (i in t) {print 10**(i/bins), t[i], t[i]*1./n; frc+=t[i]*1./n;} printf("# # Total primaries: %ld (%.2f) Emin=%.2f GeV; Emax=%.2f GeV\n", n, frc, 10**mine, 10**maxe);}' > "00${i}.prt"
-    done
-    echo
+	echo "Primary analysis ..."
+	primaries.sh -w ${wdir} -r ${arti_path} -m ${prims}
+fi
+
+# final remarks
+if [ $pass -gt 0 ]; then
+	mv $PWD/$prj* $wdir/
 fi
 rm $prj.run
 rm *.log
