@@ -59,21 +59,29 @@ showhelp() {
   echo 
   echo -e "USAGE $0:"
   echo
-  echo -e "  -w <working dir>               : Working directory, where bin (run) files are located"
-  echo -e "  -p <project name>              : Project name (suggested format: NAMEXX)"
-  echo -e "  -t <flux time>                 : Flux time (in seconds) for simulations"
-  echo -e "  -v <CORSIKA version>           : CORSIKA version"
-  echo -e "  -h <HE Int Model (EPOS|QGSII)> : Define the high interaction model to be used"
-  echo -e "  -u <user name>                 : User Name."
-  echo -e "  -s <site>                      : Location (several options)"
-  echo -e "  -j <procs>                     : Number of processors to use"
-  echo -e "  -y                             : Select volumetric detector mode (default=flat array)"
-  echo -e "  -e                             : Enable CHERENKOV mode"
-  echo -e "  -d                             : Enable DEBUG mode"
-  echo -e "  -a                             : Enable high energy cuts for secondaries"
-  echo -e "  -k <altitude, in cm>           : Fix altitude, even for predefined sites"
-  echo -e "  -x                             : Enable other defaults (It doesn't prompt user for unset parameters)"
-  echo -e "  -?                             : Shows this help and exit."
+  echo -e "  -w <working dir>                   : Working directory, where bin (run) files are located"
+  echo -e "  -p <project name>                  : Project name (suggested format: NAMEXX)"
+  echo -e "  -t <flux time>                     : Flux time (in seconds) for simulations"
+  echo -e "  -v <CORSIKA version>               : CORSIKA version"
+  echo -e "  -h <HE Int Model (EPOS|QGSII)>     : Define the high interaction model to be used"
+  echo -e "  -u <user name>                     : User Name."
+  echo -e "  -s <site>                          : Location (several options)"
+  echo -e "  -j <procs>                         : Number of processors to use"
+  echo -e "  -y                                 : Select volumetric detector mode (default=flat array)"
+  echo -e "  -e                                 : Enable CHERENKOV mode"
+  echo -e "  -d                                 : Enable DEBUG mode"
+  echo -e "  -a                                 : Enable high energy cuts for secondaries"
+  echo -e "  -k <altitude, in cm>               : Fix altitude, even for predefined sites"
+  echo -e "  -c <atm_model>                     : Fix Atmospheric Model even for predefined sites."
+  echo -e "  -b <rigidity cutoff>               : Rigidity cutoff; 0 = disabled; value in GV = enabled."
+  echo -e "  -m <Low edge zenith angle>         : Low edge of zenith angle."
+  echo -e "  -n <High edge zenith angle>        : High edge of zenith angle."
+  echo -e "  -r <Low primary particle energy>   : Lower limit of the primary particle energy."
+  echo -e "  -i <Upper primary particle energy> : Upper limit of the primary particle energy."
+  echo -e "  -o <BX>                            : Horizontal comp. of the Earth's mag. field."
+  echo -e "  -q <BZ>                            : Vertical comp. of the Earth's mag. field."
+  echo -e "  -x                                 : Enable other defaults (It doesn't prompt user for unset parameters)"
+  echo -e "  -?                                 : Shows this help and exit."
   echo
 }
 cta=false
@@ -85,9 +93,17 @@ vol=false
 alt=false
 altitude=0.
 procs=4
+atm_m=false
+rig=false
+lez=false
+hez=false
+lppe=false
+uppe=false
+BXcomp=false
+BZcomp=false
 defaults=false
 echo
-while getopts ':w:k:p:t:v:u:h:s:j:?aydex' opt; do
+while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?aydex' opt; do
   case $opt in
     w)
       wdir=$OPTARG
@@ -123,9 +139,49 @@ while getopts ':w:k:p:t:v:u:h:s:j:?aydex' opt; do
       sites=true
       echo -e "#  Site location                 = $site"
       ;;
-	j)
-	  procs=$OPTARG
+    j)
+      procs=$OPTARG
       echo -e "#  Number of processors          = $procs"
+      ;;
+    c)
+      atm_m=true
+      atm_model=$OPTARG
+      echo -e "#  Atmospheric Model             = $atm_model"
+      ;;
+    b)
+      rig=true
+      rigididy=$OPTARG
+      echo -e "#  Rigidity cutoff               = $rigididy"
+      ;;
+    m)
+      lez=true
+      lowez=$OPTARG
+      echo -e "#  Low edge of zenith angle      = $lowez"
+      ;;
+    n)
+      hez=true
+      highez=$OPTARG
+      echo -e "#  High edge of zenith angle     = $highez"
+      ;;
+    r)
+      lppe=true
+      lowppe=$OPTARG
+      echo -e "#  Low primary particle energy   = $lowppe"
+      ;;
+    i)
+      uppe=true
+      upperppe=$OPTARG
+      echo -e "#  High primary particle energy  = $upperppe"
+      ;;
+    o)
+      BXcomp=true
+      BX=$OPTARG
+      echo -e "#  Horizontal gepmagnetic field  = $BX"
+      ;;
+    q)
+      BZcomp=true
+      BZ=$OPTARG
+      echo -e "#  Vertical geomagnetic field    = $BZ"
       ;;
     e)
       cta=true
@@ -178,13 +234,53 @@ if [ "X$procs" == "X0" ]; then
 fi
 
 if [ "X$ver" == "X" ]; then
-  ver="75600"
+  ver="77402"
   echo -e "#  WARNING: CORSIKA version was not provided. Using default: $ver"
 fi
 
 if [ "X$hig" == "X" ]; then
   hig="QGSII"
   echo -e "#  WARNING: High energy interaction model was not provided. Using default: $hig"
+fi
+
+if [ "X$atm_model" == "X" ]; then
+  atm_model="E1"
+  echo -e "#  WARNING: Atmospheric Model was not provided. Using default: $atm_model"
+fi
+
+if [ "X$rigididy" == "X" ]; then
+  rigididy="0"
+  echo -e "#  WARNING: Rigidity cutoff was not provided. Using default (disabled): $rigididy"
+fi
+
+if [ "X$lowez" == "X" ]; then
+  lowez="10"
+  echo -e "#  WARNING: Low edge of zenith angle was not provided. Using default: $lowez"
+fi
+
+if [ "X$highez" == "X" ]; then
+  highez="80"
+  echo -e "#  WARNING: High edge of zenith angle was not provided. Using default: $highez"
+fi
+
+if [ "X$lowppe" == "X" ]; then
+  lowppe="1e3"
+  echo -e "#  WARNING: Low primary particle energy was not provided. Using default: $lowppe"
+fi
+
+if [ "X$upperppe" == "X" ]; then
+  upperppe="1e4"
+  echo -e "#  WARNING: Low primary particle energy was not provided. Using default: $upperppe"
+fi
+
+if [ "X$BX" == "X" ]; then
+  BX="12.5"
+  echo -e "#  WARNING: Horizontal comp. Earth's mag. field was not provided. Using default: $BX"
+fi
+
+if [ "X$BZ" == "X" ]; then
+  BZ="25.5"
+  echo -e "#  WARNING: Vertical comp. Earth's mag. field was not provided. Using default: $BZ"
 fi
 
 if $debug; then
@@ -242,6 +338,30 @@ if $vol; then
 fi
 if $alt; then
   options=${options}"-k $altitude "
+fi
+if $atm_m; then
+  options=${options}"-c $atm_model "
+fi
+if $rig; then
+  options=${options}"-b $rigididy "
+fi
+if $lez; then
+  options=${options}"-m $lowez "
+fi
+if $hez; then
+  options=${options}"-n $highez "
+fi
+if $lppe; then
+  options=${options}"-r $lowppe "
+fi
+if $uppe; then
+  options=${options}"-r $upperppe "
+fi
+if $BXcomp; then
+  options=${options}"-o $BX "
+fi
+if $BZcomp; then
+  options=${options}"-q $BZ "
 fi
 if $defaults; then
   options=${options}"-x "

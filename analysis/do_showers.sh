@@ -197,11 +197,10 @@ fi
 
 cmd+=" $prj"
 
-pass=1
-if [ "X$PWD" == "X$wdir" ]; then
-	pass=0
-else
-	echo; echo -e "#  WARNING: Not running where DAT files are located. At the end will move all files to $wdir"
+ldir=$PWD
+if [ ! "X$ldir" == "X$wdir" ]; then
+	echo; echo -e "#  WARNING: Not running where DAT files are located. Changing local directory to $wdir"
+	cd $wdir
 fi
 
 ## finally...
@@ -220,7 +219,7 @@ echo -e "#  Parallel mode (remote)        = $parallel"
 
 # primaries
 for i in ${wdir}/DAT??????.bz2; do
-	j=${i/.bz2/}
+	j=$(basename $i .bz2)
  	u=${j/DAT/}
  	run="bzip2 -d -k $i; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm ${j}"
 	echo $run >> $prj.run
@@ -247,13 +246,15 @@ else
 		eval ${line} &>> $nr.log
 	done < $prj.run
 fi
-echo "Wait for parallel execution termination..."
-while true; do
-	f=$(find . -iname 'DAT??????' | wc -l)
-	if [ $f -eq 0 ]; then
-		break
-	fi
-done
+if [ $loc -gt 0 ]; then
+	echo "Wait for parallel execution termination..."
+	while true; do
+		f=$(find . -iname 'DAT??????' | wc -l)
+		if [ $f -eq 0 ]; then
+			break
+		fi
+	done
+fi
 echo "Shower analysis ..."
 # showers
 bzcat ${wdir}/*.sec.bz2 | ${arti_path}/analysis/${cmd}
@@ -265,8 +266,6 @@ if [ $prims -gt 0 ]; then
 fi
 
 # final remarks
-if [ $pass -gt 0 ]; then
-	mv $PWD/$prj* $wdir/
-fi
+cd $ldir
 rm $prj.run
 rm *.log
