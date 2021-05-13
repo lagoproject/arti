@@ -575,12 +575,19 @@ for ($i=0; $i<$nofruns; $i++) {
 # using external atmospheres bernlhor
     $atmcrd = "ATMOSPHERE";
     $modatm =~ s/E//g;
-             $modatm .= " Y";
+	$modatm .= " Y";
+  } else {
+	if (uc(substr($modatm,0,4)) eq "GDAS") {
+	# gdas model
+		$atmcrd = "ATMFILE";
+		$modatm = "'" . lc($modatm) . "'";
+	}
   }
 
 #LAGO ECUTS
 # @ecuts=(0.05,0.05,1E-4,1E-4);
-  @ecuts=(0.05, 0.05, 0.00005, 0.00005);
+# @ecuts=(0.05, 0.05, 0.00005, 0.00005);
+  @ecuts=(0.05, 0.01, 0.00005, 0.00005);
   if ($highsec) {
     @ecuts=(10., 10., 10., 10.); # using 10 GeV
 	# if you want to use your own cuts, please add a site and use an if like
@@ -624,6 +631,8 @@ for ($i=0; $i<$nofruns; $i++) {
   $cards="";
   $plotshs="";
   $direct2 = $direct;
+  $llongi = "F";
+  $datbas = "F";
   if ($grid) {
     $direct2 = "."
   }
@@ -671,7 +680,7 @@ ECUTS         $ecuts[0] $ecuts[1] $ecuts[2] $ecuts[3]
 
 $muadditxt
 MUMULT        T
-MAXPRT        0
+MAXPRT        1
 ELMFLG        F   T
 LONGI         $llongi 20.  T  T
 ECTMAP        1.E3
@@ -689,7 +698,7 @@ EXIT
 ";
   }
   else {
-    $cards="RUNNR       $runnr
+	$cards="RUNNR       $runnr
 EVTNR       $evtnr
 NSHOW       $nshow
 
@@ -712,10 +721,10 @@ ECUTS       $ecuts[0] $ecuts[1] $ecuts[2] $ecuts[3]
 $curvout
 $muadditxt
 MUMULT      T
-MAXPRT      0
+MAXPRT      1
 ELMFLG      F   T
 LONGI       $llongi  10.  T  T
-ECTMAP      1.E3
+ECTMAP      1.E11
 
 $plotshs
 DIRECT      $direct2/

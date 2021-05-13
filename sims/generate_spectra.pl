@@ -488,7 +488,7 @@ if ($ifixalt && $fixalt) {
 if ($ifixmodatm && $fixmodatm) {
   $modatm=$fixmodatm;
 }
-$modatm=uc($modatm);
+# $modatm=uc($modatm);
 # just in case :)
 
 ######################################################
@@ -583,7 +583,7 @@ $bx
 $bz
 F
 F
-T
+F
 F
 F", $id, $llimit, $ulimit);
   close($fi);
@@ -611,4 +611,4 @@ foreach $z (sort {$b <=> $a} keys %spc) {
 }
 close($fh);
 print"\n";
-system ("clear; echo 'Fluxes'; cat $file");
+system ("echo; echo; echo 'Fluxes'; cat $file");
