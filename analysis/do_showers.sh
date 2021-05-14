@@ -137,20 +137,20 @@ done
 ##################################################
 
 # ERRORS
-file=$wdir/DAT000703.bz2
-if [ ! -f "$file" ]; then
-  echo; echo -e "#  ERROR: DAT files not found in $wdir. Please check and try again"
-  echo
-  showhelp
-  exit 1
-fi
-
 file=$arti_path/analysis/analysis
 if [ ! -f "$file" ]; then
   echo; echo -e "#  ERROR: ARTI analysis executable files not found in $arti_path. Please check and try again"
   echo
   showhelp
   exit 1;
+fi
+
+file=$(ls -1 $wdir/DAT??????.bz2 | wc -l)
+if [ ! $file -gt 0 ]; then
+  echo; echo -e "#  ERROR: DAT files not found in $wdir. Please check and try again"
+  echo
+  showhelp
+  exit 1
 fi
 
 if [ ${altitude} -eq 0 ]; then
@@ -199,8 +199,16 @@ cmd+=" $prj"
 
 ldir=$PWD
 if [ ! "X$ldir" == "X$wdir" ]; then
-	echo; echo -e "#  WARNING: Not running where DAT files are located. Changing local directory to $wdir"
+	echo; echo -e "#  WARNING: Not running where DAT files are located. Changing local directory to"
+	echo -e "#           $wdir"
 	cd $wdir
+fi
+
+if [ $loc -gt 0 ]; then 
+	if [ $N -gt $file ]; then
+		echo; echo -e "#  WARNING: You don't have enough files to analyze in local parallel model (at least $N). Turning off parallel mode."
+		loc=0
+	fi
 fi
 
 ## finally...
@@ -266,6 +274,6 @@ if [ $prims -gt 0 ]; then
 fi
 
 # final remarks
-cd $ldir
 rm $prj.run
 rm *.log
+cd $ldir

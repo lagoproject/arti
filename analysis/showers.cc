@@ -71,7 +71,7 @@ double r_earth=637131500.;
 double GeV2keV=1.0e6;
 double maxPInGeV = 1.0e7; //10^16 eV is the upper limit for p particles (not expected)
 double cm2m=0.01;
-double maxDInM = 6e4; // 60 km should be enough 
+double maxDInM = 5e4; // 50 km should be enough 
 int cGeoCdef=3;
 int cGeoC = cGeoCdef; // column from geomagnetic cutoff file
 
@@ -146,6 +146,14 @@ inline double distance(double r1, double r2, double r3) {
 inline double log10(double x) {
   return (log(x)/log(10.));
 }
+
+inline double ring(double r1, double r2) {
+	if (r2 > r1) 
+		return M_PI*(r2*r2 - r1*r1);
+	else
+		return M_PI*(r1*r1 - r2*r2);
+}
+
 
 int main (int argc, char *argv[]) {
 
@@ -567,8 +575,6 @@ int main (int argc, char *argv[]) {
           ld = log10(distance(x, y, (z-hInM)));
           if (ld < 0.)
             ld = 0.;
-//          cout 
-//            << distance(x, y, (z-hInM)) << endl;
           ilogd=int(ld*resdist);
           if (ilogd > nlogd) {
             ilogd=nlogd;
@@ -597,9 +603,10 @@ int main (int argc, char *argv[]) {
     if (igeo)
       fprintf(stderr,"Including geomagnetic effects, %ld secondaries from %ld showers were discarded.\n", geoDisSec, geoDisShw);
 
-  double p=0.,r=0;
+  double p = 0., r = 0., r1 = 0., rarea = 0.;
+  
   double norm=area*fluxTime;
-
+  // energy 
   if (ianalysis) {
     for (int i=minbine; i<=maxbine; i++) {
       p=pow(10., (i/resolution))/GeV2keV;
@@ -637,18 +644,22 @@ int main (int argc, char *argv[]) {
     fprintf(hst, "# Totals: EM:MU:NE:HD= %ld:%ld:%ld:%ld\n", (nid[0]+nid[1]+nid[2]), (nid[3]+nid[4]), (nid[8]), (nid[5]+nid[6]+nid[7]+nid[9]+nid[10]+nid[11]));
     fprintf(hst, "# Ratios: EM:MU:NE:HD= %02.3f:%02.3f:%02.3f:%02.3f\n", (nid[0]+nid[1]+nid[2])/tot, (nid[3]+nid[4])/tot, (nid[8])/tot, (nid[5]+nid[6]+nid[7]+nid[9]+nid[10]+nid[11])/tot);
   }
+  // warning, normalization depends also on distance due to the ring area...
   if (idistance) {
     for (int i=minbind; i<=maxbind; i++) {
       r=pow(10., (i/resdist));
+      r1=pow(10., ((i+1)/resdist));
+	  rarea = norm * ring(r1, r);
+	  // cerr << i << " " << r << " " << r1 << " " << rarea << endl;
       fprintf(dst, "%.6e ", r);
       for (int j=0; j<nbin; j++) {
         if (inorm)
-          fprintf(dst, "%.7e ", histod[i][j]/norm);
+          fprintf(dst, "%.7e ", histod[i][j]/rarea);
         else
           fprintf(dst, "%ld ", histod[i][j]);
       }
       if (inorm)
-        fprintf(dst, "%.7e\n", nld[i]/norm);
+        fprintf(dst, "%.7e\n", nld[i]/rarea);
       else
         fprintf(dst, "%ld\n", nld[i]);
     }
@@ -659,7 +670,7 @@ int main (int argc, char *argv[]) {
     if (inorm) {
       fprintf(dst, "#TOT_NORM: ");
       for (int j=0; j<nbin; j++) 
-        fprintf(dst, "%.7e ", nid[j]/norm);
+        fprintf(dst, "%.7e ", nid[j]/rarea);
       fprintf(dst, "\n");
     }
     double tot = totbin * 1.0;
@@ -669,7 +680,7 @@ int main (int argc, char *argv[]) {
     fprintf(dst, "\n");
     fprintf(dst, "# Total number of binned particles: %ld", totbin);
     if (inorm) 
-      fprintf(dst, " (corresponding to $%.2f$\\,particles\\, m$^{-2}$\\,s$^{-1}$.)", tot/norm);
+      fprintf(dst, " (corresponding to $%.2f$\\,particles\\,s$^{-1}$, distributed in a total area of %.0f\\,m$^{-2}$)", tot/norm, ring(r, 0.));
     fprintf(dst, "\n");
     fprintf(dst, "# Totals: EM:MU:NE:HD= %ld:%ld:%ld:%ld\n", (nid[0]+nid[1]+nid[2]), (nid[3]+nid[4]), (nid[8]), (nid[5]+nid[6]+nid[7]+nid[9]+nid[10]+nid[11]));
     fprintf(dst, "# Ratios: EM:MU:NE:HD= %02.3f:%02.3f:%02.3f:%02.3f\n", (nid[0]+nid[1]+nid[2])/tot, (nid[3]+nid[4])/tot, (nid[8])/tot, (nid[5]+nid[6]+nid[7]+nid[9]+nid[10]+nid[11])/tot);
@@ -686,7 +697,7 @@ int main (int argc, char *argv[]) {
   }
   if (idistance) {
     if (maxDerr)
-      fprintf(dst, "# # WARNING: %ld particles (%.1f%%) overpass max distance bin (located at last bin)\n", maxDerr, (100.*maxDerr)/totpart);
+      fprintf(dst, "# # WARNING: %ld particles (%.1f%%) overpass max distance bin (%d km), and were added to last bin.\n", maxDerr, (100.*maxDerr)/totpart, int(maxDInM/1000.));
     fprintf(dst, "# # Selected particles: %ld (binned, %ld), showers: %ld, lines: %ld\n", totpart, totbin, shower_id, lines);
     fclose(dst);
   }
