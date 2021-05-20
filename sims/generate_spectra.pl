@@ -528,18 +528,18 @@ unless ($ifixmodatm) {
 unless ($ifixalt) {
     while (!$altitude) {
         $altitude = get("Observation level above sea level [cm]",0,"OBSLEV", $altitude);
-        if (!$altitude) { print STDERR "ERROR: Observation level is mandatory > 0\n"; }
+		if (!$altitude) { die "ERROR: Observation level is mandatory > 0\n"; }
       }
 }
 
 while (!$bx) {
     $bx=get("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM",0,"BX", $bx);
-    if (!$bx) { print STDERR "ERROR: BX is mandatory\n"; }
+	if (!$bx) { die "ERROR: BX is mandatory\n"; }
 }
 
 while (!$bz) {
     $bz=get("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]",0,"BZ", $bz);
-    if (!$bz) { print STDERR "ERROR: BZ is mandatory\n"; }
+	if (!$bz) { die "ERROR: BZ is mandatory\n"; }
 }
 
 if ($ifixalt && $fixalt) {
