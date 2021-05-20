@@ -265,6 +265,7 @@ if [ $loc -gt 0 ]; then
 fi
 echo "Shower analysis ..."
 # showers
+echo "Showers: $cmd"
 bzcat ${wdir}/*.sec.bz2 | ${arti_path}/analysis/${cmd}
 
 # primaries histograms
