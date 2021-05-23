@@ -51,7 +51,7 @@
 # */
 # /************************************************************************/
 #
-$VERSION="v1r1";
+$VERSION="v1r2";
 
 # defaults
 use Switch;
@@ -459,6 +459,66 @@ switch ($site) {
       $bx=20.06;
       $bz=-9.616;
   }
+  case "cop" {
+      $modatm="E2";
+      $altitude=200000;
+      $bx=19.04;
+      $bz=-15.493;
+  }
+  case "sgd" {
+      $modatm="E2";
+      $altitude=25000;
+      $bx=18.108;
+      $bz=-16.891;
+  }
+  case "casp" {
+      $modatm="E2";
+      $altitude=260000;
+      $bx=19.473;
+      $bz=-12.436;
+  }
+  case "ppet" {
+      $modatm="E2";
+      $altitude=350000;
+      $bx=19.139;
+      $bz=-14.27;
+  }
+  case "mad" {
+      $modatm="E2";
+      $altitude=70000;
+      $bx=25.647;
+      $bz=36.933;
+  }
+  case "truj" {
+      $modatm="E2";
+      $altitude=56000;
+      $bx=26.223;
+      $bz=35.844;
+  }
+  case "pozn" {
+      $modatm="E2";
+      $altitude=10000;
+      $bx=18.598;
+      $bz=46.45;
+  }
+  case "juli" {
+      $modatm="E2";
+      $altitude=10000;
+      $bx=19.676;
+      $bz=44.928;
+  }
+  case "sudb" {
+      $modatm="E2";
+      $altitude=210000;
+      $bx=17.037;
+      $bz=51.991;
+  }
+  case "viri" {
+      $modatm="E2";
+      $altitude=285000;
+      $bx=19.061;
+      $bz=-16.289;
+  }
 }#switch
   
 unless ($ifixmodatm) {
@@ -468,18 +528,18 @@ unless ($ifixmodatm) {
 unless ($ifixalt) {
     while (!$altitude) {
         $altitude = get("Observation level above sea level [cm]",0,"OBSLEV", $altitude);
-        if (!$altitude) { print STDERR "ERROR: Observation level is mandatory > 0\n"; }
+		if (!$altitude) { die "ERROR: Observation level is mandatory > 0\n"; }
       }
 }
 
 while (!$bx) {
     $bx=get("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM",0,"BX", $bx);
-    if (!$bx) { print STDERR "ERROR: BX is mandatory\n"; }
+	if (!$bx) { die "ERROR: BX is mandatory\n"; }
 }
 
 while (!$bz) {
     $bz=get("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]",0,"BZ", $bz);
-    if (!$bz) { print STDERR "ERROR: BZ is mandatory\n"; }
+	if (!$bz) { die "ERROR: BZ is mandatory\n"; }
 }
 
 if ($ifixalt && $fixalt) {
