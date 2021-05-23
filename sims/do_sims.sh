@@ -254,23 +254,23 @@ if [ "X$rigididy" == "X" ]; then
 fi
 
 if [ "X$lowez" == "X" ]; then
-  lowez="10"
+  lowez="0"
   echo -e "#  WARNING: Low edge of zenith angle was not provided. Using default: $lowez"
 fi
 
 if [ "X$highez" == "X" ]; then
-  highez="80"
+  highez="90"
   echo -e "#  WARNING: High edge of zenith angle was not provided. Using default: $highez"
 fi
 
 if [ "X$lowppe" == "X" ]; then
-  lowppe="1e3"
-  echo -e "#  WARNING: Low primary particle energy was not provided. Using default: $lowppe"
+  lowppe="5e0"
+  echo -e "#  WARNING: Primary particle low energy limit was not provided. Using default: $lowppe"
 fi
 
 if [ "X$upperppe" == "X" ]; then
-  upperppe="1e4"
-  echo -e "#  WARNING: Low primary particle energy was not provided. Using default: $upperppe"
+  upperppe="1e6"
+  echo -e "#  WARNING: Primary particle high energy limit was not provided. Using default: $upperppe"
 fi
 
 if [ "X$BX" == "X" ]; then
@@ -355,7 +355,7 @@ if $lppe; then
   options=${options}"-r $lowppe "
 fi
 if $uppe; then
-  options=${options}"-r $upperppe "
+  options=${options}"-i $upperppe "
 fi
 if $BXcomp; then
   options=${options}"-o $BX "
