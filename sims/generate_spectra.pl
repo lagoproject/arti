@@ -519,6 +519,12 @@ switch ($site) {
       $bx=19.061;
       $bz=-16.289;
   }
+  case "ima" {
+      $modatm="E1";
+      $altitude=460000;
+      $bx=22.969;
+      $bz=-3.79;
+  }
 }#switch
   
 unless ($ifixmodatm) {
