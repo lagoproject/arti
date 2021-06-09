@@ -102,6 +102,8 @@ uppe=false
 BXcomp=false
 BZcomp=false
 defaults=false
+ecut=800
+
 echo
 while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?aydex' opt; do
   case $opt in
@@ -264,8 +266,8 @@ if [ "X$highez" == "X" ]; then
 fi
 
 if [ "X$lowppe" == "X" ]; then
-  lowppe="5e0"
-  echo -e "#  WARNING: Primary particle low energy limit was not provided. Using default: $lowppe"
+  lowppe="5"
+  lppe=true
 fi
 
 if [ "X$upperppe" == "X" ]; then
@@ -302,7 +304,12 @@ if $cta; then
 fi
 
 if $highsec; then
-  echo -e "#  WARNING: High energy cuts for secondaries will be used."
+	echo -e "#  WARNING: High energy cuts of $ecut GeV for secondaries will be used."
+	if [ $lowppe -lt $ecut ]; then
+			lowppe="$ecut"
+			lppe=true
+			echo -e "#  WARNING: Primary particle low energy limit is below energy cuts for secondaries. Changing to: $lowppe"
+	fi
 fi
 
 corsika_bin="corsika${ver}Linux_${hig}_gheisha"

@@ -81,6 +81,7 @@ $cherenkov = 0;
 $grid = 0;
 $imuaddi = 0;
 $nofruns = 1;
+$ecutshe = 800.;
 
 sub get {
   my $question = $_[0];
@@ -589,13 +590,11 @@ for ($i=0; $i<$nofruns; $i++) {
 # @ecuts=(0.05, 0.05, 0.00005, 0.00005);
   @ecuts=(0.05, 0.01, 0.00005, 0.00005);
   if ($highsec) {
-    @ecuts=(10., 10., 10., 10.); # using 10 GeV
-	# if you want to use your own cuts, please add a site and use an if like
-	# the one show below for andes:
-    if ($site eq "and") {
-      @ecuts=(800.,800.,800.,800.); # ecuts for ANDES
-    }
-  }
+    @ecuts=($ecutshe, $ecutshe, $ecutshe, $ecutshe); 
+	if ($elow < $ecutshe) {
+		$elow = $ecutshe;
+	}
+}
 
 #true of false
   unless ($batch) {
