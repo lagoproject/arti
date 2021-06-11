@@ -52,9 +52,6 @@
 # /************************************************************************/
 # 
 
-VERSION="v1r0" # First release, mar 20 abr 2021 11:00:00 CEST
-VERSION="v1r1" # parallel analysis, jue 29 abr 2021 12:52:12 CEST
-
 arti_path="${LAGO_ARTI}"
 odir=""
 wdir="${PWD}"
@@ -82,7 +79,7 @@ showhelp() {
 	echo
 	echo -e "  -o <origin directory>     : Origin dir, where the DAT files are located"
 	echo -e "  -r <ARTI directory>       : ARTI installation directory, generally pointed by \$LAGO_ARTI (default)"
-	echo -e "  -w <workding directory>      : Working dir, where the analysis will be done (default is current directory, ${wdir})"
+	echo -e "  -w <workding directory>   : Working dir, where the analysis will be done (default is current directory, ${wdir})"
 	echo -e "  -r <ARTI directory>       : ARTI installation directory, generally pointed by \$LAGO_ARTI (default)"
 	echo -e "  -e <energy bins>          : Number of energy secondary bins (default: $energy_bins"
 	echo -e "  -d <distance bins>        : Number of distance secondary bins (default: $distance_bins"
@@ -213,6 +210,7 @@ fi
 
 if [ "X$prj" == "X" ]; then
 	prj=$(basename $odir)
+	prj=${prj/S0/S1}
 	echo; echo -e "#  WARNING: Project base name not provided. Using $prj"
 fi
 
@@ -260,7 +258,7 @@ for i in ${odir}/DAT??????.bz2; do
 	if [ $dirlw -gt 0 ]; then 
 		run="bzip2 -d -k $i; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm ${j}"
 	else
-		run="cp -a $i $wdir/; bzip2 -d $j.bz2; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm $wdir/${j}"
+		run="while ! cp -a $i $wdir/; do sleep 5; done; bzip2 -d $j.bz2; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm $wdir/${j}"
 	fi	
 	echo $run >> $prj.run
 done
@@ -309,5 +307,5 @@ if [ $prims -gt 0 ]; then
 fi
 
 # final remarks
-rm $prj.run
+# rm $prj.run
 rm *.log
