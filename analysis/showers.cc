@@ -65,13 +65,14 @@ using namespace std;
 int iverbose = 0, iforce = 0, ifilter = 0, icurve = 0, idistance=0, ianalysis=0, inorm = 0, igeo = 0; 
 int particle=0; 
 bool print=true;
-FILE *fi, *shw, *hst, *dst;
+FILE *fi, *shw, *hst, *dst, *dse;
 double x, y, z, h, hInM;
 double r_earth=637131500.;
 double GeV2keV=1.0e6;
+double kev2GeV=1.0e-6;
 double maxPInGeV = 1.0e7; //10^16 eV is the upper limit for p particles (not expected)
 double cm2m=0.01;
-double maxDInM = 6e4; // 60 km should be enough 
+double maxDInM = 5e4; // 50 km should be enough 
 int cGeoCdef=3;
 int cGeoC = cGeoCdef; // column from geomagnetic cutoff file
 
@@ -84,6 +85,49 @@ int masaI[masaN] = {1, 14, 402, 703, 904, 1105, 1206, 1407, 1608, 1909, 2010, 23
 
 double masas[masaN] = {0., 0.938272, 3.73338, 6.53478, 8.39429, 10.25361, 11.17879, 13.04507, 14.89833, 17.68991, 18.61736, 21.40802, 22.33628, 25.12634, 26.05532, 28.84497, 29.77460, 32.56398, 37.21075, 36.28343, 37.21424, 41.86053, 44.64837, 47.44020, 48.36813, 51.15981, 52.08852};
 
+double mass(int id) {
+// return mass in GeV for the Corsika id secondary
+    switch (id) {
+    //1=foton, 2=e+, 3=e-, 5=mu+, 6=mu-, 7=pi0, 8=pi+, 9=pi-, 13=n, 14=p, 15=bar-p, other
+        case 1:
+            return (0.); //photon
+            break;
+        case 2:
+        case 3:
+            return (511.*kev2GeV);
+            break;
+        case 5:
+        case 6:
+            return (0.10566);
+            break;
+        case 7:
+            return (0.13498);
+            break;
+        case 8:
+        case 9:
+            return (0.13957);
+            break;
+        case 13:
+        case 25:
+            return (0.93957);
+            break;
+        case 14:
+        case 15:
+            return (0.938272);
+            break;
+        default:
+            if (id < 100)
+                return 1.;
+            else {
+              int idm = 0;
+              for (int i=0; i<masaN; i++)
+                if (masaI[i] == id)
+                    idm = i;
+              return masas[idm];
+            }
+        return 1; // just in case
+    }
+}
 
 int Open(char *nfi) {
   char tmpc[256];
@@ -111,8 +155,11 @@ void Usage(char *prog, int iverbose=0) {
   cout << "      -s <type>       : filter secondaries by type: 1: EM, 2: MU, 3: HD"<<endl;
   cout << "      -a <n>          : Energy distribution of secondaries per type, with <n> bins per decade."<<endl;
   cout << "      -d <n>          : Distance distribution of secondaries per type, with <n> bins per decade."<<endl;
+  cout << "                      : If normalization is also selected (-n) the distribution is weighted by the ring area."<<endl;
+  cout << "                      : In that case, produce also a new file (dse) with the energy density distribution at ground."<<endl;
   cout << "      -n <a> <t>      : Normalize energy distribution in particles/(m2 s bin), <a>=detector area (m2), <t> = flux time (s)." <<endl;
-  cout << "      -c <obs_lev in m>: Enable curved mode: x'y' will be converted to local coordinates xy"<<endl;
+  cout << "                      : Change distance distribution by normalizing by the increasing area of the ring (r, r+dr)." <<endl;
+  cout << "      -c <obs_lev (m)>: Enable curved mode: x'y' will be converted to local coordinates xy"<<endl;
   cout << "                        Observation level (<obs_lev>) should be given in m a.s.l." << endl;
   cout << "      -g <file> <col> : Include geomagentic effects. Read  rigidities from column <R> of <file>. Default R= " << cGeoCdef <<endl;
   cout << "                        3=R_U, 4=R_C 5=R_L"<<endl;
@@ -135,8 +182,14 @@ void curved(double xp, double yp) {
   y = d*sin(f)*cm2m;
 }
 
-inline double momemtum(double px, double py, double pz) {
+inline double momentum(double px, double py, double pz) {
   return (GeV2keV*sqrt(px*px+py*py+pz*pz));
+}
+
+inline double energy(double m, double pkeV) {
+// Energy in GeV for a particle of mass m and momentum m
+  double p = pkeV * kev2GeV; // Asuming pkeV comes from momentum function (in keV)
+  return (sqrt(m * m + p * p));
 }
 
 inline double distance(double r1, double r2, double r3) {
@@ -146,6 +199,14 @@ inline double distance(double r1, double r2, double r3) {
 inline double log10(double x) {
   return (log(x)/log(10.));
 }
+
+inline double ring(double r1, double r2) {
+	if (r2 > r1) 
+		return M_PI*(r2*r2 - r1*r1);
+	else
+		return M_PI*(r1*r1 - r2*r2);
+}
+
 
 int main (int argc, char *argv[]) {
 
@@ -312,8 +373,14 @@ int main (int argc, char *argv[]) {
       fprintf(stderr,"Failed to open dst (distance histogram) file. Abort.\n");
       exit(1);
     }
+    snprintf(nfi, 256, "%s.dse", ifile);
+    if (inorm) {
+        if ((dse = fopen(nfi,"w"))==NULL) {
+            fprintf(stderr,"Failed to open dse (distance energy histogram) file. Abort.\n");
+            exit(1);
+        }
+    }
   }
-
   fprintf(shw, "# # # shw\n");
   if (icurve)
     fprintf(shw, "# # CURVED mode is ENABLED and observation level is %.0lf m a.s.l.\n", hInM);
@@ -345,6 +412,7 @@ int main (int argc, char *argv[]) {
       //1=foton, 2=e+, 3=e-, 5=mu+, 6=mu-, 7=pi0, 8=pi+, 9=pi-, 13=n, 14=p, 15=bar-p, other
   }
   if (idistance) {
+    // DST
     fprintf(dst, "# # # dst\n");
     if (iforce)
       fprintf(dst, "# # # WARNING: force mode is enable. Analysis done in FLAT mode.\n");
@@ -353,12 +421,30 @@ int main (int argc, char *argv[]) {
     if (igeo)
       fprintf(dst, "# # Geomagnetic effects were included: %d values were read from file %s\n", iGeoN, nfg);
     fprintf(dst, "# # This is the Histogram of secondary distance file - ARTI     %s\n", VERSION);
-    fprintf(dst, "# # Logaritmic distance scale. Resolution used: %d bins per distance decade\n", int(resolution));
+    fprintf(dst, "# # Logarithmic distance scale. Resolution used: %d bins per distance decade\n", int(resolution));
     if (inorm)
-      fprintf(dst, "# # Number of particles are divided by detector area (%.4f m^2) and flux time (%.2f s)\n", area, fluxTime);
+      fprintf(dst, "# # Number of particles are divided by detector area (%.4f m^2), ring (r,r+dr) area and flux time (%.2f s).\n", area, fluxTime);
     fprintf(dst, "# # 14 column format is:\n");
     fprintf(dst, "# # distance_in_bin(m) N_phot N_e+ N_e- N_mu+ N_mu- N_pi0 N_pi+ N_pi- N_n N_p N_pbar N_others Total_per_bin\n");
       //1=foton, 2=e+, 3=e-, 5=mu+, 6=mu-, 7=pi0, 8=pi+, 9=pi-, 13=n, 14=p, 15=bar-p, other
+
+    // DSE
+    if (inorm) {
+        fprintf(dse, "# # # dse\n");
+        if (iforce)
+          fprintf(dse, "# # # WARNING: force mode is enable. Analysis done in FLAT mode.\n");
+        if (icurve)
+          fprintf(dse, "# # CURVED mode is ENABLED and observation level is %.0lf m a.s.l.\n", hInM);
+        if (igeo)
+          fprintf(dse, "# # Geomagnetic effects were included: %d values were read from file %s\n", iGeoN, nfg);
+        fprintf(dse, "# # This is the Histogram of secondary energy distance distribution file - ARTI     %s\n", VERSION);
+        fprintf(dse, "# # Logarithmic distance scale. Resolution used: %d bins per distance decade\n", int(resolution));
+        if (inorm)
+          fprintf(dse, "# # Total energy (in GeV) of particles at each bin are divided by detector area (%.4f m^2), ring area (r,r+dr) and flux time (%.2f s)\n", area, fluxTime);
+        fprintf(dse, "# # 14 column format is:\n");
+        fprintf(dse, "# # distance_in_bin(m) E_phot E_e+ E_e- E_mu+ E_mu- E_pi0 E_pi+ E_pi- E_n E_p E_pbar E_others Total_E_per_bin\n");
+          //1=foton, 2=e+, 3=e-, 5=mu+, 6=mu-, 7=pi0, 8=pi+, 9=pi-, 13=n, 14=p, 15=bar-p, other
+      }
   }
   if (iverbose) {
     fprintf (stderr, "Verbosity level set to: %d.\n", iverbose);
@@ -380,10 +466,13 @@ int main (int argc, char *argv[]) {
   nlogd = int(log10(maxDInM)*resdist);
   long int histod[nlogd][nbin];
   long int nld[nlogd];
+  double histode[nlogd][nbin];
+  double nlde[nlogd];
   long int maxDerr = 0, maxEerr = 0;
   int prmId, prmX, prmZ, prmA;
   double prmEn, prmTh, prmPh;
   double prmMa, prmIm;
+  double secp = 0.;
   bool prmGeo = true;
   long int geoDisShw = 0, geoDisSec = 0;
   long int totpart=0, totbin = 0;
@@ -396,13 +485,19 @@ int main (int argc, char *argv[]) {
     for (int j=0; j<nlogd; j++) {
       histod[j][i] = 0;
     }
+    for (int j=0; j<nlogd; j++) {
+        histode[j][i] = 0.;
+    }
+
     nid[i] = 0;
   }
   for (int j=0; j<nloge; j++)
     nle[j] = 0;
   for (int j=0; j<nlogd; j++)
     nld[j] = 0;
-   
+  for (int j=0; j<nlogd; j++)
+    nlde[j] = 0;
+
   long int lines = 0, ps = 0, shower_id = 0;
   while(fgets(line,250,fi)) {
     if (!(++lines % 10000))
@@ -450,6 +545,7 @@ int main (int argc, char *argv[]) {
             if (prmId==masaI[i])
               prmX = i;
           if (prmX < 0) {
+            fprintf(stderr, " Error: Can't find primary. PrmId: %04d. Please check. \nLine: %s\n", prmId, line);
             fprintf(stderr, " Error: Can't find primary. PrmId: %04d. Please check. \nLine: %s\n", prmId, line);
             exit(1);
           }
@@ -547,14 +643,15 @@ int main (int argc, char *argv[]) {
             ibin=11; //other hadrons
             break;
         }
+        secp = momentum(d[1], d[2], d[3]);
         if (ianalysis) {
-          lp = log10(momemtum(d[1], d[2], d[3]));
+          lp = log10(secp);
           iloge=int(lp*resolution);
           if (iloge > nloge) {
             iloge=nloge;
             maxEerr++;
             if (iverbose>1)
-              cerr << "Warning! Particle momemtum is " << momemtum(d[1], d[2], d[3]) << "which is bigger than " << maxPInGeV << " GeV. Should check. \nLine: " << line << endl;
+              cerr << "Warning! Particle momentum is " << secp << "which is bigger than " << maxPInGeV << " GeV. Should check. \nLine: " << line << endl;
           }
           if (iloge < minbine)
             minbine=iloge;
@@ -567,8 +664,6 @@ int main (int argc, char *argv[]) {
           ld = log10(distance(x, y, (z-hInM)));
           if (ld < 0.)
             ld = 0.;
-//          cout 
-//            << distance(x, y, (z-hInM)) << endl;
           ilogd=int(ld*resdist);
           if (ilogd > nlogd) {
             ilogd=nlogd;
@@ -582,6 +677,8 @@ int main (int argc, char *argv[]) {
             maxbind=ilogd;
           histod[ilogd][ibin]++;
           nld[ilogd]++;
+          histode[ilogd][ibin] += energy(mass(id), secp);
+          nlde[ilogd] += energy(mass(id), secp);
         }
         nid[ibin]++;
         totbin++;
@@ -597,9 +694,10 @@ int main (int argc, char *argv[]) {
     if (igeo)
       fprintf(stderr,"Including geomagnetic effects, %ld secondaries from %ld showers were discarded.\n", geoDisSec, geoDisShw);
 
-  double p=0.,r=0;
+  double p = 0., r = 0., r1 = 0., rarea = 0.;
+  
   double norm=area*fluxTime;
-
+  // energy 
   if (ianalysis) {
     for (int i=minbine; i<=maxbine; i++) {
       p=pow(10., (i/resolution))/GeV2keV;
@@ -637,18 +735,27 @@ int main (int argc, char *argv[]) {
     fprintf(hst, "# Totals: EM:MU:NE:HD= %ld:%ld:%ld:%ld\n", (nid[0]+nid[1]+nid[2]), (nid[3]+nid[4]), (nid[8]), (nid[5]+nid[6]+nid[7]+nid[9]+nid[10]+nid[11]));
     fprintf(hst, "# Ratios: EM:MU:NE:HD= %02.3f:%02.3f:%02.3f:%02.3f\n", (nid[0]+nid[1]+nid[2])/tot, (nid[3]+nid[4])/tot, (nid[8])/tot, (nid[5]+nid[6]+nid[7]+nid[9]+nid[10]+nid[11])/tot);
   }
+  // warning, normalization depends also on distance due to the ring area...
   if (idistance) {
     for (int i=minbind; i<=maxbind; i++) {
       r=pow(10., (i/resdist));
+      r1=pow(10., ((i+1)/resdist));
+	  rarea = norm * ring(r1, r);
       fprintf(dst, "%.6e ", r);
+      if (inorm)
+        fprintf(dse, "%.6e ", r);
       for (int j=0; j<nbin; j++) {
-        if (inorm)
-          fprintf(dst, "%.7e ", histod[i][j]/norm);
+        if (inorm) {
+          fprintf(dst, "%.7e ", histod[i][j]/rarea);
+          fprintf(dse, "%.7e ", histode[i][j]/rarea);
+        }
         else
           fprintf(dst, "%ld ", histod[i][j]);
       }
-      if (inorm)
-        fprintf(dst, "%.7e\n", nld[i]/norm);
+      if (inorm) {
+        fprintf(dst, "%.7e\n", nld[i]/rarea);
+        fprintf(dse, "%.7e\n", nlde[i]/rarea);
+      }
       else
         fprintf(dst, "%ld\n", nld[i]);
     }
@@ -659,7 +766,7 @@ int main (int argc, char *argv[]) {
     if (inorm) {
       fprintf(dst, "#TOT_NORM: ");
       for (int j=0; j<nbin; j++) 
-        fprintf(dst, "%.7e ", nid[j]/norm);
+        fprintf(dst, "%.7e ", nid[j]/rarea);
       fprintf(dst, "\n");
     }
     double tot = totbin * 1.0;
@@ -669,7 +776,7 @@ int main (int argc, char *argv[]) {
     fprintf(dst, "\n");
     fprintf(dst, "# Total number of binned particles: %ld", totbin);
     if (inorm) 
-      fprintf(dst, " (corresponding to $%.2f$\\,particles\\, m$^{-2}$\\,s$^{-1}$.)", tot/norm);
+      fprintf(dst, " (corresponding to $%.2f$\\,particles\\,s$^{-1}$, distributed in a total area of %.0f\\,m$^{-2}$)", tot/norm, ring(r, 0.));
     fprintf(dst, "\n");
     fprintf(dst, "# Totals: EM:MU:NE:HD= %ld:%ld:%ld:%ld\n", (nid[0]+nid[1]+nid[2]), (nid[3]+nid[4]), (nid[8]), (nid[5]+nid[6]+nid[7]+nid[9]+nid[10]+nid[11]));
     fprintf(dst, "# Ratios: EM:MU:NE:HD= %02.3f:%02.3f:%02.3f:%02.3f\n", (nid[0]+nid[1]+nid[2])/tot, (nid[3]+nid[4])/tot, (nid[8])/tot, (nid[5]+nid[6]+nid[7]+nid[9]+nid[10]+nid[11])/tot);
@@ -686,8 +793,9 @@ int main (int argc, char *argv[]) {
   }
   if (idistance) {
     if (maxDerr)
-      fprintf(dst, "# # WARNING: %ld particles (%.1f%%) overpass max distance bin (located at last bin)\n", maxDerr, (100.*maxDerr)/totpart);
+      fprintf(dst, "# # WARNING: %ld particles (%.1f%%) overpass max distance bin (%d km), and were added to last bin.\n", maxDerr, (100.*maxDerr)/totpart, int(maxDInM/1000.));
     fprintf(dst, "# # Selected particles: %ld (binned, %ld), showers: %ld, lines: %ld\n", totpart, totbin, shower_id, lines);
     fclose(dst);
+    fclose(dse);
   }
 }
