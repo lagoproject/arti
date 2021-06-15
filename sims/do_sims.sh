@@ -59,29 +59,29 @@ showhelp() {
   echo 
   echo -e "USAGE $0:"
   echo
-  echo -e "  -w <working dir>               : Working directory, where bin (run) files are located"
-  echo -e "  -p <project name>              : Project name (suggested format: NAMEXX)"
-  echo -e "  -t <flux time>                 : Flux time (in seconds) for simulations"
-  echo -e "  -v <CORSIKA version>           : CORSIKA version"
-  echo -e "  -h <HE Int Model (EPOS|QGSII)> : Define the high interaction model to be used"
-  echo -e "  -u <user name>                 : User Name."
-  echo -e "  -s <site>                      : Location (several options)"
-  echo -e "  -j <procs>                     : Number of processors to use"
-  echo -e "  -y                             : Select volumetric detector mode (default=flat array)"
-  echo -e "  -e                             : Enable CHERENKOV mode"
-  echo -e "  -d                             : Enable DEBUG mode"
-  echo -e "  -a                             : Enable high energy cuts for secondaries"
-  echo -e "  -k <altitude, in cm>           : Fix altitude, even for predefined sites"
-  echo -e "  -c <modatm>                 : Fix Atmospheric Model even for predefined sites."
-  echo -e "  -b <rigidity cutoff>           : Rigidity cutoff; 0 = disabled; value in GV = enabled."
-  echo -e "  -m <tMin>                            : Low edge of zenith angle."
-  echo -e "  -n <tMax>                            : High edge of zenith angle."
-  echo -e "  -r  <llimit>                           : Lower limit of the primary particle energy."
-  echo -e "  -i  <ulimit>                           : Upper limit of the primary particle energy."
-  echo -e "  -o <BX>                        : Horizontal comp. of the Earth's mag. field."
-  echo -e "  -q <BZ>                        : Vertical comp. of the Earth's mag. field."
-  echo -e "  -x                             : Enable other defaults (It doesn't prompt user for unset parameters)"
-  echo -e "  -?                             : Shows this help and exit."
+  echo -e "  -w <working dir>                   : Working directory, where bin (run) files are located"
+  echo -e "  -p <project name>                  : Project name (suggested format: NAMEXX)"
+  echo -e "  -t <flux time>                     : Flux time (in seconds) for simulations"
+  echo -e "  -v <CORSIKA version>               : CORSIKA version"
+  echo -e "  -h <HE Int Model (EPOS|QGSII)>     : Define the high interaction model to be used"
+  echo -e "  -u <user name>                     : User Name."
+  echo -e "  -s <site>                          : Location (several options)"
+  echo -e "  -j <procs>                         : Number of processors to use"
+  echo -e "  -y                                 : Select volumetric detector mode (default=flat array)"
+  echo -e "  -e                                 : Enable CHERENKOV mode"
+  echo -e "  -d                                 : Enable DEBUG mode"
+  echo -e "  -a                                 : Enable high energy cuts for secondaries"
+  echo -e "  -k <altitude, in cm>               : Fix altitude, even for predefined sites"
+  echo -e "  -c <atm_model>                     : Fix Atmospheric Model even for predefined sites."
+  echo -e "  -b <rigidity cutoff>               : Rigidity cutoff; 0 = disabled; value in GV = enabled."
+  echo -e "  -m <Low edge zenith angle>         : Low edge of zenith angle."
+  echo -e "  -n <High edge zenith angle>        : High edge of zenith angle."
+  echo -e "  -r <Low primary particle energy>   : Lower limit of the primary particle energy."
+  echo -e "  -i <Upper primary particle energy> : Upper limit of the primary particle energy."
+  echo -e "  -o <BX>                            : Horizontal comp. of the Earth's mag. field."
+  echo -e "  -q <BZ>                            : Vertical comp. of the Earth's mag. field."
+  echo -e "  -x                                 : Enable other defaults (It doesn't prompt user for unset parameters)"
+  echo -e "  -?                                 : Shows this help and exit."
   echo
 }
 cta=false
@@ -102,6 +102,8 @@ uppe=false
 BXcomp=false
 BZcomp=false
 defaults=false
+ecut=800
+
 echo
 while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?aydex' opt; do
   case $opt in
@@ -145,43 +147,43 @@ while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?aydex' opt; do
       ;;
     c)
       atm_m=true
-      modatm=$OPTARG
-      echo -e "#  <modatm>                   = $modatm"
+      atm_model=$OPTARG
+      echo -e "#  Atmospheric Model             = $atm_model"
       ;;
     b)
       rig=true
       rigididy=$OPTARG
-      echo -e "#  <rigidity cutoff>                   = $rigididy"
+      echo -e "#  Rigidity cutoff               = $rigididy"
       ;;
     m)
       lez=true
-      tMin=$OPTARG
-      echo -e "#  <Low edge of zenith angle>                   = $tMin"
+      lowez=$OPTARG
+      echo -e "#  Low edge of zenith angle      = $lowez"
       ;;
     n)
       hez=true
-      tMax=$OPTARG
-      echo -e "#  <High edge of zenith angle>                   = $tMax"
+      highez=$OPTARG
+      echo -e "#  High edge of zenith angle     = $highez"
       ;;
     r)
       lppe=true
-      llimit=$OPTARG
-      echo -e "#  <Low primary particle energy>                   = $llimit"
+      lowppe=$OPTARG
+      echo -e "#  Low primary particle energy   = $lowppe"
       ;;
     i)
       uppe=true
-      ulimit=$OPTARG
-      echo -e "#  <High primary particle energy>                   = $ulimit"
+      upperppe=$OPTARG
+      echo -e "#  High primary particle energy  = $upperppe"
       ;;
     o)
       BXcomp=true
       BX=$OPTARG
-      echo -e "#  <Horizontal comp. Earth's mag. field>                   = $BX"
+      echo -e "#  Horizontal gepmagnetic field  = $BX"
       ;;
     q)
       BZcomp=true
       BZ=$OPTARG
-      echo -e "#  <Vertical comp. Earth's mag. field>                   = $BZ"
+      echo -e "#  Vertical geomagnetic field    = $BZ"
       ;;
     e)
       cta=true
@@ -234,7 +236,7 @@ if [ "X$procs" == "X0" ]; then
 fi
 
 if [ "X$ver" == "X" ]; then
-  ver="75600"
+  ver="77402"
   echo -e "#  WARNING: CORSIKA version was not provided. Using default: $ver"
 fi
 
@@ -253,24 +255,24 @@ if [ "X$rigididy" == "X" ]; then
   echo -e "#  WARNING: Rigidity cutoff was not provided. Using default (disabled): $rigididy"
 fi
 
-if [ "X$tMin" == "X" ]; then
-  tMin="10"
-  echo -e "#  WARNING: Low edge of zenith angle was not provided. Using default: $tMin"
+if [ "X$lowez" == "X" ]; then
+  lowez="0"
+  echo -e "#  WARNING: Low edge of zenith angle was not provided. Using default: $lowez"
 fi
 
-if [ "X$tMax" == "X" ]; then
-  tMax="80"
-  echo -e "#  WARNING: High edge of zenith angle was not provided. Using default: $tMax"
+if [ "X$highez" == "X" ]; then
+  highez="90"
+  echo -e "#  WARNING: High edge of zenith angle was not provided. Using default: $highez"
 fi
 
-if [ "X$llimit" == "X" ]; then
-  llimit="1e3"
-  echo -e "#  WARNING: Low primary particle energy was not provided. Using default: $llimit"
+if [ "X$lowppe" == "X" ]; then
+  lowppe="5"
+  lppe=true
 fi
 
-if [ "X$ulimit" == "X" ]; then
-  ulimit="1e4"
-  echo -e "#  WARNING: Low primary particle energy was not provided. Using default: $ulimit"
+if [ "X$upperppe" == "X" ]; then
+  upperppe="1e6"
+  echo -e "#  WARNING: Primary particle high energy limit was not provided. Using default: $upperppe"
 fi
 
 if [ "X$BX" == "X" ]; then
@@ -302,7 +304,12 @@ if $cta; then
 fi
 
 if $highsec; then
-  echo -e "#  WARNING: High energy cuts for secondaries will be used."
+	echo -e "#  WARNING: High energy cuts of $ecut GeV for secondaries will be used."
+	if [ $lowppe -lt $ecut ]; then
+			lowppe="$ecut"
+			lppe=true
+			echo -e "#  WARNING: Primary particle low energy limit is below energy cuts for secondaries. Changing to: $lowppe"
+	fi
 fi
 
 corsika_bin="corsika${ver}Linux_${hig}_gheisha"
@@ -355,7 +362,7 @@ if $lppe; then
   options=${options}"-r $llimit "
 fi
 if $uppe; then
-  options=${options}"-r $ulimit "
+  options=${options}"-i $upperppe "
 fi
 if $BXcomp; then
   options=${options}"-o $BX "
