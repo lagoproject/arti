@@ -63,14 +63,10 @@ filter=0
 tim=0
 prj=""
 cmd="showers"
-loc=0
-parallel=0
 prims=0
 N=$(/usr/bin/nproc)   # number of simultaneous process for paralllel local processing
-N=$((N / 2)) # number of simultaneous process for paralllel local processing
-if [ $N -gt 8 ]; then
-        N=8
-fi
+loc=0
+
 showhelp() {
 	echo
 	echo -e "$0 version $VERSION"
@@ -80,7 +76,6 @@ showhelp() {
 	echo -e "  -o <origin directory>     : Origin dir, where the DAT files are located"
 	echo -e "  -r <ARTI directory>       : ARTI installation directory, generally pointed by \$LAGO_ARTI (default)"
 	echo -e "  -w <workding directory>   : Working dir, where the analysis will be done (default is current directory, ${wdir})"
-	echo -e "  -r <ARTI directory>       : ARTI installation directory, generally pointed by \$LAGO_ARTI (default)"
 	echo -e "  -e <energy bins>          : Number of energy secondary bins (default: $energy_bins"
 	echo -e "  -d <distance bins>        : Number of distance secondary bins (default: $distance_bins"
 	echo -e "  -p <project base name>    : Base name for identification of S1 files (don't use spaces). Default: odir basename"
@@ -88,13 +83,13 @@ showhelp() {
 	echo -e "  -s <type>                 : Filter secondaries by type: 1: EM, 2: MU, 3: HD"
 	echo -e "  -t <time>                 : Normalize energy distribution in particles/(m2 s bin), S=1 m2; <t> = flux time (s)."
 	echo -e "  -m <bins per decade>      : Produce files with the energy distribution of the primary flux per nuclei."
-	echo -e "  -j                        : Produce a batch file for parallel processing. Not compatible with local (-l)"
-	echo -e "  -l                        : Enable parallel execution locally ($N procs). Not compatible with parallel (-j)"
+	echo -e "  -j <number of processes>  : Force paralellize by this number. If disabled, paralallelize among whole cores in the computer"
+	echo -e "  -l                        : Execute locally. (If not, only produces .run files for posterior batch processing)"
 	echo -e "  -?                        : Shows this help and exit."
 	echo
 }
 echo
-while getopts ':r:w:o:e:p:d:k:s:t:m:lj?' opt; do
+while getopts ':r:w:o:e:p:d:k:s:t:m:j:l?' opt; do
 	case $opt in
 		r)
 			arti_path=${OPTARG%/}
@@ -126,11 +121,11 @@ while getopts ':r:w:o:e:p:d:k:s:t:m:lj?' opt; do
 		t)
 			tim=$OPTARG
 			;;
+		j)
+			N=$OPTARG
+			;;
 		l)
 			loc=1
-			;;
-		j)
-			parallel=1
 			;;
 		?)
 			showhelp
@@ -179,13 +174,6 @@ if [ ${altitude} -eq 0 ]; then
 	exit 1
 fi
 
-# both parallels are not compatible?
-if [ $parallel -gt 0 ] && [ $loc -gt 0 ]; then
-	echo; echo -e "#	ERROR: Parallel and local modes are not compatible. Look for -j or -l options."
-	echo
-	showhelp
-	exit 1
-fi
 
 # No errors found, so 
 cmd+=" -a $energy_bins"
@@ -222,11 +210,10 @@ if [ "X$wdir" == "X$odir" ]; then
 	dirlw=1
 fi
 
-if [ $loc -gt 0 ]; then 
-	if [ $N -gt $file ]; then
-		echo; echo -e "#  WARNING: You don't have enough files to analyze in local parallel model (at least $N). Turning off parallel mode."
-		loc=0
-	fi
+
+if [ $N -gt $file ]; then
+	echo; echo -e "#  WARNING: You don't have enough files to analyze in local parallel model (at least $N). Turning off parallel mode. Fitting to this number."
+	N=$file
 fi
 
 ## finally...
@@ -244,14 +231,14 @@ echo -e "#  Altitude                      = $altitude"
 echo -e "#  Filtering by type             = $filter"
 echo -e "#  Normalize flux, S=1 m2; time  = $tim"
 echo -e "#  Energy bins for primaries     = $prims"
-echo -en "#  Parallel mode (local)         = "
+echo -en "#  Execution type         = "
 if [ $loc -gt 0 ]; then
 	echo -e "Local - $N processes"
 else
-	echo -e "Remote"
+	echo -e "Delayed for batch processing: compiled in .run files"
 fi
 
-# primaries
+# secondaries from primaries  (generate prj.run file)
 for i in ${odir}/DAT??????.bz2; do
 	j=$(basename $i .bz2)
  	u=${j/DAT/}
@@ -262,50 +249,59 @@ for i in ${odir}/DAT??????.bz2; do
 	fi	
 	echo $run >> $prj.run
 done
-nl=$(cat $prj.run | wc -l)
-if [ $parallel -gt 0 ]; then
-	# parallel mode, just produce the shower analysis file and exit
-	echo "bzcat ${wdir}/*.sec.bz2 | ${arti_path}/analysis/${cmd}" > $prj.shw.run
-	if [ $prims -gt 0 ]; then 
-		echo "primaries.sh -w ${wdir} -r ${arti_path} -m ${prims}" > $prj.pri.run
-	fi
+
+# final joins: produce the shower analysis from secondaries
+echo "bzcat ${wdir}/*.sec.bz2 | ${arti_path}/analysis/${cmd}" > $prj.shw.run
+# final join (optional): primaries histograms
+if [ $prims -gt 0 ]; then 
+	echo "primaries.sh -w ${wdir} -r ${arti_path} -m ${prims}" > $prj.pri.run
+fi
+
+#------------
+# if not compute in local, EXIT from the program
+#------------
+if [ $loc -eq 0 ]; then
 	exit 0
-elif [ $loc -gt 0 ]; then
-	# parallel and local
+
+#------------
+# EXECUTING
+#------------
+
+nl=$(cat $prj.run | wc -l)
+if [ $N -gt 1 ]: then
+	# parallel
 	while IFS= read -r line; do
 		((nr++))
 		((n=n%N)); ((n++==0)) && wait
 		echo $nr/$nl
 		eval ${line} &>> $nr.log &
 	done < $prj.run
-else
-	# it's local and not parallel
-	while IFS= read -r line; do 
-		((nr++))
-		echo $nr/$nl
-		eval ${line} &>> $nr.log
-	done < $prj.run
-fi
-if [ $loc -gt 0 ]; then
 	echo "Wait for parallel execution termination..."
 	while true; do
 		f=$(find . -iname 'DAT??????' | wc -l)
 		if [ $f -eq 0 ]; then
 			break
 		fi
-	done
+	done	
+else
+	# not parallel
+	while IFS= read -r line; do 
+		((nr++))
+		echo $nr/$nl
+		eval ${line} &>> $nr.log
+	done < $prj.run
 fi
-echo "Shower analysis ..."
-# showers
-echo "Showers: $cmd"
-bzcat ${wdir}/*.sec.bz2 | ${arti_path}/analysis/${cmd}
 
-# primaries histograms
+
+echo "Shower analysis (from secondaries)..."
+echo "Showers: $cmd"
+cat $prj.shw.run | bash
+
 if [ $prims -gt 0 ]; then
-	echo "Primary analysis ..."
-	primaries.sh -w ${wdir} -r ${arti_path} -m ${prims}
+	echo "Primary analysis histograms ..."
+	cat $prj.pri.run | bash
 fi
 
 # final remarks
 # rm $prj.run
-rm *.log
+# rm *.log
