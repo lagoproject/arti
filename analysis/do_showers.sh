@@ -55,6 +55,7 @@
 arti_path="${LAGO_ARTI}"
 odir=""
 wdir="${PWD}"
+usr="LAGO"
 dirlw=0
 energy_bins=20
 distance_bins=20
@@ -76,6 +77,7 @@ showhelp() {
 	echo -e "  -o <origin directory>     : Origin dir, where the DAT files are located"
 	echo -e "  -r <ARTI directory>       : ARTI installation directory, generally pointed by \$LAGO_ARTI (default)"
 	echo -e "  -w <workding directory>   : Working dir, where the analysis will be done (default is current directory, ${wdir})"
+	echo -e "  -u <username>             : Only for backward compatibility (ORCID, local username, or the default, LAGO)"	
 	echo -e "  -e <energy bins>          : Number of energy secondary bins (default: $energy_bins"
 	echo -e "  -d <distance bins>        : Number of distance secondary bins (default: $distance_bins"
 	echo -e "  -p <project base name>    : Base name for identification of S1 files (don't use spaces). Default: odir basename"
@@ -89,7 +91,7 @@ showhelp() {
 	echo
 }
 echo
-while getopts ':r:w:o:e:p:d:k:s:t:m:j:l?' opt; do
+while getopts ':o:r:w:u:e:p:d:k:s:t:m:j:l?' opt; do
 	case $opt in
 		r)
 			arti_path=${OPTARG%/}
