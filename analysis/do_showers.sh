@@ -78,8 +78,8 @@ showhelp() {
 	echo -e "  -r <ARTI directory>       : ARTI installation directory, generally pointed by \$LAGO_ARTI (default)"
 	echo -e "  -w <workding directory>   : Working dir, where the analysis will be done (default is current directory, ${wdir})"
 	echo -e "  -u <username>             : Only for backward compatibility (ORCID, local username, or the default, LAGO)"	
-	echo -e "  -e <energy bins>          : Number of energy secondary bins (default: $energy_bins"
-	echo -e "  -d <distance bins>        : Number of distance secondary bins (default: $distance_bins"
+	echo -e "  -e <energy bins>          : Number of energy secondary bins (default: $energy_bins)"
+	echo -e "  -d <distance bins>        : Number of distance secondary bins (default: $distance_bins)"
 	echo -e "  -p <project base name>    : Base name for identification of S1 files (don't use spaces). Default: odir basename"
 	echo -e "  -k <site altitude, in m>  : For curved mode (default), site altitude in m a.s.l. (mandatory)"
 	echo -e "  -s <type>                 : Filter secondaries by type: 1: EM, 2: MU, 3: HD"
@@ -105,6 +105,9 @@ while getopts ':o:r:w:u:e:p:d:k:s:t:m:j:l?' opt; do
 		p)
 			prj=$OPTARG
 			;;
+                u)      
+                        usr=$OPTARG
+                        ;;
 		e)
  			energy_bins=$OPTARG
 			;;
@@ -233,7 +236,7 @@ echo -e "#  Altitude                      = $altitude"
 echo -e "#  Filtering by type             = $filter"
 echo -e "#  Normalize flux, S=1 m2; time  = $tim"
 echo -e "#  Energy bins for primaries     = $prims"
-echo -en "#  Execution type         = "
+echo -en "#  Execution type                = "
 if [ $loc -gt 0 ]; then
 	echo -e "Local - $N processes"
 else
@@ -247,7 +250,7 @@ for i in ${odir}/DAT??????.bz2; do
 	if [ $dirlw -gt 0 ]; then 
 		run="bzip2 -d -k $i; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm ${j}"
 	else
-		run="while ! cp -a $i $wdir/; do sleep 5; done; bzip2 -d $j.bz2; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm $wdir/${j}"
+		run="cd $wdir; while ! cp -a $i ./; do sleep 5; done; bzip2 -d $j.bz2; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm ${j}; cd .."
 	fi	
 	echo $run >> $prj.run
 done
@@ -264,13 +267,13 @@ fi
 #------------
 if [ $loc -eq 0 ]; then
 	exit 0
-
+fi
 #------------
 # EXECUTING
 #------------
 
 nl=$(cat $prj.run | wc -l)
-if [ $N -gt 1 ]: then
+if [ $N -gt 1 ]; then
 	# parallel
 	while IFS= read -r line; do
 		((nr++))
@@ -307,3 +310,4 @@ fi
 # final remarks
 # rm $prj.run
 # rm *.log
+
