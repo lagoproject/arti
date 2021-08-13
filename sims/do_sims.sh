@@ -376,8 +376,9 @@ fi
   
 options=${options}"-f $basearti/sims/spectra.dat"
 
-$basearti/sims/generate_spectra.pl ${options}
-
+echo
+$basearti/sims/generate_spectra.pl ${options} || exit 1
+echo
 ##############
 
 a=$(echo $prj)

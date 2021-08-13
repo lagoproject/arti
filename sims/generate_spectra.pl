@@ -75,6 +75,7 @@ $flat=1;
 $fixalt=0.;
 $ifixalt=0;
 #ajrm vars
+$modatm="";
 $fixmodatm=0;
 $ifixmodatm=0;
 $tMin = 0;
@@ -83,6 +84,7 @@ $llimit = 0.;
 $ulimit = 0.;
 $rigidity = 0.;
 $usedefaults=0;
+$gensite = 0; 
 
 # masses from stderr output of mass.pl
 @mid = (0, 14, 402, 703, 904, 1105, 1206, 1407, 1608, 1909, 2010, 2311, 2412, 2713, 2814, 3115, 3216, 3517, 3919, 4018, 4020, 4521, 4822, 5123, 5224, 5525, 5626);
@@ -139,7 +141,7 @@ Recommended:
 Optional:
   -u <user name>        For CORSIKA simulation (Default: none)
   -t <time in sec>      Flux time ( Default: 3600s)
-  -s <site>             Choice predefined site for simulation (Default: unknow)
+  -s <site>             Choice predefined site for simulation (Default: unknown)
                           - Predefined sites: check the code)
                           - Predefined parameters: altitude, BX, BZ, and Atmospheric Model.
   -k <altitude>         Fix altitude even for predefined sites (It cannot be 0)
@@ -152,7 +154,7 @@ Optional:
   -n                    High edge of zenith angle (THETAP) [deg] (Default: 90)
   -r                    Lower limit of the primary particle energy (ERANGE) [GeV] (Default: 5e0) 
   -i                    Upper limit of the primary particle energy (ERANGE) [GeV] (Default: 1e6)
-Fix parameters for unknow sites:
+Fix parameters for generic sites:
   -o <BX>               Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT], see values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM 
   -q <BZ>               Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT], see values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM  
 Run modes:
@@ -525,8 +527,17 @@ switch ($site) {
       $bx=22.969;
       $bz=-3.79;
   }
+  case "gen" {
+      $gensite=1;
+  }
+  case "air" {
+      $gensite=1;
+  }
+  case "unk" {
+      $gensite=1;
+  }
 }#switch
-  
+
 unless ($ifixmodatm) {
     $modatm = get("Atmospheric model selection (ATMOD). Start number with 'E' to use external atmospheres module (ATMOSPHERE), examples: E30=wi,E31=sp,E32=su,E33=au)", $modatm, "$atmcrd", $modatm);
 }
@@ -553,6 +564,12 @@ if ($ifixalt && $fixalt) {
 }
 if ($ifixmodatm && $fixmodatm) {
   $modatm=$fixmodatm;
+}
+
+if ($gensite) { 
+	unless ($modatm ne "" && $bx && $bz && $altitude) {
+		die "ERROR: For generic sites, altitude (-k), atmospheric model (-c) and geomagnetic coordinates (-o, -q) are mandatory\n"; 
+	}
 }
 # $modatm=uc($modatm);
 # just in case :)
