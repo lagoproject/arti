@@ -195,9 +195,11 @@ fi
 count=0
 good=0
 for i in $odir/*.lst.bz2; do 
-	while ! cp -a $i $wdir/; do
-		sleep 5
-	done
+	if [[ $odir != $wdir ]]; then
+		while ! cp -a $i $wdir/; do
+			sleep 5
+		done
+	fi
 	j=$(basename $i)
 	p=$((100* ++count / lst))
 	echo -n -e "End of run check: ${BOLD}$count / $lst (${p}%)${NC}\r"
@@ -205,7 +207,9 @@ for i in $odir/*.lst.bz2; do
 	if [ $tst -gt 0 ]; then
 		((good++))
 	fi
-	rm $j
+	if [[ $odir != $wdir ]]; then
+		rm $wdir/$j
+	fi
 done
 echo -en "3. 'END OF RUN' : " 
 if [ $count -ne $lst ]; then

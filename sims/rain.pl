@@ -535,7 +535,7 @@ for ($i=0; $i<$nofruns; $i++) {
         $bz=+18.6777;
       }
       else {
-        $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module", 19, "$atmcrd");
+        $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
         $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
         while (!$altitude) {
           print STDERR "ERROR: Observation level is mandatory\n";
@@ -556,7 +556,7 @@ for ($i=0; $i<$nofruns; $i++) {
   }
   else {
     $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
-    $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module", 19, "$atmcrd");
+    $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
     while (!$altitude) {
       print STDERR "ERROR: Observation level is mandatory\n";
       $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
@@ -578,13 +578,17 @@ for ($i=0; $i<$nofruns; $i++) {
     $modatm =~ s/E//g;
 	$modatm .= " Y";
   } else {
-	if (uc(substr($modatm,0,4)) eq "GDAS") {
+	if (uc(substr($modatm,0,1)) eq "G") {
 	# gdas model
 		$atmcrd = "ATMFILE";
-		$modatm = "'" . lc($modatm) . "'";
+		$modatm = "'atm" . lc($modatm) . ".dat'";
+		$package = $package . "-atmfile";
+		$bin=$wdir."/".$package;
+		unless (-e $bin) {
+			die "\n\nERROR: Couldn't find corsika excecutable $package at $bin. Please check\n$usage\n";
+		}
 	}
   }
-
 #LAGO ECUTS
 # @ecuts=(0.05,0.05,1E-4,1E-4);
 # @ecuts=(0.05, 0.05, 0.00005, 0.00005);
