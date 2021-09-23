@@ -64,8 +64,7 @@ $crk_ver = "77402";
 $heim = "QGSII";
 $debug = 0;
 $help = 0;
-$cluster = 0;
-$clsname = "";
+$slurm = 0;
 $highsec = 0;
 $curvout = "";
 $halley = 0;
@@ -115,8 +114,7 @@ while ($_ = $ARGV[0]) {
     $curvout="CURVOUT     T";
   }
   if (/-l$/i) {
-    $cluster++;
-    $clsname = $ARGV[0];
+    $slurm++;
     shift;
   }
   if (/-t$/i) {
@@ -210,7 +208,7 @@ $usage="
        -r  <working directory>             Specify where corsika bin files are located
        -v  <version>                       Corsika version number
        -h  <high energy interaction model> High energy interaction model used for compilation of CORSIKA (EPOS|QGSII|SIBYLL)
-       -l  <cluster user name>             Enables OAR cluster compatibility (UIS style), use -l \$USER
+       -l                                  Enables SLURM cluster compatibility (with sbatch)
        -t  <EFRCTHN> <WMAX> <RMAX>         Enables THIN Mode (see manual for pg 62 for values)
        -th <THINRAT> <WEITRAT>             If THIN Mode, select different thining levels for Hadronic (THINH) ...
        -te <THINRAT> <WEITRAT>             ... and electromagnetic particles (THINEM)
@@ -307,21 +305,12 @@ if (int($monoe) || $monoq) {
 $prj=get("Project name (Results will go into $wdir/<project> dir)", "$defprj", "DIRECT");
 
 $user=get("User name", "LAGO", "USER");
-if ($cluster) {
-  $user=$clsname;
-}
 
 $bin=$wdir."/".$package;
 
 $direct="$wdir/$prj";
 $home = $wdir;
-if ($cluster) {
-  $wdir="/opt/corsika-73500/run";
-  $bin=$wdir."/".$package;
-  $home = "/home/$user";
-  $direct="$home/$prj";
-}
-unless ($cluster or $grid) {
+unless ($grid) {
   unless (-e $bin) {
     die "\n\nERROR: Couldn't find corsika at $bin. Please check\n$usage\n";
   }
@@ -765,7 +754,7 @@ EXIT
     open ($fh ,">$file") or die "Can't open $file\n";
     print $fh "$cards";
     close($fh);
-    unless ($cluster or $grid) {
+    unless ($grid) {
       open ($fh ,">$script") or die "Can't open $script\n";
       print $fh "echo $name\n";
       print $fh "echo -n \"Starting simulation on \"; date\n";
@@ -785,8 +774,8 @@ EXIT
   unless ($grid) {
     print "###################################################################\n";
     print "# Starting simulations $name\n";
-    if ($cluster) {
-      $cmd="./$package < $file > $out";
+    if ($slurm) {
+      $cmd="sbatch -p highpri2 -o ${name}_srun_%j.log ${script}";
       print "###################################################################\n";
     }
     else {

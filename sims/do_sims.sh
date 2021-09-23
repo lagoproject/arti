@@ -84,6 +84,7 @@ showhelp() {
   echo -e "  -e                                 : Enable CHERENKOV mode"
   echo -e "  -d                                 : Enable DEBUG mode"
   echo -e "  -x                                 : Enable other defaults (It doesn't prompt user for unset parameters)"
+  echo -e "  -l                                 : Enable SLURM compatibility (Will not work in other environments)"
   echo -e "  -?                                 : Shows this help and exit."
   echo
 }
@@ -106,9 +107,10 @@ BXcomp=false
 BZcomp=false
 defaults=false
 ecut=800
+slurm=false
 
 echo
-while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?aydex' opt; do
+while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?aydelx' opt; do
   case $opt in
     w)
       wdir=$OPTARG
@@ -201,6 +203,9 @@ while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?aydex' opt; do
       ;;
     d)
       debug=true
+      ;;
+    l)
+      slurm=true
       ;;
     x)
       defaults=true
@@ -315,6 +320,11 @@ if $highsec; then
 	fi
 fi
 
+if $slurm; then
+	echo -e "#  WARNING: SLURM mode is enable. Will not work in other environments."
+fi
+
+
 corsika_bin="corsika${ver}Linux_${hig}_gheisha"
 if [ ! -e $wdir/$corsika_bin ]; then
 	echo; echo -e "ERROR: Can't locate corsika executable file ($corsika_bin) in the working dir you provided. Please check."
@@ -407,6 +417,10 @@ fi
 
 if $highsec; then
   rain="$rain -a"
+fi
+
+if $slurm; then
+	rain="$rain -l"
 fi
 
 rain="$rain -r $wdir -v $ver -h $hig -b $prj/\$i-*.run"
