@@ -113,10 +113,6 @@ while ($_ = $ARGV[0]) {
     $highsec++;
     $curvout="CURVOUT     T";
   }
-  if (/-l$/i) {
-    $slurm++;
-    shift;
-  }
   if (/-t$/i) {
     $ithin=1;
     $efrcthn = $ARGV[0];
@@ -166,6 +162,9 @@ while ($_ = $ARGV[0]) {
   if (/-mu$/i) {
     $imuaddi=1;
   }
+  if (/-l$/i) {
+    $slurm++;
+  }
   if (/-g$/i) {
     $grid=1;
   }
@@ -208,7 +207,8 @@ $usage="
        -r  <working directory>             Specify where corsika bin files are located
        -v  <version>                       Corsika version number
        -h  <high energy interaction model> High energy interaction model used for compilation of CORSIKA (EPOS|QGSII|SIBYLL)
-       -l                                  Enables SLURM cluster compatibility (with sbatch)
+       -l  <\"job parameters\">            Enables SLURM cluster compatibility (with sbatch). Job parameters (suchs as queue)
+                                           must be provided using quotes.
        -t  <EFRCTHN> <WMAX> <RMAX>         Enables THIN Mode (see manual for pg 62 for values)
        -th <THINRAT> <WEITRAT>             If THIN Mode, select different thining levels for Hadronic (THINH) ...
        -te <THINRAT> <WEITRAT>             ... and electromagnetic particles (THINEM)
@@ -756,6 +756,7 @@ EXIT
     close($fh);
     unless ($grid) {
       open ($fh ,">$script") or die "Can't open $script\n";
+      print $fh "#!/bin/bash\n";
       print $fh "echo $name\n";
       print $fh "echo -n \"Starting simulation on \"; date\n";
       print $fh "cd $wdir\n";

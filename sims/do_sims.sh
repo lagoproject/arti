@@ -81,10 +81,11 @@ showhelp() {
   echo -e "  -q <BZ>                            : Vertical comp. of the Earth's mag. field."
   echo -e "  -b <rigidity cutoff>               : Rigidity cutoff; 0 = disabled; value in GV = enabled."
   echo -e "Modifiers"
+  echo -e "  -l <\"job parameters\">            : Enables SLURM cluster compatibility (with sbatch). Job parameters"
+  echo -e "                                       (such as queue) must be provided using quotes."
   echo -e "  -e                                 : Enable CHERENKOV mode"
   echo -e "  -d                                 : Enable DEBUG mode"
   echo -e "  -x                                 : Enable other defaults (It doesn't prompt user for unset parameters)"
-  echo -e "  -l                                 : Enable SLURM compatibility (Will not work in other environments)"
   echo -e "  -?                                 : Shows this help and exit."
   echo
 }
@@ -110,7 +111,7 @@ ecut=800
 slurm=false
 
 echo
-while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?aydelx' opt; do
+while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?alydex' opt; do
   case $opt in
     w)
       wdir=$OPTARG
@@ -201,11 +202,11 @@ while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?aydelx' opt; do
     a)
       highsec=true
       ;;
-    d)
-      debug=true
-      ;;
     l)
       slurm=true
+      ;;
+    d)
+      debug=true
       ;;
     x)
       defaults=true
@@ -331,7 +332,7 @@ if [ ! -e $wdir/$corsika_bin ]; then
     showhelp
     exit 1;
 fi
-echo -e "#  Corsika executable file ($corsika_bin)"
+echo -e "#  INFO   : Executable file is ($corsika_bin)"
 
 
 direct=$wdir/$prj
@@ -424,6 +425,9 @@ if $slurm; then
 fi
 
 rain="$rain -r $wdir -v $ver -h $hig -b $prj/\$i-*.run"
+
+echo -e "#  INFO   : rain command: $rain"
+
 basenice=19
 stuff=(001206 001608 000703 002412 001105 002814 001407 002010 005626 000904 003216 002713 002311 004020 001909 005224 004018 004822 005525 003919 005123 003115 003517 004521)
 t=0
