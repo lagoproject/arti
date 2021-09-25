@@ -81,7 +81,7 @@ showhelp() {
   echo -e "  -q <BZ>                            : Vertical comp. of the Earth's mag. field."
   echo -e "  -b <rigidity cutoff>               : Rigidity cutoff; 0 = disabled; value in GV = enabled."
   echo -e "Modifiers"
-  echo -e "  -l <\"job parameters\">            : Enables SLURM cluster compatibility (with sbatch). Job parameters"
+  echo -e "  -l                                 : Enables SLURM cluster compatibility (with sbatch). Job parameters"
   echo -e "                                       (such as queue) must be provided using quotes."
   echo -e "  -e                                 : Enable CHERENKOV mode"
   echo -e "  -d                                 : Enable DEBUG mode"
