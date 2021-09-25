@@ -528,6 +528,8 @@ for i in $(seq 1 $multPr); do
 done
 if $slurm; then
     echo -e "squeue -u \$USER" >> $wdir/go-slrum-$prj.sh
+    echo -e "mv $wdir/$wdir/go-slrum-$prj.sh $wdir/$wdir/go-slrum-$prj.run" >> $wdir/go-slrum-$prj.sh
+	echo -e "chmod 644 $wdir/$wdir/go-slrum-$prj.run" >> $wdir/go-slrum-$prj.sh
 fi
 
 
