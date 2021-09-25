@@ -429,6 +429,14 @@ rain="$rain -r $wdir -v $ver -h $hig -b $prj/\$i-*.run"
 echo -e "#  INFO   : rain command: $rain"
 
 basenice=19
+
+if $slurm; then
+	echo -e "#!/bin/bash" > $wdir/go-slrum-$prj.sh
+	echo -e "# go slurm $prj" >> $wdir/go-slrum-$prj.sh
+	echo -e "" >> $wdir/go-slrum-$prj.sh
+    chmod 744 $wdir/go-slrum-$prj.sh
+fi
+
 stuff=(001206 001608 000703 002412 001105 002814 001407 002010 005626 000904 003216 002713 002311 004020 001909 005224 004018 004822 005525 003919 005123 003115 003517 004521)
 t=0
 for i in $(seq 0 $procs $[${#stuff[@]}-1]); do
@@ -448,6 +456,9 @@ chmod 644 $wdir/go-$prj-all-$n.sh
 mv $wdir/go-$prj-all-$n.sh $wdir/go-$prj-all-$n.run
 " > $wdir/go-$prj-all-$n.sh
 	chmod 744 $wdir/go-$prj-all-$n.sh
+	if $slurm; then
+		echo $wdir/go-$prj-all-$n.sh >> $wdir/go-slrum-$prj.sh
+	fi
 done
 
 #helium
@@ -472,6 +483,9 @@ mv $wdir/go-$prj-he.sh $wdir/go-$prj-he.run
 " > $wdir/go-$prj-he.sh
 chmod 744 $wdir/go-${prj}-he.sh
 rm $wdir/$prj/000402-*.run
+if $slurm; then
+	echo $wdir/go-${prj}-he.sh >> $wdir/go-slrum-$prj.sh
+fi
 
 #protons
 b=$(basename $(ls -1 $wdir/$prj/000014-*) .run | sed -e "s/000014-//" | awk '{print $1*1.0}')
@@ -489,7 +503,7 @@ for i in $(seq 1 $multPr); do
 	done
 	ii=$[$ff+1]
 	ff=$[$ii+$prcHe-1]
-	echo "#!/bin/bash 
+	echo "#!/bin/bash
 # Protons!
 for j in \$(seq $ii $ff); do
   printf -v n "%02d" \$j
@@ -499,8 +513,13 @@ for j in \$(seq $ii $ff); do
 done
 chmod 644 $wdir/go-$prj-pr-$i.sh
 mv $wdir/go-$prj-pr-$i.sh $wdir/go-$prj-pr-$i.run" > $wdir/go-${prj}-pr-$i.sh
+if $slurm; then
+    echo $wdir/go-${prj}-pr-$i.sh >> $wdir/go-slrum-$prj.sh
+fi
 done
 rm $wdir/$prj/000014-*.run
 for i in $(seq 1 $multPr); do
   chmod 744 $wdir/go-${prj}-pr-$i.sh
 done
+
+
