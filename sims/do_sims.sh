@@ -71,7 +71,7 @@ showhelp() {
   echo -e "  -n <High edge zenith angle>        : High edge of zenith angle."
   echo -e "  -r <Low primary particle energy>   : Lower limit of the primary particle energy."
   echo -e "  -i <Upper primary particle energy> : Upper limit of the primary particle energy."
-  echo -e "  -a                                 : Enable high energy cuts for secondaries"
+  echo -e "  -a <high energy ecuts (GeV)>       : Enables and set high energy cuts for ECUTS"
   echo -e "  -y                                 : Select volumetric detector mode (default=flat array)"
   echo -e "Site parameters"
   echo -e "  -s <site>                          : Location (several options)"
@@ -111,7 +111,7 @@ ecut=800
 slurm=false
 
 echo
-while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?alydex' opt; do
+while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:a:?lydex' opt; do
   case $opt in
     w)
       wdir=$OPTARG
@@ -146,6 +146,11 @@ while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?alydex' opt; do
       site=$OPTARG
       sites=true
       echo -e "#  Site location                 = $site"
+      ;;
+    a)
+      highsec=true
+      ecut=$OPTARG
+      echo -e "#  High energy CUTS              = $ecut"
       ;;
     j)
       procs=$OPTARG
@@ -198,9 +203,6 @@ while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:?alydex' opt; do
     y)
       vol=true
       echo -e "#  Volumetric detector mode for  = $site"
-      ;;
-    a)
-      highsec=true
       ;;
     l)
       slurm=true
@@ -352,7 +354,7 @@ if $sites; then
 fi
 options=${options}"-u ${usr} "
 if $highsec; then
-  options=${options}"-a "
+  options=${options}"-a $ecut "
 fi
 if $vol; then
   options=${options}"-y "
@@ -417,7 +419,7 @@ if $debug; then
 fi
 
 if $highsec; then
-  rain="$rain -a"
+  rain="$rain -a $ecut"
 fi
 
 if $slurm; then
@@ -429,6 +431,9 @@ rain="$rain -r $wdir -v $ver -h $hig -b $prj/\$i-*.run"
 echo -e "#  INFO   : rain command: $rain"
 
 basenice=19
+if $slurm; then
+  basenice=0;
+fi
 
 if $slurm; then
 	echo -e "#!/bin/bash" > $wdir/go-slrum-$prj.sh
@@ -521,5 +526,8 @@ rm $wdir/$prj/000014-*.run
 for i in $(seq 1 $multPr); do
   chmod 744 $wdir/go-${prj}-pr-$i.sh
 done
+if $slurm; then
+    echo -e "squeue -u \$USER" >> $wdir/go-slrum-$prj.sh
+fi
 
 

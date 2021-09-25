@@ -108,10 +108,14 @@ while ($_ = $ARGV[0]) {
   if (/-a$/i) {
     $highsec++;
     $curvout="CURVOUT     T";
+    $ecutshe = $ARGV[0];
+    shift;
   }
   if (/-$/i) {
     $highsec++;
     $curvout="CURVOUT     T";
+    $ecutshe = $ARGV[0];
+    shift;
   }
   if (/-t$/i) {
     $ithin=1;
@@ -212,7 +216,7 @@ $usage="
        -t  <EFRCTHN> <WMAX> <RMAX>         Enables THIN Mode (see manual for pg 62 for values)
        -th <THINRAT> <WEITRAT>             If THIN Mode, select different thining levels for Hadronic (THINH) ...
        -te <THINRAT> <WEITRAT>             ... and electromagnetic particles (THINEM)
-       -a                                  Enables high energy cuts for ECUTS - for now, hardcoded
+       -a <high energy ecuts (GeV)>        Enables and set high energy cuts for ECUTS
        -z                                  Enables CHERENKOV mode
        -mu                                 Enables additional information from muons and EM particles
        -g                                  Enables GRID mode

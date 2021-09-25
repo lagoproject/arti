@@ -70,6 +70,7 @@ $cluster=0;
 $clsname="";
 $grid=0;
 $highsec=0;
+$ecut=800;
 $batch=1;
 $flat=1;
 $fixalt=0.;
@@ -148,7 +149,7 @@ Optional:
   -c <Atmosph. Model>   Fix Atmospheric Model even for predefined sites. 
                            (Note: Start number with 'E' to use external atmospheres module)
   -y                    Enable volumetric detector for flux calculations (Default: flat)
-  -a                    Enable high energy cuts for secondaries
+  -a <HE ecuts (GeV)>   Enables and set high energy cuts for ECUTS
   -b <rigidity cutoff>  0 = disabled; value in GV = enabled (Default: 5.)
   -m                    Low edge of zenith angle (THETAP) [deg] (Default: 0)
   -n                    High edge of zenith angle (THETAP) [deg] (Default: 90)
@@ -207,6 +208,8 @@ while (defined($_ = $ARGV[0]) && $_ =~ /^-/) {
   }
   if (/-a$/i) {
     $highsec++;
+    $ecut = $ARGV[0]; 
+    shift;
   }
   if (/-b$/i) {
     $rigidity = $ARGV[0];
@@ -685,7 +688,7 @@ if ($flat) {
 }
 $hig=", standard energy cuts";
 if ($highsec) {
-	$hig=", high energy cuts";
+	$hig=", high energy cuts at $ecut GeV";
 }
 open ($fh, "> $file") or die "Can't open file $direct/$file\n";
 print $fh "Flux time: $time s ($totalShowers showers, $userllimit<E<$ulimit, $tMin<q<$tMax at site $site (h=$altitude, atm=$modatm)$vol$hig$rig\n";
