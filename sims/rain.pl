@@ -211,8 +211,7 @@ $usage="
        -r  <working directory>             Specify where corsika bin files are located
        -v  <version>                       Corsika version number
        -h  <high energy interaction model> High energy interaction model used for compilation of CORSIKA (EPOS|QGSII|SIBYLL)
-       -l  <\"job parameters\">            Enables SLURM cluster compatibility (with sbatch). Job parameters (suchs as queue)
-                                           must be provided using quotes.
+       -l                                  Enables SLURM cluster compatibility (with sbatch). 
        -t  <EFRCTHN> <WMAX> <RMAX>         Enables THIN Mode (see manual for pg 62 for values)
        -th <THINRAT> <WEITRAT>             If THIN Mode, select different thining levels for Hadronic (THINH) ...
        -te <THINRAT> <WEITRAT>             ... and electromagnetic particles (THINEM)
