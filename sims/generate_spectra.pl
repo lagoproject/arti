@@ -434,6 +434,12 @@ switch ($site) {
       $bx=27.405;
       $bz=27.024;
   }
+  case "chi" {
+      $modatm="E1";
+      $altitude=500000;
+      $bx=26.56;
+      $bz=8.758;
+  }
   case "sng" {
       $modatm="E2";
       $altitude=455000;
@@ -529,6 +535,12 @@ switch ($site) {
       $altitude=460000;
       $bx=22.969;
       $bz=-3.79;
+  }
+  case "ata" {
+      $modatm="E1";
+      $altitude=510500;
+      $bx=20.638;
+      $bz=-8.598;
   }
   case "gen" {
       $gensite=1;

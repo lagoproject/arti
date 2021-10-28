@@ -414,6 +414,31 @@ for ($i=0; $i<$nofruns; $i++) {
         $bz=-8.91;
         $arrang="0";
       }
+    case "chi" {
+      $modatm="E1";
+      $altitude=500000;
+      $bx=26.56;
+      $bz=8.758;
+	  $arrang="0";
+  }
+    case "ata" {
+      $modatm="";
+      $altitude=510500;
+      $bx=20.638;
+      $bz=-8.598;
+  }
+  case "ima" {
+      $modatm="E1";
+      $altitude=460000;
+      $bx=22.935;
+      $bz=-3.823;
+  }
+  case "sng" {
+      $modatm="E2";
+      $altitude=455000;
+      $bx=27.333;
+      $bz=27.989;
+  }
     case "etn" {
         $modatm=get("Atmospheric model selection ", "E2", "ATMOSPHERE");
         $altitude=3000e2;
