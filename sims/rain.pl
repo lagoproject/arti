@@ -60,12 +60,11 @@ $tmp = "";
 $batch = 0;
 $runmode = 0;
 $wdir = "x";
-$crk_ver = "75600";
+$crk_ver = "77402";
 $heim = "QGSII";
 $debug = 0;
 $help = 0;
-$cluster = 0;
-$clsname = "";
+$slurm = 0;
 $highsec = 0;
 $curvout = "";
 $halley = 0;
@@ -81,6 +80,7 @@ $cherenkov = 0;
 $grid = 0;
 $imuaddi = 0;
 $nofruns = 1;
+$ecutshe = 800.;
 
 sub get {
   my $question = $_[0];
@@ -108,14 +108,13 @@ while ($_ = $ARGV[0]) {
   if (/-a$/i) {
     $highsec++;
     $curvout="CURVOUT     T";
+    $ecutshe = $ARGV[0];
+    shift;
   }
   if (/-$/i) {
     $highsec++;
     $curvout="CURVOUT     T";
-  }
-  if (/-l$/i) {
-    $cluster++;
-    $clsname = $ARGV[0];
+    $ecutshe = $ARGV[0];
     shift;
   }
   if (/-t$/i) {
@@ -167,6 +166,9 @@ while ($_ = $ARGV[0]) {
   if (/-mu$/i) {
     $imuaddi=1;
   }
+  if (/-l$/i) {
+    $slurm++;
+  }
   if (/-g$/i) {
     $grid=1;
   }
@@ -192,6 +194,7 @@ while ($_ = $ARGV[0]) {
 }
 
 $package="corsika".$crk_ver."Linux_".$heim."_gheisha";
+
 if ($ithin) {
   $package= $package . "_thin";
 }
@@ -208,11 +211,11 @@ $usage="
        -r  <working directory>             Specify where corsika bin files are located
        -v  <version>                       Corsika version number
        -h  <high energy interaction model> High energy interaction model used for compilation of CORSIKA (EPOS|QGSII|SIBYLL)
-       -l  <cluster user name>             Enables OAR cluster compatibility (UIS style), use -l \$USER
+       -l                                  Enables SLURM cluster compatibility (with sbatch). 
        -t  <EFRCTHN> <WMAX> <RMAX>         Enables THIN Mode (see manual for pg 62 for values)
        -th <THINRAT> <WEITRAT>             If THIN Mode, select different thining levels for Hadronic (THINH) ...
        -te <THINRAT> <WEITRAT>             ... and electromagnetic particles (THINEM)
-       -a                                  Enables high energy cuts for ECUTS - for now, hardcoded
+       -a <high energy ecuts (GeV)>        Enables and set high energy cuts for ECUTS
        -z                                  Enables CHERENKOV mode
        -mu                                 Enables additional information from muons and EM particles
        -g                                  Enables GRID mode
@@ -305,21 +308,12 @@ if (int($monoe) || $monoq) {
 $prj=get("Project name (Results will go into $wdir/<project> dir)", "$defprj", "DIRECT");
 
 $user=get("User name", "LAGO", "USER");
-if ($cluster) {
-  $user=$clsname;
-}
 
 $bin=$wdir."/".$package;
 
 $direct="$wdir/$prj";
 $home = $wdir;
-if ($cluster) {
-  $wdir="/opt/corsika-73500/run";
-  $bin=$wdir."/".$package;
-  $home = "/home/$user";
-  $direct="$home/$prj";
-}
-unless ($cluster or $grid) {
+unless ($grid) {
   unless (-e $bin) {
     die "\n\nERROR: Couldn't find corsika at $bin. Please check\n$usage\n";
   }
@@ -420,6 +414,31 @@ for ($i=0; $i<$nofruns; $i++) {
         $bz=-8.91;
         $arrang="0";
       }
+    case "chi" {
+      $modatm="E1";
+      $altitude=500000;
+      $bx=26.56;
+      $bz=8.758;
+	  $arrang="0";
+  }
+    case "ata" {
+      $modatm="";
+      $altitude=510500;
+      $bx=20.638;
+      $bz=-8.598;
+  }
+  case "ima" {
+      $modatm="E1";
+      $altitude=460000;
+      $bx=22.935;
+      $bz=-3.823;
+  }
+  case "sng" {
+      $modatm="E2";
+      $altitude=455000;
+      $bx=27.333;
+      $bz=27.989;
+  }
     case "etn" {
         $modatm=get("Atmospheric model selection ", "E2", "ATMOSPHERE");
         $altitude=3000e2;
@@ -533,7 +552,7 @@ for ($i=0; $i<$nofruns; $i++) {
         $bz=+18.6777;
       }
       else {
-        $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module", 19, "$atmcrd");
+        $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
         $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
         while (!$altitude) {
           print STDERR "ERROR: Observation level is mandatory\n";
@@ -554,7 +573,7 @@ for ($i=0; $i<$nofruns; $i++) {
   }
   else {
     $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
-    $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module", 19, "$atmcrd");
+    $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
     while (!$altitude) {
       print STDERR "ERROR: Observation level is mandatory\n";
       $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
@@ -574,20 +593,29 @@ for ($i=0; $i<$nofruns; $i++) {
 # using external atmospheres bernlhor
     $atmcrd = "ATMOSPHERE";
     $modatm =~ s/E//g;
-             $modatm .= " Y";
+	$modatm .= " Y";
+  } else {
+	if (uc(substr($modatm,0,1)) eq "G") {
+	# gdas model
+		$atmcrd = "ATMFILE";
+		$modatm = "'atm" . lc($modatm) . ".dat'";
+		$package = $package . "-atmfile";
+		$bin=$wdir."/".$package;
+		unless (-e $bin) {
+			die "\n\nERROR: Couldn't find corsika excecutable $package at $bin. Please check\n$usage\n";
+		}
+	}
   }
-
 #LAGO ECUTS
 # @ecuts=(0.05,0.05,1E-4,1E-4);
-  @ecuts=(0.05, 0.05, 0.00005, 0.00005);
+# @ecuts=(0.05, 0.05, 0.00005, 0.00005);
+  @ecuts=(0.05, 0.01, 0.00005, 0.00005);
   if ($highsec) {
-    @ecuts=(10., 10., 10., 10.); # using 10 GeV
-	# if you want to use your own cuts, please add a site and use an if like
-	# the one show below for andes:
-    if ($site eq "and") {
-      @ecuts=(800.,800.,800.,800.); # ecuts for ANDES
-    }
-  }
+    @ecuts=($ecutshe, $ecutshe, $ecutshe, $ecutshe); 
+	if ($elow < $ecutshe) {
+		$elow = $ecutshe;
+	}
+}
 
 #true of false
   unless ($batch) {
@@ -623,6 +651,8 @@ for ($i=0; $i<$nofruns; $i++) {
   $cards="";
   $plotshs="";
   $direct2 = $direct;
+  $llongi = "F";
+  $datbas = "F";
   if ($grid) {
     $direct2 = "."
   }
@@ -670,7 +700,7 @@ ECUTS         $ecuts[0] $ecuts[1] $ecuts[2] $ecuts[3]
 
 $muadditxt
 MUMULT        T
-MAXPRT        0
+MAXPRT        1
 ELMFLG        F   T
 LONGI         $llongi 20.  T  T
 ECTMAP        1.E3
@@ -688,7 +718,7 @@ EXIT
 ";
   }
   else {
-    $cards="RUNNR       $runnr
+	$cards="RUNNR       $runnr
 EVTNR       $evtnr
 NSHOW       $nshow
 
@@ -711,10 +741,10 @@ ECUTS       $ecuts[0] $ecuts[1] $ecuts[2] $ecuts[3]
 $curvout
 $muadditxt
 MUMULT      T
-MAXPRT      0
+MAXPRT      1
 ELMFLG      F   T
 LONGI       $llongi  10.  T  T
-ECTMAP      1.E3
+ECTMAP      1.E11
 
 $plotshs
 DIRECT      $direct2/
@@ -752,8 +782,9 @@ EXIT
     open ($fh ,">$file") or die "Can't open $file\n";
     print $fh "$cards";
     close($fh);
-    unless ($cluster or $grid) {
+    unless ($grid) {
       open ($fh ,">$script") or die "Can't open $script\n";
+      print $fh "#!/bin/bash\n";
       print $fh "echo $name\n";
       print $fh "echo -n \"Starting simulation on \"; date\n";
       print $fh "cd $wdir\n";
@@ -772,8 +803,8 @@ EXIT
   unless ($grid) {
     print "###################################################################\n";
     print "# Starting simulations $name\n";
-    if ($cluster) {
-      $cmd="./$package < $file > $out";
+    if ($slurm) {
+      $cmd="sbatch -p highpri2 -o ${name}_srun_%j.log ${script}";
       print "###################################################################\n";
     }
     else {

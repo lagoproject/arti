@@ -58,22 +58,34 @@ showhelp() {
   echo -e "$0 version $VERSION"
   echo 
   echo -e "USAGE $0:"
-  echo
-  echo -e "  -w <working dir>               : Working directory, where bin (run) files are located"
-  echo -e "  -p <project name>              : Project name (suggested format: NAMEXX)"
-  echo -e "  -t <flux time>                 : Flux time (in seconds) for simulations"
-  echo -e "  -v <CORSIKA version>           : CORSIKA version"
-  echo -e "  -h <HE Int Model (EPOS|QGSII)> : Define the high interaction model to be used"
-  echo -e "  -u <user name>                 : User Name."
-  echo -e "  -s <site>                      : Location (several options)"
-  echo -e "  -j <procs>                     : Number of processors to use"
-  echo -e "  -y                             : Select volumetric detector mode (default=flat array)"
-  echo -e "  -e                             : Enable CHERENKOV mode"
-  echo -e "  -d                             : Enable DEBUG mode"
-  echo -e "  -a                             : Enable high energy cuts for secondaries"
-  echo -e "  -k <altitude, in cm>           : Fix altitude, even for predefined sites"
-  echo -e "  -x                             : Enable other defaults (It doesn't prompt user for unset parameters)"
-  echo -e "  -?                             : Shows this help and exit."
+  echo -e "Simulation parameters"
+  echo -e "  -w <working dir>                   : Working directory, where bin (run) files are located"
+  echo -e "  -p <project name>                  : Project name (suggested format: NAMEXX)"
+  echo -e "  -v <CORSIKA version>               : CORSIKA version"
+  echo -e "  -h <HE Int Model (EPOS|QGSII)>     : Define the high interaction model to be used"
+  echo -e "  -u <user name>                     : User Name."
+  echo -e "  -j <procs>                         : Number of processors to use"
+  echo -e "Physical parameters"
+  echo -e "  -t <flux time>                     : Flux time (in seconds) for simulations"
+  echo -e "  -m <Low edge zenith angle>         : Low edge of zenith angle."
+  echo -e "  -n <High edge zenith angle>        : High edge of zenith angle."
+  echo -e "  -r <Low primary particle energy>   : Lower limit of the primary particle energy."
+  echo -e "  -i <Upper primary particle energy> : Upper limit of the primary particle energy."
+  echo -e "  -a <high energy ecuts (GeV)>       : Enables and set high energy cuts for ECUTS"
+  echo -e "  -y                                 : Select volumetric detector mode (default=flat array)"
+  echo -e "Site parameters"
+  echo -e "  -s <site>                          : Location (several options)"
+  echo -e "  -k <altitude, in cm>               : Fix altitude, even for predefined sites"
+  echo -e "  -c <atm_model>                     : Fix Atmospheric Model even for predefined sites."
+  echo -e "  -o <BX>                            : Horizontal comp. of the Earth's mag. field."
+  echo -e "  -q <BZ>                            : Vertical comp. of the Earth's mag. field."
+  echo -e "  -b <rigidity cutoff>               : Rigidity cutoff; 0 = disabled; value in GV = enabled."
+  echo -e "Modifiers"
+  echo -e "  -l                                 : Enables SLURM cluster compatibility (with sbatch)."
+  echo -e "  -e                                 : Enable CHERENKOV mode"
+  echo -e "  -d                                 : Enable DEBUG mode"
+  echo -e "  -x                                 : Enable other defaults (It doesn't prompt user for unset parameters)"
+  echo -e "  -?                                 : Shows this help and exit."
   echo
 }
 cta=false
@@ -85,9 +97,20 @@ vol=false
 alt=false
 altitude=0.
 procs=4
+atm_m=false
+rig=false
+lez=false
+hez=false
+lppe=false
+uppe=false
+BXcomp=false
+BZcomp=false
 defaults=false
+ecut=800
+slurm=false
+
 echo
-while getopts ':w:k:p:t:v:u:h:s:j:?aydex' opt; do
+while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:a:?lydex' opt; do
   case $opt in
     w)
       wdir=$OPTARG
@@ -123,9 +146,54 @@ while getopts ':w:k:p:t:v:u:h:s:j:?aydex' opt; do
       sites=true
       echo -e "#  Site location                 = $site"
       ;;
-	j)
-	  procs=$OPTARG
+    a)
+      highsec=true
+      ecut=$OPTARG
+      echo -e "#  High energy CUTS              = $ecut"
+      ;;
+    j)
+      procs=$OPTARG
       echo -e "#  Number of processors          = $procs"
+      ;;
+    c)
+      atm_m=true
+      atm_model=$OPTARG
+      echo -e "#  Atmospheric Model             = $atm_model"
+      ;;
+    b)
+      rig=true
+      rigididy=$OPTARG
+      echo -e "#  Rigidity cutoff               = $rigididy"
+      ;;
+    m)
+      lez=true
+      lowez=$OPTARG
+      echo -e "#  Low edge of zenith angle      = $lowez"
+      ;;
+    n)
+      hez=true
+      highez=$OPTARG
+      echo -e "#  High edge of zenith angle     = $highez"
+      ;;
+    r)
+      lppe=true
+      lowppe=$OPTARG
+      echo -e "#  Low primary particle energy   = $lowppe"
+      ;;
+    i)
+      uppe=true
+      upperppe=$OPTARG
+      echo -e "#  High primary particle energy  = $upperppe"
+      ;;
+    o)
+      BXcomp=true
+      BX=$OPTARG
+      echo -e "#  Horizontal gepmagnetic field  = $BX"
+      ;;
+    q)
+      BZcomp=true
+      BZ=$OPTARG
+      echo -e "#  Vertical geomagnetic field    = $BZ"
       ;;
     e)
       cta=true
@@ -135,8 +203,8 @@ while getopts ':w:k:p:t:v:u:h:s:j:?aydex' opt; do
       vol=true
       echo -e "#  Volumetric detector mode for  = $site"
       ;;
-    a)
-      highsec=true
+    l)
+      slurm=true
       ;;
     d)
       debug=true
@@ -178,13 +246,53 @@ if [ "X$procs" == "X0" ]; then
 fi
 
 if [ "X$ver" == "X" ]; then
-  ver="75600"
+  ver="77402"
   echo -e "#  WARNING: CORSIKA version was not provided. Using default: $ver"
 fi
 
 if [ "X$hig" == "X" ]; then
   hig="QGSII"
   echo -e "#  WARNING: High energy interaction model was not provided. Using default: $hig"
+fi
+
+if [ "X$atm_model" == "X" ]; then
+  atm_model="E1"
+  echo -e "#  WARNING: Atmospheric Model was not provided. Using default: $atm_model"
+fi
+
+if [ "X$rigididy" == "X" ]; then
+  rigididy="0"
+  echo -e "#  WARNING: Rigidity cutoff was not provided. Using default (disabled): $rigididy"
+fi
+
+if [ "X$lowez" == "X" ]; then
+  lowez="0"
+  echo -e "#  WARNING: Low edge of zenith angle was not provided. Using default: $lowez"
+fi
+
+if [ "X$highez" == "X" ]; then
+  highez="90"
+  echo -e "#  WARNING: High edge of zenith angle was not provided. Using default: $highez"
+fi
+
+if [ "X$lowppe" == "X" ]; then
+  lowppe="5"
+  lppe=true
+fi
+
+if [ "X$upperppe" == "X" ]; then
+  upperppe="1e6"
+  echo -e "#  WARNING: Primary particle high energy limit was not provided. Using default: $upperppe"
+fi
+
+if [ "X$BX" == "X" ]; then
+  BX="12.5"
+  echo -e "#  WARNING: Horizontal comp. Earth's mag. field was not provided. Using default: $BX"
+fi
+
+if [ "X$BZ" == "X" ]; then
+  BZ="25.5"
+  echo -e "#  WARNING: Vertical comp. Earth's mag. field was not provided. Using default: $BZ"
 fi
 
 if $debug; then
@@ -206,8 +314,18 @@ if $cta; then
 fi
 
 if $highsec; then
-  echo -e "#  WARNING: High energy cuts for secondaries will be used."
+	echo -e "#  WARNING: High energy cuts of $ecut GeV for secondaries will be used."
+	if [ $lowppe -lt $ecut ]; then
+			lowppe="$ecut"
+			lppe=true
+			echo -e "#  WARNING: Primary particle low energy limit is below energy cuts for secondaries. Changing to: $lowppe"
+	fi
 fi
+
+if $slurm; then
+	echo -e "#  WARNING: SLURM mode is enable. Will not work in other environments."
+fi
+
 
 corsika_bin="corsika${ver}Linux_${hig}_gheisha"
 if [ ! -e $wdir/$corsika_bin ]; then
@@ -215,7 +333,7 @@ if [ ! -e $wdir/$corsika_bin ]; then
     showhelp
     exit 1;
 fi
-echo -e "#  Corsika executable file ($corsika_bin)"
+echo -e "#  INFO   : Executable file is ($corsika_bin)"
 
 
 direct=$wdir/$prj
@@ -235,7 +353,7 @@ if $sites; then
 fi
 options=${options}"-u ${usr} "
 if $highsec; then
-  options=${options}"-a "
+  options=${options}"-a $ecut "
 fi
 if $vol; then
   options=${options}"-y "
@@ -243,14 +361,39 @@ fi
 if $alt; then
   options=${options}"-k $altitude "
 fi
+if $atm_m; then
+  options=${options}"-c $atm_model "
+fi
+if $rig; then
+  options=${options}"-b $rigididy "
+fi
+if $lez; then
+  options=${options}"-m $lowez "
+fi
+if $hez; then
+  options=${options}"-n $highez "
+fi
+if $lppe; then
+  options=${options}"-r $lowppe "
+fi
+if $uppe; then
+  options=${options}"-i $upperppe "
+fi
+if $BXcomp; then
+  options=${options}"-o $BX "
+fi
+if $BZcomp; then
+  options=${options}"-q $BZ "
+fi
 if $defaults; then
   options=${options}"-x "
 fi
   
 options=${options}"-f $basearti/sims/spectra.dat"
 
-$basearti/sims/generate_spectra.pl ${options}
-
+echo
+$basearti/sims/generate_spectra.pl ${options} || exit 1
+echo
 ##############
 
 a=$(echo $prj)
@@ -275,11 +418,29 @@ if $debug; then
 fi
 
 if $highsec; then
-  rain="$rain -a"
+  rain="$rain -a $ecut"
+fi
+
+if $slurm; then
+	rain="$rain -l"
 fi
 
 rain="$rain -r $wdir -v $ver -h $hig -b $prj/\$i-*.run"
+
+echo -e "#  INFO   : rain command: $rain"
+
 basenice=19
+if $slurm; then
+  basenice=0;
+fi
+
+if $slurm; then
+	echo -e "#!/bin/bash" > $wdir/go-slrum-$prj.sh
+	echo -e "# go slurm $prj" >> $wdir/go-slrum-$prj.sh
+	echo -e "" >> $wdir/go-slrum-$prj.sh
+    chmod 744 $wdir/go-slrum-$prj.sh
+fi
+
 stuff=(001206 001608 000703 002412 001105 002814 001407 002010 005626 000904 003216 002713 002311 004020 001909 005224 004018 004822 005525 003919 005123 003115 003517 004521)
 t=0
 for i in $(seq 0 $procs $[${#stuff[@]}-1]); do
@@ -299,6 +460,9 @@ chmod 644 $wdir/go-$prj-all-$n.sh
 mv $wdir/go-$prj-all-$n.sh $wdir/go-$prj-all-$n.run
 " > $wdir/go-$prj-all-$n.sh
 	chmod 744 $wdir/go-$prj-all-$n.sh
+	if $slurm; then
+		echo $wdir/go-$prj-all-$n.sh >> $wdir/go-slrum-$prj.sh
+	fi
 done
 
 #helium
@@ -323,6 +487,9 @@ mv $wdir/go-$prj-he.sh $wdir/go-$prj-he.run
 " > $wdir/go-$prj-he.sh
 chmod 744 $wdir/go-${prj}-he.sh
 rm $wdir/$prj/000402-*.run
+if $slurm; then
+	echo $wdir/go-${prj}-he.sh >> $wdir/go-slrum-$prj.sh
+fi
 
 #protons
 b=$(basename $(ls -1 $wdir/$prj/000014-*) .run | sed -e "s/000014-//" | awk '{print $1*1.0}')
@@ -340,7 +507,7 @@ for i in $(seq 1 $multPr); do
 	done
 	ii=$[$ff+1]
 	ff=$[$ii+$prcHe-1]
-	echo "#!/bin/bash 
+	echo "#!/bin/bash
 # Protons!
 for j in \$(seq $ii $ff); do
   printf -v n "%02d" \$j
@@ -350,8 +517,18 @@ for j in \$(seq $ii $ff); do
 done
 chmod 644 $wdir/go-$prj-pr-$i.sh
 mv $wdir/go-$prj-pr-$i.sh $wdir/go-$prj-pr-$i.run" > $wdir/go-${prj}-pr-$i.sh
+if $slurm; then
+    echo $wdir/go-${prj}-pr-$i.sh >> $wdir/go-slrum-$prj.sh
+fi
 done
 rm $wdir/$prj/000014-*.run
 for i in $(seq 1 $multPr); do
   chmod 744 $wdir/go-${prj}-pr-$i.sh
 done
+if $slurm; then
+    echo -e "squeue -u \$USER" >> $wdir/go-slrum-$prj.sh
+    echo -e "mv $wdir/$wdir/go-slrum-$prj.sh $wdir/$wdir/go-slrum-$prj.run" >> $wdir/go-slrum-$prj.sh
+	echo -e "chmod 644 $wdir/$wdir/go-slrum-$prj.run" >> $wdir/go-slrum-$prj.sh
+fi
+
+
