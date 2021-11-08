@@ -260,7 +260,7 @@ for i in ${odir}/DAT??????.bz2; do
 	if [ $dirlw -gt 0 ]; then 
 		run="bzip2 -d -k $i; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm -f ${j}"
 	else
-		run="while ! cp -a $i $wdir/; do sleep 5; done; bzip2 -d $j.bz2; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm -f $wdir/${j}"
+		run="while ! cp -a $i $wdir/; do sleep 5; done; cd $wdir; bzip2 -d $j.bz2; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm -f $wdir/${j}"
 	fi	
 	echo $run >> $prj.run
 done
