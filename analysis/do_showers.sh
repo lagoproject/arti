@@ -258,9 +258,9 @@ for i in ${odir}/DAT??????.bz2; do
 	j=$(basename $i .bz2)
  	u=${j/DAT/}
 	if [ $dirlw -gt 0 ]; then 
-		run="bzip2 -d -k $i; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm ${j}"
+		run="bzip2 -d -k $i; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm -f ${j}"
 	else
-		run="while ! cp -a $i $wdir/; do sleep 5; done; bzip2 -d $j.bz2; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm $wdir/${j}"
+		run="while ! cp -a $i $wdir/; do sleep 5; done; bzip2 -d $j.bz2; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm -f $wdir/${j}"
 	fi	
 	echo $run >> $prj.run
 done
@@ -309,5 +309,5 @@ if [ $prims -gt 0 ]; then
 fi
 
 # final remarks
-# rm $prj.run
-rm *.log
+# rm -f $prj.run
+rm -f *.log
