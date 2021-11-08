@@ -93,6 +93,9 @@ showhelp() {
 	echo
 }
 echo
+# ajrm : tengo problemas con la ordenación de los parámetros (si cambias el orden no los coge bien), 
+#        lo he solucionado con esto, pero no sé si está bien
+# while getopts ':r:w:o:p:e:d:k:s:m:t:l:j:?' opt; do
 while getopts ':r:w:o:e:p:d:k:s:t:m:lj?' opt; do
 	case $opt in
 		r)
