@@ -71,6 +71,7 @@ N=$((N / 2)) # number of simultaneous process for paralllel local processing
 if [ $N -gt 8 ]; then
         N=8
 fi
+verbose=false
 showhelp() {
 	echo
 	echo -e "$0 version $VERSION"
@@ -278,14 +279,22 @@ elif [ $loc -gt 0 ]; then
 		((nr++))
 		((n=n%N)); ((n++==0)) && wait
 		echo $nr/$nl
-		eval ${line} &>> $nr.log &
+		if $verbose; then
+			eval ${line} &>> $nr.log &
+		else
+			eval ${line} &>> /dev/null &
+		fi
 	done < $prj.run
 else
 	# it's local and not parallel
 	while IFS= read -r line; do 
 		((nr++))
 		echo $nr/$nl
-		eval ${line} &>> $nr.log
+		if $verbose; then
+			eval ${line} &>> $nr.log
+		else
+			eval ${line} &>> /dev/null
+		fi
 	done < $prj.run
 fi
 if [ $loc -gt 0 ]; then
