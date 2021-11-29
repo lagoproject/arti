@@ -7,7 +7,7 @@ CFLAGS = -Wall
 FC = gfortran
 FCFLAGS = -g -fbounds-check -O2
 
-CTARGETS = analysis showers cherenkov
+CTARGETS = analysis showers cherenkov primaries
 FTARGETS = lagocrkread onlysecs lagocrkthin
 
 all: $(CTARGETS) $(FTARGETS)
@@ -16,6 +16,9 @@ analysis: analysis.cc
 	$(CC) -o $@ $< $(CFLAGS)
 
 showers: showers.cc
+	$(CC) -o $@ $< $(CFLAGS)
+
+primaries: primaries.cc
 	$(CC) -o $@ $< $(CFLAGS)
 
 lagocrkread: lagocrkread.f

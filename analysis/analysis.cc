@@ -79,7 +79,7 @@ long int lines = 0, shower_id = 0, counter = 0;
 
 int bad_block  = 0;
 double chk_block[5] = {0.00000e+00, 1.11111e+07, 3.33333e+07, 7.77778e+07, 1.00000e+08};
-bool events = true, data = true;
+bool events = true, b_data = true;
 
 int iverbose = 0, iprim = 0, idegub = 0, iinclude = 0, iforce = 0, icurve = 0;
 double r_earth=637131500.;
@@ -190,7 +190,7 @@ int ReadDataBlock(double *block, int blk) {
     }
     //one more check: if the first element of DataBlock is 7.77778E+07, then there is no secondaries, and we read evt_footer!
     if (block[0] == chk_block[3]) {
-      data=false;
+      b_data=false;
       for (int i=0; i<block_size; i++) 
         evt_footer[i] = block[i];
     }
@@ -364,7 +364,7 @@ int main(int argc, char *argv[]) {
     if (iverbose)
       cerr << "Reading event " << shower_id << endl;
     block = 1;
-    data=true;
+    b_data=true;
     if (iinclude) {
       fprintf(sec, "# h");
       for (int i=0; i<block_size; i++)
@@ -379,11 +379,11 @@ int main(int argc, char *argv[]) {
       evt_buffer[3] = rad2deg(evt_header[10]);
       evt_buffer[4] = rad2deg(evt_header[11]);
     }
-    while (data) {
+    while (b_data) {
       if (!ReadDataBlock(data_block, block))
         if (!iforce)
           exit(1);
-      if (!data)
+      if (!b_data)
         break;
       for (int i=0; i<block_rows; i++) {
       if (iverbose)
@@ -417,7 +417,7 @@ int main(int argc, char *argv[]) {
       else { // no more particles
           if (iverbose)
             fprintf(stderr,"\nNo more particles for this event.\n");
-          data=false;
+          b_data=false;
           break;
       }
     }
