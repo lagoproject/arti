@@ -110,7 +110,7 @@ ecut=800
 slurm=false
 
 echo
-while getopts ':w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:a:?lydex' opt; do
+while getopts 'w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:a:?lydex' opt; do
   case $opt in
     w)
       wdir=$OPTARG

@@ -1,4 +1,3 @@
-#!/bin/bash
 # /************************************************************************/
 # /*                                                                      */
 # /* Package:  ARTI                                                       */
@@ -6,14 +5,13 @@
 # /*                                                                      */
 # /************************************************************************/
 # /* Authors:  Hernán Asorey                                              */
-# /* e-mail:   hernanasorey@cnea.gob.ar                                   */
+# /* e-mail:   hernan.asorey@iteda.cnea.gob.ar                            */
 # /*                                                                      */
 # /************************************************************************/
 # /* Comments: Script to automatize the analysis of simulated showers     */
 # /*                                                                      */
 # /************************************************************************/
 # /* 
-#  
 #  
 # Copyright 2021
 # Hernán Asorey
@@ -80,7 +78,7 @@ showhelp() {
 	echo
 	echo -e "  -o <origin directory>     : Origin dir, where the DAT files are located"
 	echo -e "  -r <ARTI directory>       : ARTI installation directory, generally pointed by \$LAGO_ARTI (default)"
-	echo -e "  -w <workding directory>   : Working dir, where the analysis will be done (default is current directory, ${wdir})"
+	echo -e "  -w <working directory>    : Working dir, where the analysis will be done (default is current directory, ${wdir})"
 	echo -e "  -e <energy bins>          : Number of energy secondary bins (default: $energy_bins)"
 	echo -e "  -d <distance bins>        : Number of distance secondary bins (default: $distance_bins)"
 	echo -e "  -p <project base name>    : Base name for identification of S1 files (don't use spaces). Default: odir basename"
@@ -90,14 +88,12 @@ showhelp() {
 	echo -e "  -m <bins per decade>      : Produce files with the energy distribution of the primary flux per nuclei."
 	echo -e "  -j                        : Produce a batch file for parallel processing. Not compatible with local (-l)"
 	echo -e "  -l                        : Enable parallel execution locally ($N procs). Not compatible with parallel (-j)"
+	echo -e "  -v                        : Enable verbosity. Will write .log processing files."
 	echo -e "  -?                        : Shows this help and exit."
 	echo
 }
 echo
-# ajrm : tengo problemas con la ordenación de los parámetros (si cambias el orden no los coge bien), 
-#        lo he solucionado con esto, pero no sé si está bien
-while getopts ':r:w:o:p:e:d:k:s:m:t:l:j:?' opt; do
-# while getopts ':r:w:o:e:p:d:k:s:t:m:lj?' opt; do
+while getopts 'o:r:w:e:d:p:k:s:t:m:jlv?' opt; do
 	case $opt in
 		r)
 			arti_path=${OPTARG%/}
@@ -135,6 +131,9 @@ while getopts ':r:w:o:p:e:d:k:s:m:t:l:j:?' opt; do
 		j)
 			parallel=1
 			;;
+		v)
+		  verbose=true
+		  ;;
 		?)
 			showhelp
 			exit 1;
@@ -147,8 +146,7 @@ done
 ##################################################
 
 # ERRORS
-
-# is ARTI installed? 
+# is ARTI installed?
 file=$arti_path/analysis/analysis
 if [ ! -f "$file" ]; then
 	echo; echo -e "#  ERROR: ARTI analysis executable files not found in $arti_path. Please check and try again"
@@ -318,5 +316,4 @@ if [ $prims -gt 0 ]; then
 fi
 
 # final remarks
-# rm -f $prj.run
 rm -f *.log
