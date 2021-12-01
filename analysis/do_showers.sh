@@ -96,8 +96,8 @@ showhelp() {
 echo
 # ajrm : tengo problemas con la ordenación de los parámetros (si cambias el orden no los coge bien), 
 #        lo he solucionado con esto, pero no sé si está bien
-# while getopts ':r:w:o:p:e:d:k:s:m:t:l:j:?' opt; do
-while getopts ':r:w:o:e:p:d:k:s:t:m:lj?' opt; do
+while getopts ':r:w:o:p:e:d:k:s:m:t:l:j:?' opt; do
+# while getopts ':r:w:o:e:p:d:k:s:t:m:lj?' opt; do
 	case $opt in
 		r)
 			arti_path=${OPTARG%/}
@@ -261,7 +261,7 @@ for i in ${odir}/DAT??????.bz2; do
 	if [ $dirlw -gt 0 ]; then 
 		run="bzip2 -d -k $i; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm ${j}"
 	else
-		run="while ! cp -a $i $wdir/; do sleep 5; done; bzip2 -d $j.bz2; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm $wdir/${j}"
+		run="while ! cp -a $i $wdir/; do sleep 5; done; cd $wdir; bzip2 -d $j.bz2; echo $j | ${arti_path}/analysis/lagocrkread | ${arti_path}/analysis/analysis -p ${u}; rm -f $wdir/${j}"
 	fi	
 	echo $run >> $prj.run
 done
@@ -318,5 +318,5 @@ if [ $prims -gt 0 ]; then
 fi
 
 # final remarks
-# rm $prj.run
-rm *.log
+# rm -f $prj.run
+rm -f *.log
