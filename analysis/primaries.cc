@@ -314,8 +314,8 @@ int main (int argc, char *argv[]) {
   if (igeo)
     fprintf(pri, "# # Geomagnetic effects were included: %d values were read from column %d of file %s\n", iGeoN, cGeoC+1, nfg);
   fprintf(pri, "# # This is the Primaries file including geomagnetic effects - ARTI     %s\n", VERSION);
-  fprintf(pri, "# # Include an extra column (#11) indicating geomagnetic status: ");
-  fprintf(pri, "# # 0: not-allowed // 1: allowed");
+  fprintf(pri, "# # Include an extra column (#11) indicating geomagnetic status: \n");
+  fprintf(pri, "# # 0: not-allowed // 1: allowed\n");
   fprintf(pri, "# # 11 column format is:\n");
   fprintf(pri, "# # prm_Crk_id prm_energy prm_x0 prm_theta prm_phi ph_obs_lev el_obs_lev hd_obs_lev mu_obs_lev tot_obs_lev geo_status\n");
   if (ianalysis) {
@@ -357,6 +357,7 @@ int main (int argc, char *argv[]) {
   double prmMa, prmIm;
   double secp = 0.;
   bool prmGeo = true;
+  int iprmGeo = 1;
   long int geoDisShw = 0, geoDisSec = 0;
   long int totpart=0, totbin = 0;
   int minbine=10000000, maxbine=0;
@@ -386,6 +387,8 @@ int main (int argc, char *argv[]) {
     //checking for geomagnetic effects
     if (igeo) {
       prmId=d[0];
+      prmGeo=true;
+      iprmGeo=1;
       if (prmId>1) { // only check for charged particles (photons=1)
         prmEn=d[1];
         prmTh=d[3];
@@ -421,18 +424,19 @@ int main (int argc, char *argv[]) {
         iGeoA = int(prmPh/rGeoA);
         if ((prmIm/prmZ) < gGeoC[iGeoZ][iGeoA]) {
           prmGeo = false;
+          iprmGeo = 0;
           geoDisShw++;
         }
       }
     }
     do {
       // fprintf(pri, "# # prm_Crk_id prm_energy prm_x0 prm_theta prm_phi ph_obs_lev el_obs_lev hd_obs_lev mu_obs_lev tot_obs_lev geo_status\n");
-      check=fprintf(pri, "%04d %+.5E %+.5E %+08.3lf %+08.3lf %+.5E %+.5E %+.5E %+.5E %+.5E, %d\n", prmId, prmEn, d[2], prmTh, d[4], d[5], d[6], d[7], d[8], d[9], (int)prmGeo);
+      check=fprintf(pri, "%04d %+.5E %+.5E %+08.3lf %+08.3lf %+.5E %+.5E %+.5E %+.5E %+.5E %d\n", prmId, prmEn, d[2], prmTh, d[4], d[5], d[6], d[7], d[8], d[9], iprmGeo);
     } while (check<=0);
     totpart++;
   }
   // say goodbye
-  cerr << "From " << totpart << "primaries, in " << lines << "lines, " << geoDisShw << "primaries were discarded" << endl;
+  cerr << "From " << totpart << " primaries, in " << lines << " lines, " << geoDisShw << " primaries were discarded" << endl;
   fprintf(pri, "# # Total primaries: %ld, Discarded primaries: %ld, Allowed primaries: %ld\n", totpart, geoDisShw, (totpart-geoDisShw));
   pclose(pri);
 }
