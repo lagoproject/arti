@@ -53,7 +53,7 @@
 
 $VERSION="v1r0";
 
-use Switch;
+# use Switch;
 use Cwd;
 
 $tmp = "";
@@ -398,160 +398,135 @@ for ($i=0; $i<$nofruns; $i++) {
   }
   $atmcrd="ATMOD";
 
+  my $modatm = "";
+  my $altitude = 0.;
+  my $bx = 0.;
+  my $bz = 0.;
+  my $arrang = 0.;
   unless ($batch) {
-    switch ($site) {
-    case "hess" {
+    if ($site eq "hess") {
         $modatm=get("Atmospheric model selection ($site)", "E10", "ATMOSPHERE");
         $altitude=1800e2;
         $bx=12.5;
         $bz=-25.9;
         $arrang="-14";
-      }
-    case "sac" {
+	} elsif ($site eq "sac") {
         $modatm=get("Atmospheric model selection (E30=wi,E31=sp,E32=su,E33=au)", "E32", "ATMOSPHERE");
         $altitude=3700e2;
         $bx=20.94;
         $bz=-8.91;
         $arrang="0";
-      }
-    case "chi" {
+	} elsif ($site eq "chi") {
       $modatm="E1";
       $altitude=500000;
       $bx=26.56;
       $bz=8.758;
 	  $arrang="0";
-  }
-    case "ata" {
+	} elsif ($site eq "ata") {
       $modatm="";
       $altitude=510500;
       $bx=20.638;
       $bz=-8.598;
-  }
-  case "ima" {
+	} elsif ($site eq "ima") {
       $modatm="E1";
       $altitude=460000;
       $bx=22.935;
       $bz=-3.823;
-  }
-  case "sng" {
+	} elsif ($site eq "sng") {
       $modatm="E2";
       $altitude=455000;
       $bx=27.333;
       $bz=27.989;
-  }
-    case "etn" {
+	} elsif ($site eq "etn") {
         $modatm=get("Atmospheric model selection ", "E2", "ATMOSPHERE");
         $altitude=3000e2;
         $bx=27.7623;
         $bz=36.0667;
         $arrang="0";
-      }
-    case "ber" {
+	} elsif ($site eq "ber") {
         $modatm=get("Atmospheric model selection ", "E1", "ATMOSPHERE");
         $altitude=3450e2;
         $bx=26.9814;
         $bz=17.1054;
         $arrang="0";
-      }
-    case "bga" {
+    } elsif ($site eq "bga") {
         $modatm=get("Atmospheric model selection ", "E1", "ATMOSPHERE");
         $altitude=950e2;
         $bx=27.0263;
         $bz=17.1760;
         $arrang="0";
-      }
-    case "lim" {
+    } elsif ($site eq "lim") {
         $modatm=get("Atmospheric model selection ", "E2", "ATMOSPHERE");
         $altitude=168e2;
         $bx=25.28;
         $bz=-0.046;
         $arrang="0";
-      }
-    case "glr" {
+    } elsif ($site eq "glr") {
         $modatm=get("Atmospheric model selection ", "E1", "ATMOSPHERE");
         $altitude=4276e2;
         $bx=27.0750;
         $bz=11.7728;
         $arrang="0";
-      }
-    case "mch" {
+    } elsif ($site eq "mch") {
         $modatm=get("Atmospheric model selection ", "E1", "ATMOSPHERE");
         $altitude=2650e2;
         $bx=27.1762;
         $bz=14.6184;
         $arrang="0";
-      }
-    case "mge" {
+    } elsif ($site eq "mge") {
         $modatm=get("Atmospheric model selection ", "19", "$atmcrd");
         $altitude=1400e2;
         $bx=20.4367;
         $bz=-11.8217;
         $arrang="0";
-      }
-    case "brc" {
+    } elsif ($site eq "brc") {
         $modatm=get("Atmospheric model selection ", "E3", "$atmcrd");
         $altitude=800e2;
         $bx=19.234;
         $bz=-17.068;
         $arrang="0";
-      }
-    case "and" {
+      } elsif ($site eq "and") {
         $modatm=get("Atmospheric model selection ", "19", "$atmcrd");
         $altitude=4200e2;
         $bx=19.6922;
         $bz=-14.2420;
         $arrang="0";
-      }
-    case "mpc" {
-# Marcapomacocha
+      } elsif ($site eq "mpc") {
         $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
         $altitude=4500e2;
         $bx=24.9599;
         $bz=+0.4124;
-      }
-    case "cha" {
-# Chacaltaya
+	  } elsif ($site eq "cha") {
         $modatm=get("Atmospheric model selection ", "E2", "$atmcrd");
         $altitude=5230e2;
         $bx=23.0386;
         $bz=-3.9734;
-      }
-    case "cid" {
-# CIDA
+      } elsif ($site eq "cid") {
         $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
         $altitude=3600e2;
         $bx=26.8464;
         $bz=+18.1604;
-      }
-    case "mor" {
-# Mordor
+      } elsif ($site eq "mor") {
         $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
         $altitude=4400e2;
         $bx=26.8340;
         $bz=+18.2004;
-      }
-    case "lsc" {
-# La Serena
+      } elsif ($site eq "lsc") {
         $modatm=get("Atmospheric model selection ", "E2", "$atmcrd");
         $altitude=28e2;
         $bx=20.29;
         $bz=-11.74;
-      }
-    case "mbo" {
-# Base Marambio
+      } elsif ($site eq "mbo") {
         $modatm=get("Atmospheric model selection ", "E5", "$atmcrd");
         $altitude=196e2;
         $bx=19.6571;
         $bz=-30.5809;
-      }
-    case "ccs" {
-#Caracas, data provided by Jose Antonio López, UCV, 10.486004N -66.894461W
+      } elsif ($site eq "ccs") {
         $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
         $altitude=900E2;
         $bx=26.7364;
         $bz=+18.6777;
-      }
-      else {
+      } else {
         $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
         $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
         while (!$altitude) {
@@ -570,7 +545,6 @@ for ($i=0; $i<$nofruns; $i++) {
         }
       }
     }
-  }
   else {
     $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
     $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
