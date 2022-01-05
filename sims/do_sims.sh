@@ -435,10 +435,10 @@ if $slurm; then
 fi
 
 if $slurm; then
-	echo -e "#!/bin/bash" > $wdir/go-slrum-$prj.sh
-	echo -e "# go slurm $prj" >> $wdir/go-slrum-$prj.sh
-	echo -e "" >> $wdir/go-slrum-$prj.sh
-    chmod 744 $wdir/go-slrum-$prj.sh
+	echo -e "#!/bin/bash" > $wdir/go-slurm-$prj.sh
+	echo -e "# go slurm $prj" >> $wdir/go-slurm-$prj.sh
+	echo -e "" >> $wdir/go-slurm-$prj.sh
+    chmod 744 $wdir/go-slurm-$prj.sh
 fi
 
 stuff=(001206 001608 000703 002412 001105 002814 001407 002010 005626 000904 003216 002713 002311 004020 001909 005224 004018 004822 005525 003919 005123 003115 003517 004521)
@@ -461,7 +461,7 @@ mv $wdir/go-$prj-all-$n.sh $wdir/go-$prj-all-$n.run
 " > $wdir/go-$prj-all-$n.sh
 	chmod 744 $wdir/go-$prj-all-$n.sh
 	if $slurm; then
-		echo $wdir/go-$prj-all-$n.sh >> $wdir/go-slrum-$prj.sh
+		echo $wdir/go-$prj-all-$n.sh >> $wdir/go-slurm-$prj.sh
 	fi
 done
 
@@ -488,7 +488,7 @@ mv $wdir/go-$prj-he.sh $wdir/go-$prj-he.run
 chmod 744 $wdir/go-${prj}-he.sh
 rm $wdir/$prj/000402-*.run
 if $slurm; then
-	echo $wdir/go-${prj}-he.sh >> $wdir/go-slrum-$prj.sh
+	echo $wdir/go-${prj}-he.sh >> $wdir/go-slurm-$prj.sh
 fi
 
 #protons
@@ -518,7 +518,7 @@ done
 chmod 644 $wdir/go-$prj-pr-$i.sh
 mv $wdir/go-$prj-pr-$i.sh $wdir/go-$prj-pr-$i.run" > $wdir/go-${prj}-pr-$i.sh
 if $slurm; then
-    echo $wdir/go-${prj}-pr-$i.sh >> $wdir/go-slrum-$prj.sh
+    echo $wdir/go-${prj}-pr-$i.sh >> $wdir/go-slurm-$prj.sh
 fi
 done
 rm $wdir/$prj/000014-*.run
@@ -526,9 +526,7 @@ for i in $(seq 1 $multPr); do
   chmod 744 $wdir/go-${prj}-pr-$i.sh
 done
 if $slurm; then
-    echo -e "squeue -u \$USER" >> $wdir/go-slrum-$prj.sh
-    echo -e "mv $wdir/$wdir/go-slrum-$prj.sh $wdir/$wdir/go-slrum-$prj.run" >> $wdir/go-slrum-$prj.sh
-	echo -e "chmod 644 $wdir/$wdir/go-slrum-$prj.run" >> $wdir/go-slrum-$prj.sh
+    echo -e "squeue -u \$USER" >> $wdir/go-slurm-$prj.sh
+    echo -e "mv $wdir/go-slurm-$prj.sh $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
+    echo -e "chmod 644 $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
 fi
-
-
