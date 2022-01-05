@@ -86,6 +86,11 @@ $ulimit = 0.;
 $rigidity = 0.;
 $usedefaults=0;
 $gensite = 0; 
+my $modatm="";
+my $altitude=0.;
+my $bx=0.;
+my $bz=0.;
+
 
 # masses from stderr output of mass.pl
 @mid = (0, 14, 402, 703, 904, 1105, 1206, 1407, 1608, 1909, 2010, 2311, 2412, 2713, 2814, 3115, 3216, 3517, 3919, 4018, 4020, 4521, 4822, 5123, 5224, 5525, 5626);
@@ -301,11 +306,6 @@ $atmcrd = "ATMOSPHERE";
 # For pre-challenge we will simulate some of this new sites. 
 # HA - Apr 08, 2021
 # switch case replaced by if-elsif-else
-
-my $modatm="";
-my $altitude=0.;
-my $bx=0.;
-my $bz=0.;
 
 if ($site eq "sawb") {
     $modatm="E5";

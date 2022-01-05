@@ -71,7 +71,7 @@ showhelp() {
   echo -e "  -n <High edge zenith angle>        : High edge of zenith angle."
   echo -e "  -r <Low primary particle energy>   : Lower limit of the primary particle energy."
   echo -e "  -i <Upper primary particle energy> : Upper limit of the primary particle energy."
-  echo -e "  -a <high energy ecuts (GeV)>       : Enables and set high energy cuts for ECUTS"
+  echo -e "  -a <high energy ecuts>             : High energy cuts for ECUTS; (if set value in GV = enabled)."
   echo -e "  -y                                 : Select volumetric detector mode (default=flat array)"
   echo -e "Site parameters"
   echo -e "  -s <site>                          : Location (several options)"
@@ -79,7 +79,7 @@ showhelp() {
   echo -e "  -c <atm_model>                     : Fix Atmospheric Model even for predefined sites."
   echo -e "  -o <BX>                            : Horizontal comp. of the Earth's mag. field."
   echo -e "  -q <BZ>                            : Vertical comp. of the Earth's mag. field."
-  echo -e "  -b <rigidity cutoff>               : Rigidity cutoff; 0 = disabled; value in GV = enabled."
+  echo -e "  -b <rigidity cutoff>               : Rigidity cutoff; (if set value in GV = enabled)."
   echo -e "Modifiers"
   echo -e "  -l                                 : Enables SLURM cluster compatibility (with sbatch)."
   echo -e "  -e                                 : Enable CHERENKOV mode"
@@ -435,10 +435,10 @@ if $slurm; then
 fi
 
 if $slurm; then
-	echo -e "#!/bin/bash" > $wdir/go-slrum-$prj.sh
-	echo -e "# go slurm $prj" >> $wdir/go-slrum-$prj.sh
-	echo -e "" >> $wdir/go-slrum-$prj.sh
-    chmod 744 $wdir/go-slrum-$prj.sh
+	echo -e "#!/bin/bash" > $wdir/go-slurm-$prj.sh
+	echo -e "# go slurm $prj" >> $wdir/go-slurm-$prj.sh
+	echo -e "" >> $wdir/go-slurm-$prj.sh
+    chmod 744 $wdir/go-slurm-$prj.sh
 fi
 
 stuff=(001206 001608 000703 002412 001105 002814 001407 002010 005626 000904 003216 002713 002311 004020 001909 005224 004018 004822 005525 003919 005123 003115 003517 004521)
@@ -461,7 +461,7 @@ mv $wdir/go-$prj-all-$n.sh $wdir/go-$prj-all-$n.run
 " > $wdir/go-$prj-all-$n.sh
 	chmod 744 $wdir/go-$prj-all-$n.sh
 	if $slurm; then
-		echo $wdir/go-$prj-all-$n.sh >> $wdir/go-slrum-$prj.sh
+		echo $wdir/go-$prj-all-$n.sh >> $wdir/go-slurm-$prj.sh
 	fi
 done
 
@@ -488,7 +488,7 @@ mv $wdir/go-$prj-he.sh $wdir/go-$prj-he.run
 chmod 744 $wdir/go-${prj}-he.sh
 rm $wdir/$prj/000402-*.run
 if $slurm; then
-	echo $wdir/go-${prj}-he.sh >> $wdir/go-slrum-$prj.sh
+	echo $wdir/go-${prj}-he.sh >> $wdir/go-slurm-$prj.sh
 fi
 
 #protons
@@ -518,7 +518,7 @@ done
 chmod 644 $wdir/go-$prj-pr-$i.sh
 mv $wdir/go-$prj-pr-$i.sh $wdir/go-$prj-pr-$i.run" > $wdir/go-${prj}-pr-$i.sh
 if $slurm; then
-    echo $wdir/go-${prj}-pr-$i.sh >> $wdir/go-slrum-$prj.sh
+    echo $wdir/go-${prj}-pr-$i.sh >> $wdir/go-slurm-$prj.sh
 fi
 done
 rm $wdir/$prj/000014-*.run
@@ -526,9 +526,7 @@ for i in $(seq 1 $multPr); do
   chmod 744 $wdir/go-${prj}-pr-$i.sh
 done
 if $slurm; then
-    echo -e "squeue -u \$USER" >> $wdir/go-slrum-$prj.sh
-    echo -e "mv $wdir/$wdir/go-slrum-$prj.sh $wdir/$wdir/go-slrum-$prj.run" >> $wdir/go-slrum-$prj.sh
-	echo -e "chmod 644 $wdir/$wdir/go-slrum-$prj.run" >> $wdir/go-slrum-$prj.sh
+    echo -e "squeue -u \$USER" >> $wdir/go-slurm-$prj.sh
+    echo -e "mv $wdir/go-slurm-$prj.sh $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
+    echo -e "chmod 644 $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
 fi
-
-
