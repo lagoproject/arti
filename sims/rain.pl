@@ -1,26 +1,22 @@
 #!/usr/bin/perl -w
+#!/usr/bin/perl -w
 # /************************************************************************/
-# /*                                                                      */
 # /* Package:  ARTI                                                       */
 # /* Module:   rain.pl                                                    */
-# /*                                                                      */
 # /************************************************************************/
 # /* Authors:  Hernán Asorey                                              */
-# /* e-mail:   asoreyh@cab.cnea.gov.ar                                    */
-# /*                                                                      */
+# /* e-mail:   hernan.asoreyh@iteda.cnea.gov.ar                           */
 # /************************************************************************/
 # /* Comments: Main CORSIKA imput generator files and simulation launcher */
 # /*           for CORSIKA.                                               */
-# /*                                                                      */
 # /************************************************************************/
-# /* 
-#  
-# Copyright 2013
-# Hernán Asorey
-# Lab DPR (CAB-CNEA), Argentina
-# Grupo Halley (UIS), Colombia
+# /*
+# LICENSE BSD-3-Clause
+# Copyright (c) 2015
+# The LAGO Collaboration
+# https://lagoproject.net
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
 # met:
@@ -51,49 +47,56 @@
 # */
 # /************************************************************************/
 
-$VERSION="v1r0";
-
-# use Switch;
+use strict;
+use warnings;
 use Cwd;
 
-$tmp = "";
-$batch = 0;
-$runmode = 0;
-$wdir = "x";
-$crk_ver = "77402";
-$heim = "QGSII";
-$debug = 0;
-$help = 0;
-$slurm = 0;
-$highsec = 0;
-$curvout = "";
-$halley = 0;
-$ithin = $ithinh = $ithine = 0;
-$thin = $thine = $thinh = " \n";
-$efrcthn = $wmax = $rmax = $thinrath = $thinrate = $weitrath = $weitrate = 0.;
-$site="";
-$monoe = 0.;
-$monoq = 0;
-$monot = 0.;
-$monop = 0;
-$cherenkov = 0;
-$grid = 0;
-$imuaddi = 0;
-$nofruns = 1;
-$ecutshe = 800.;
+my $VERSION="v1r9";
+my $tmp = "";
+my $batch = 0;
+my $runmode = 0;
+my $wdir = "x";
+my $crk_ver = "77402";
+my $heim = "QGSII";
+my $debug = 0;
+my $help = 0;
+my $slurm = 0;
+my $highsec = 0;
+my $curvout = "";
+my $halley = 0;
+my $ithin = 0;
+my $ithinh = 0;
+my $ithine = 0;
+my $thin = " \n";
+my $thine = " \n";
+my $thinh = " \n";
+my $efrcthn = 0.;
+my $wmax = 0.;
+my $rmax = 0.;
+my $thinrath = 0.;
+my $thinrate = 0.;
+my $weitrath = 0.;
+my $weitrate = 0.;
+my $site = "";
+my $monoe = 0.;
+my $monoq = 0;
+my $monot = 0.;
+my $monop = 0;
+my $cherenkov = 0;
+my $grid = 0;
+my $imuaddi = 0;
+my $nofruns = 1;
+my $ecutshe = 800.;
 
 sub get {
   my $question = $_[0];
   my $default = $_[1];
   my $param = $_[2];
-  unless ($batch) {
-    print "$question?\n<$param $default>: ";
-  }
-  chomp (my $tmp = <>);
-  if ($tmp eq "") {
-    $tmp=$default;
-  }
-  return $tmp;
+  my $get_tmp;
+  print "$question?\n<$param $default>: " unless ($batch > 0);
+  chomp ($get_tmp = <>);
+  $get_tmp = $default if ($get_tmp eq "");
+  return $get_tmp;
 }
 
 while ($_ = $ARGV[0]) {
@@ -193,13 +196,10 @@ while ($_ = $ARGV[0]) {
   }
 }
 
-$package="corsika".$crk_ver."Linux_".$heim."_gheisha";
+my $package="corsika".$crk_ver."Linux_".$heim."_gheisha";
+$package = $package . "_thin" if ($ithin != 0);
 
-if ($ithin) {
-  $package= $package . "_thin";
-}
-
-$usage="
+my $usage="
        $0 $VERSION\n
        A simple input files generator for CORSIKA
        (C) 2013 - H. Asorey - asoreyh\@cab.cnea.gov.ar
@@ -225,103 +225,53 @@ $usage="
        -p <prmpar>                         Defines primary particle (see table 4 pg 87) (CHERENKOV)
 
        \n";
+die "$usage\n" if ($help != 0);
 
-
-if ($help) {
-  die "$usage\n";
+print STDERR "\nWARNING! You are running in DEBUG mode. I'll only show what I should do\n\n" if ($debug != 0);
+print STDERR "\nWARNING! CHERENKOV mode is enabled.\n\n" if ($cherenkov != 0);
+print STDERR "\nWARNING! Site selected for simulation: $site.\n\n" unless ($site eq "");
+if ($runmode != 0) {
+  die "\n\nERROR: You selected run mode without indicate working directory.\n$usage\n" if ($wdir eq "x");
 }
-
-if ($debug) {
-  print STDERR "\nWARNING! You are running in DEBUG mode. I'll only show what I should do\n\n";
-}
-
-if ($cherenkov) {
-  print STDERR "\nWARNING! CHERENKOV mode is enabled.\n\n";
-}
-
-unless ($site eq "") {
-  print STDERR "\nWARNING! Site selected for simulation: $site.\n\n";
-}
-
-if ($runmode) {
-  if ($wdir eq "x") {
-    die "\n\nERROR: You selected run mode without indicate working directory.\n$usage\n";
-  }
-}
-
-if (($ithine || $ithinh) && !($ithin)) {
-  die "\n\nERROR: -th or -te options needs -t option.\n$usage\n";
-}
-
-if ($ithin) {
-  unless ($wmax && $rmax && $efrcthn) {
-    die "\n\nERROR: You have to specify three paramters for THIN (-t).\n$usage\n";
-  }
+die "\n\nERROR: -th or -te options needs -t option.\n$usage\n" if (($ithine || $ithinh) && !($ithin));
+if ($ithin != 0) {
+  die "\n\nERROR: You have to specify three paramters for THIN (-t).\n$usage\n" unless ($wmax && $rmax && $efrcthn);
   $thin="THIN        $efrcthn  $wmax  $rmax\n";
 }
-
-
-if ($ithine && $ithinh) {
-  die "\n\nERROR: You can't specify both THINH and THINEM at the same time.\n$usage\n";
-
-}
-
-if ($ithine) {
-  unless ($thinrate && $weitrate) {
-    die "\n\nERROR: You have to specify two paramters for THINE (-te).\n$usage\n";
-  }
+die "\n\nERROR: You can't specify both THINH and THINEM at the same time.\n$usage\n" if ($ithine && $ithinh);
+if ($ithine != 0) {
+  die "\n\nERROR: You have to specify two paramters for THINE (-te).\n$usage\n" unless ($thinrate && $weitrate);
   $thine="THINEM      $thinrate $weitrate\n";
 }
-
-if ($ithinh) {
-  unless ($thinrath && $weitrath) {
-    die "\n\nERROR: You have to specify two paramters for THINH (-th).\n$usage\n";
-  }
+if ($ithinh != 0) {
+  die "\n\nERROR: You have to specify two paramters for THINH (-th).\n$usage\n" unless ($thinrath && $weitrath);
   $thinh="THINH       $thinrath $weitrath\n";
 }
-
 ## ready to start
-
-unless ($monoe || $monoq) {
-# XXX Could be a problem with generate_spectra.pl XXX
-  $nofruns=get("Number of runs", $nofruns, "RUNS");
-}
-
-
+$nofruns = get("Number of runs", $nofruns, "RUNS") unless ($monoe || $monoq);
+my $w_dir_tmp;
 if ($wdir eq "x") {
-  $wdirtmp=getcwd() . "/run";
+  $w_dir_tmp=getcwd() . "/run";
+} else {
+  $w_dir_tmp = $wdir;
 }
-else {
-  $wdirtmp=$wdir
+if ($batch != 0) {
+  $w_dir_tmp=get("Working directory (where CORSIKA run files are located)", "$w_dir_tmp", "WDIR");
+} else {
+  $wdir=get("Working directory (where CORSIKA run files are located)", "$w_dir_tmp", "WDIR");
 }
-if ($batch) {
-  $wdirtmp=get("Working directory (where CORSIKA run files are located)", "$wdirtmp", "WDIR");
+my $def_prj="sims";
+$def_prj = "mono" . $site if (int($monoe) || $monoq);
+my $prj=get("Project name (Results will go into $wdir/<project> dir)", "$def_prj", "DIRECT");
+my $user=get("User name", "LAGO", "USER");
+my $bin=$wdir."/".$package;
+my $direct="$wdir/$prj";
+my $home = $wdir;
+unless ($grid != 0) {
+  die "\n\nERROR: Couldn't find corsika at $bin. Please check\n$usage\n" unless (-e $bin);
 }
-else {
-  $wdir=get("Working directory (where CORSIKA run files are located)", "$wdirtmp", "WDIR");
-}
-
-$defprj="sims";
-if (int($monoe) || $monoq) {
-  $defprj="mono".$site;
-}
-$prj=get("Project name (Results will go into $wdir/<project> dir)", "$defprj", "DIRECT");
-
-$user=get("User name", "LAGO", "USER");
-
-$bin=$wdir."/".$package;
-
-$direct="$wdir/$prj";
-$home = $wdir;
-unless ($grid) {
-  unless (-e $bin) {
-    die "\n\nERROR: Couldn't find corsika at $bin. Please check\n$usage\n";
-  }
-}
-
 system("clear");
-
-unless ($batch) {
+unless ($batch != 0) {
   print "###################################################################\n";
   print "# I will run this script $nofruns times\n";
   print "# in $direct/\n";
@@ -329,10 +279,9 @@ unless ($batch) {
   print "###################################################################\n";
   $tmp=<>;
 }
-
-for ($i=0; $i<$nofruns; $i++) {
-  $index=$i+1;
-  unless ($batch) {
+for (my $i=0; $i < $nofruns; $i++) {
+  my $index=$i+1;
+  unless ($batch != 0) {
     system("clear");
     print "###################################################################\n";
     print "# RUN $index\n";
@@ -341,69 +290,63 @@ for ($i=0; $i<$nofruns; $i++) {
     print "# Simulation parameters\n";
     print "###################################################################\n";
   }
-  unless ($monop) {
-    $runnr=get("Corsika run number", $index, "RUNNR");
-    $evtnr=get("number of first shower event", 0 ,"EVTNR");
-  }
-  else {
-    $evtnr = 1;
+  my $run_nr;
+  my $evt_nr;
+  my $prmpar;
+  unless ($monop != 0) {
+    $run_nr=get("Corsika run number", $index, "RUNNR");
+    $evt_nr=get("number of first shower event", 0 ,"EVTNR");
+  } else {
+    $evt_nr = 1;
     $prmpar = $monop;
-    if ($monop > 6) {
-      $monop = 9;
-# 9=hadrons
-    }
-    $monoename=$monoe;
-    if ($monoename>999) {
-      $monoename=999;
-    }
-    $runnr = int($monot + $monoename * 100. + $monop * 1e5);
+    $monop = 9 if ($monop > 6); # 9=hadrons
+    my $monoename = $monoe;
+    $monoename = 999 if ($monoename > 999);
+    $run_nr = int($monot + $monoename * 100. + $monop * 1e5);
   }
-  $nshow=get("number of showers to generate", 100000,"NSHOW");
-  unless ($batch) {
+  my $N_show=get("number of showers to generate", 1, "NSHOW");
+  unless ($batch != 0) {
     system("clear");
     print "###################################################################\n";
     print "# Primary particle parameters\n";
     print "###################################################################\n";
   }
 
-  unless ($monop) {
-    $prmpar=get("Primary particle identification (see table 4 pg 87)", 14, "PRMPAR");
+  $prmpar = get("Primary particle identification (see table 4 pg 87)", 14, "PRMPAR") unless ($monop != 0);
+  my $e_slope;
+  my $e_low;
+  my $e_high;
+  unless ($monoe != 0) {
+    $e_slope=get("Spectral index of primary energy spectrum", -2.7, "ESLOPE");
+    $e_low=get("Lower limit of the primary particle energy (ERANGE) [GeV]", 1e4, "LLIMIT");
+    $e_high=get("Upper limit of the primary particle energy (ERANGE) [GeV]", 1e4, "ULIMIT");
+  } else {
+    $e_slope = -2.7; # don't used for mono-energetic showers but needed
+    $e_low = $e_high = $monoe;
   }
-  unless ($monoe) {
-    $eslope=get("Spectral index of primary energy spectrum", -2.7, "ESLOPE");
-    $elow=get("Lower limit of the primary particle energy (ERANGE) [GeV]", 1e4, "LLIMIT");
-    $ehigh=get("Upper limit of the primary particle energy (ERANGE) [GeV]", 1e4, "ULIMIT");
+  my $t_low;
+  my $t_high;
+  unless ($monoq != 0) {
+    $t_low=get("Low edge of zenith angle (THETAP) [deg]", 0, "THETPR(1)");
+    $t_high=get("High edge of zenith angle (THETAP) [deg]", 90, "THETPR(2)");
+  } else {
+    $t_low = $t_high = $monot;
   }
-  else {
-    $eslope = -2.7;
-# for completitude
-    $elow = $ehigh = $monoe;
-  }
-  unless ($monoq) {
-    $tlow=get("Low edge of zenith angle (THETAP) [deg]", 0, "THETPR(1)");
-    $thigh=get("High edge of zenith angle (THETAP) [deg]", 90, "THETPR(2)");
-  }
-  else {
-    $tlow = $thigh = $monot;
-  }
-  $flow=get("Low edge of azimuth angle (PHIP) [deg]", -180, "PHIPR(1)");
-  $fhigh=get("High edge of azimuth angle (PHIP) [deg]", 180, "PHIPR(2)");
-
-  unless ($batch) {
+  my $f_low=get("Low edge of azimuth angle (PHIP) [deg]", -180, "PHIPR(1)");
+  my $f_high=get("High edge of azimuth angle (PHIP) [deg]", 180, "PHIPR(2)");
+  unless ($batch != 0) {
     system("clear");
     print "###################################################################\n";
     print "# Observatory parameters\n";
     print "###################################################################\n";
-
   }
-  $atmcrd="ATMOD";
-
+  my $atmcrd="ATMOD";
   my $modatm = "";
   my $altitude = 0.;
   my $bx = 0.;
   my $bz = 0.;
   my $arrang = 0.;
-  unless ($batch) {
+  unless ($batch != 0) {
     if ($site eq "hess") {
         $modatm=get("Atmospheric model selection ($site)", "E10", "ATMOSPHERE");
         $altitude=1800e2;
@@ -485,185 +428,154 @@ for ($i=0; $i<$nofruns; $i++) {
         $bx=19.234;
         $bz=-17.068;
         $arrang="0";
-      } elsif ($site eq "and") {
-        $modatm=get("Atmospheric model selection ", "19", "$atmcrd");
-        $altitude=4200e2;
-        $bx=19.6922;
-        $bz=-14.2420;
-        $arrang="0";
-      } elsif ($site eq "mpc") {
-        $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
-        $altitude=4500e2;
-        $bx=24.9599;
-        $bz=+0.4124;
-	  } elsif ($site eq "cha") {
-        $modatm=get("Atmospheric model selection ", "E2", "$atmcrd");
-        $altitude=5230e2;
-        $bx=23.0386;
-        $bz=-3.9734;
-      } elsif ($site eq "cid") {
-        $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
-        $altitude=3600e2;
-        $bx=26.8464;
-        $bz=+18.1604;
-      } elsif ($site eq "mor") {
-        $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
-        $altitude=4400e2;
-        $bx=26.8340;
-        $bz=+18.2004;
-      } elsif ($site eq "lsc") {
-        $modatm=get("Atmospheric model selection ", "E2", "$atmcrd");
-        $altitude=28e2;
-        $bx=20.29;
-        $bz=-11.74;
-      } elsif ($site eq "mbo") {
-        $modatm=get("Atmospheric model selection ", "E5", "$atmcrd");
-        $altitude=196e2;
-        $bx=19.6571;
-        $bz=-30.5809;
-      } elsif ($site eq "ccs") {
-        $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
-        $altitude=900E2;
-        $bx=26.7364;
-        $bz=+18.6777;
-      } else {
-        $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
+    } elsif ($site eq "and") {
+      $modatm=get("Atmospheric model selection ", "19", "$atmcrd");
+      $altitude=4200e2;
+      $bx=19.6922;
+      $bz=-14.2420;
+      $arrang="0";
+    } elsif ($site eq "mpc") {
+      $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
+      $altitude=4500e2;
+      $bx=24.9599;
+      $bz=+0.4124;
+    } elsif ($site eq "cha") {
+      $modatm=get("Atmospheric model selection ", "E2", "$atmcrd");
+      $altitude=5230e2;
+      $bx=23.0386;
+      $bz=-3.9734;
+    } elsif ($site eq "cid") {
+      $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
+      $altitude=3600e2;
+      $bx=26.8464;
+      $bz=+18.1604;
+    } elsif ($site eq "mor") {
+      $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
+      $altitude=4400e2;
+      $bx=26.8340;
+      $bz=+18.2004;
+    } elsif ($site eq "lsc") {
+      $modatm=get("Atmospheric model selection ", "E2", "$atmcrd");
+      $altitude=28e2;
+      $bx=20.29;
+      $bz=-11.74;
+    } elsif ($site eq "mbo") {
+      $modatm=get("Atmospheric model selection ", "E5", "$atmcrd");
+      $altitude=196e2;
+      $bx=19.6571;
+      $bz=-30.5809;
+    } elsif ($site eq "ccs") {
+      $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
+      $altitude=900E2;
+      $bx=26.7364;
+      $bz=+18.6777;
+    } else {
+      $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
+      $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
+      while ($altitude == 0) {
+        print STDERR "ERROR: Observation level is mandatory\n";
         $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
-        while (!$altitude) {
-          print STDERR "ERROR: Observation level is mandatory\n";
-          $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
-        }
+      }
+      $bx=get("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM",0,"BX");
+      while ($bx == 0) {
+        print STDERR "ERROR: BX is mandatory\n";
         $bx=get("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM",0,"BX");
-        while (!$bx) {
-          print STDERR "ERROR: BX is mandatory\n";
-          $bx=get("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM",0,"BX");
-        }
+      }
+      $bz=get("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]",0,"BZ");
+      while ($bz == 0) {
+        print STDERR "ERROR: BZ is mandatory\n";
         $bz=get("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]",0,"BZ");
-        while (!$bz) {
-          print STDERR "ERROR: BZ is mandatory\n";
-          $bz=get("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]",0,"BZ");
-        }
       }
     }
-  else {
-    $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
+  } else {
+    $altitude = get("Observation level above sea level [cm]", 0, "OBSLEV");
     $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
-    while (!$altitude) {
+    while ($altitude == 0) {
       print STDERR "ERROR: Observation level is mandatory\n";
       $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
     }
     $bx=get("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM",0,"BX");
-    while (!$bx) {
+    while ($bx == 0) {
       print STDERR "ERROR: BX is mandatory\n";
       $bx=get("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM",0,"BX");
     }
     $bz=get("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]",0,"BZ");
-    while (!$bz) {
+    while ($bz == 0) {
       print STDERR "ERROR: BZ is mandatory\n";
       $bz=get("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]",0,"BZ");
     }
   }
-  if (uc(substr($modatm,0,1)) eq "E") {
-# using external atmospheres bernlhor
+  if (uc(substr($modatm,0,1)) eq "E") { # using external atmospheres bernlhor
     $atmcrd = "ATMOSPHERE";
     $modatm =~ s/E//g;
 	$modatm .= " Y";
   } else {
-	if (uc(substr($modatm,0,1)) eq "G") {
-	# gdas model
+	if (uc(substr($modatm,0,1)) eq "G") { # gdas model
 		$atmcrd = "ATMFILE";
 		$modatm = "'atm" . lc($modatm) . ".dat'";
 		$package = $package . "-atmfile";
 		$bin=$wdir."/".$package;
-		unless (-e $bin) {
-			die "\n\nERROR: Couldn't find corsika excecutable $package at $bin. Please check\n$usage\n";
-		}
-	}
+      die "\n\nERROR: Couldn't find corsika excecutable $package at $bin. Please check\n$usage\n" unless (-e $bin);
+    }
   }
-#LAGO ECUTS
-# @ecuts=(0.05,0.05,1E-4,1E-4);
-# @ecuts=(0.05, 0.05, 0.00005, 0.00005);
-  @ecuts=(0.05, 0.01, 0.00005, 0.00005);
-  if ($highsec) {
-    @ecuts=($ecutshe, $ecutshe, $ecutshe, $ecutshe); 
-	if ($elow < $ecutshe) {
-		$elow = $ecutshe;
-	}
-}
-
-#true of false
-  unless ($batch) {
+  # LAGO ECUTS, minimum possible values as for the current corsika version
+  my @ecuts=(0.05, 0.01, 0.00005, 0.00005);
+  if ($highsec != 0) {
+    @ecuts=($ecutshe, $ecutshe, $ecutshe, $ecutshe);
+    $e_low = $ecutshe if ($e_low < $ecutshe);
+  }
+  unless ($batch != 0) {
     print "###################################################################\n";
     print "# General (T or F) parameters\n";
     print "###################################################################\n";
   }
-
-# MUADDI. For v<7.4005, EMADDI AND NUADDI does not work, only MUADDI
-  $muaddi="";
-  if ($imuaddi) {
+  my $muaddi=""; # MUADDI. For v<7.4005, EMADDI AND NUADDI does not work, only MUADDI
+  if ($imuaddi != 0) {
     if ($crk_ver eq "73500") {
       $muaddi=get("Get additional info for muons",'F',"MUADDI");
     } else {
       $muaddi=get("Get additional info for muons, EM and neutrinos",'F',"MUADDI, EMADDI, NUADDI");
     }
   }
-
-  $plotsh=get("Write add- files for track plot of secondaries",'F',"PLOTSH");
-  $datbas=get("Write .dbase file",'T',"DATBAS");
-  $llongi=get("Track longitudinal development of secondaries (LONGI)", 'F',"LLONGI");
-  $ftabout=get("Write tab output of charged particle dev file (PAROUT)",'F',"FTABOUT");
-  $s1 = int(rand(1e7));
-  $s2 = int(rand(1e7));
-  $s3 = int(rand(1e7));
-  $s4 = int(rand(1e7));
-  $cerary = "50 50 80.E2 80.E2 25 25";
-
-
-##################################################################################
-# END OF INTERACTIVE QUESTIONS
-##################################################################################
-  $cards="";
-  $plotshs="";
-  $direct2 = $direct;
+  my $plotsh=get("Write add- files for track plot of secondaries",'F',"PLOTSH");
+  my $datbas=get("Write .dbase file",'T',"DATBAS");
+  my $llongi=get("Track longitudinal development of secondaries (LONGI)", 'F',"LLONGI");
+  my $ftabout=get("Write tab output of charged particle dev file (PAROUT)",'F',"FTABOUT");
+  my $s1 = int(rand(1e7));
+  my $s2 = int(rand(1e7));
+  my $s3 = int(rand(1e7));
+  my $s4 = int(rand(1e7));
+  my $cerary = "50 50 80.E2 80.E2 25 25";
+  my $cards = "";
+  my $plotshs = "";
+  my $direct2 = $direct;
   $llongi = "F";
   $datbas = "F";
-  if ($grid) {
-    $direct2 = "."
-  }
-  $muadditxt=""; 
-  if ($imuaddi) {
+  $direct2 = "." if ($grid != 0);
+  my $muadditxt = "";
+  if ($imuaddi != 0) {
     $muadditxt="MUADDI      $muaddi
 EMADDI      $muaddi
 NUADDI      $muaddi";
-    if ($crk_ver*1.0 < 74005) {
-  	  $muadditxt = "";
-    }
+    $muadditxt = "" if ($crk_ver * 1.0 < 74005);
   }
-
-  unless ($halley) {
-    $plotshs="PLOTSH      $plotsh";
-  }
-  if ($plotsh eq "F") {
-    $plotshs="";
-  }
-  if ($cherenkov) {
-    $cards="RUNNR         $runnr
-EVTNR         $evtnr
-NSHOW         $nshow
-
+  $plotshs = "PLOTSH      $plotsh" unless ($halley != 0);
+  $plotshs = "" if ($plotsh eq "F");
+  if ($cherenkov != 0) {
+    $cards="RUNNR         $run_nr
+EVTNR         $evt_nr
+NSHOW         $N_show
 PRMPAR        $prmpar
-ESLOPE        $eslope
-ERANGE        $elow $ehigh
-THETAP        $tlow $thigh
-PHIP          $flow $fhigh
+ESLOPE        $e_slope
+ERANGE        $e_low $e_high
+THETAP        $t_low $t_high
+PHIP          $f_low $f_high
 VIEWCONE      0. 0.
-
 OBSLEV        $altitude
 $atmcrd       $modatm
 MAGNET        $bx $bz
 ARRANG        $arrang
 CERARY        $cerary
-
 FIXHEI        0. 0
 FIXCHI        0.
 SEED          $s1   0   0
@@ -671,18 +583,15 @@ SEED          $s2   0   0
 SEED          $s3   0   0
 SEED          $s4   0   0
 ECUTS         $ecuts[0] $ecuts[1] $ecuts[2] $ecuts[3]
-
 $muadditxt
 MUMULT        T
 MAXPRT        1
 ELMFLG        F   T
 LONGI         $llongi 20.  T  T
 ECTMAP        1.E3
-
 CERSIZ        1.
 CERFIL        T
 CWAVLG        250.  700.
-
 $plotshs
 DIRECT        $direct2/
 DATBAS        $datbas
@@ -690,18 +599,15 @@ PAROUT        T $ftabout
 USER          $user
 EXIT
 ";
-  }
-  else {
-	$cards="RUNNR       $runnr
-EVTNR       $evtnr
-NSHOW       $nshow
-
+  } else {
+	$cards="RUNNR       $run_nr
+EVTNR       $evt_nr
+NSHOW       $N_show
 PRMPAR      $prmpar
-ESLOPE      $eslope
-ERANGE      $elow $ehigh
-THETAP      $tlow $thigh
-PHIP        $flow $fhigh
-
+ESLOPE      $e_slope
+ERANGE      $e_low $e_high
+THETAP      $t_low $t_high
+PHIP        $f_low $f_high
 OBSLEV      $altitude
 $atmcrd     $modatm
 MAGNET      $bx $bz
@@ -711,7 +617,6 @@ SEED        $s2   0   0
 SEED        $s3   0   0
 SEED        $s4   0   0
 ECUTS       $ecuts[0] $ecuts[1] $ecuts[2] $ecuts[3]
-
 $curvout
 $muadditxt
 MUMULT      T
@@ -719,7 +624,6 @@ MAXPRT      1
 ELMFLG      F   T
 LONGI       $llongi  10.  T  T
 ECTMAP      1.E11
-
 $plotshs
 DIRECT      $direct2/
 DATBAS      $datbas
@@ -731,32 +635,27 @@ USER        $user
 EXIT
 ";
   }
-
-  unless ($batch) {
+  unless ($batch != 0) {
     system ("clear");
     print "$cards";
-
     print "###################################################################\n";
     print "# I will run this simulation using those parameters\n";
     print "# Please check and press ENTER to continue; CTRL-C to abort\n";
     print "###################################################################\n";
     $tmp=<>;
   }
-
-  $name=sprintf("%06d-%04d-%011d",$runnr,$prmpar,$nshow);
-  $file="$direct/DAT$name.input";
-  $binout=sprintf("$direct/DAT%06d",$runnr);
-  $out="$direct/DAT$name.lst";
-  $script = "$home/run-$prj-$name.sh";
-
-  unless ($debug) {
+  my $name = sprintf("%06d-%04d-%011d",$run_nr,$prmpar,$N_show);
+  my $file = "$direct/DAT$name.input";
+  my $binout = sprintf("$direct/DAT%06d",$run_nr);
+  my $out = "$direct/DAT$name.lst";
+  my $script = "$home/run-$prj-$name.sh";
+  unless ($debug != 0) {
     opendir(IMD, "$direct/") or system("mkdir $direct/");
     closedir(IMD);
-
-    open ($fh ,">$file") or die "Can't open $file\n";
+    open (my $fh ,">$file") or die "Can't open $file\n";
     print $fh "$cards";
     close($fh);
-    unless ($grid) {
+    unless ($grid != 0) {
       open ($fh ,">$script") or die "Can't open $script\n";
       print $fh "#!/bin/bash\n";
       print $fh "echo $name\n";
@@ -773,20 +672,20 @@ EXIT
     }
   }
   $name = $name . "-$prj";
-  $cmd = "";
-  unless ($grid) {
+  my $cmd = "";
+  unless ($grid != 0) {
     print "###################################################################\n";
     print "# Starting simulations $name\n";
-    if ($slurm) {
-      $cmd="sbatch -p highpri2 -o ${name}_srun_%j.log ${script}";
+    if ($slurm != 0) {
       print "###################################################################\n";
+      $cmd="sbatch -p highpri2 -o ${name}_srun_%j.log ${script}";
     }
     else {
       print "# in screen $name\n";
       print "###################################################################\n";
       $cmd = "screen -d -m -a -S $name $script; screen -ls";
     }
-    if ($debug) {
+    if ($debug != 0) {
       print "$cmd\n";
     }
     else {
@@ -794,7 +693,7 @@ EXIT
     }
   }
 }
-unless ($grid) {
+unless ($grid != 0) {
   print "###################################################################\n";
   print "# BYE BYE\n";
   print "###################################################################\n";

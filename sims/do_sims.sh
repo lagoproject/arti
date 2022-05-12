@@ -1,24 +1,18 @@
 #!/bin/bash
 # /************************************************************************/
-# /*                                                                      */
 # /* Package:  ARTI                                                       */
-# /* Module:   do_sims.sh										          */
-# /*                                                                      */
+# /* Module:   do_sims.sh										                              */
 # /************************************************************************/
 # /* Authors:  Hernán Asorey                                              */
-# /* e-mail:   asoreyh@cab.cnea.gov.ar                                    */
-# /*                                                                      */
+# /* e-mail:   hernan.asoreyh@iteda.cnea.gov.ar                           */
 # /************************************************************************/
-# /* Comments: Main script to automatize secondary flux calculations and  */
-# /*           run simulations in a single personal computer              */
-# /*                                                                      */
+# /* Comments: Main script to automatize secondary flux calculations      */
 # /************************************************************************/
-# /* 
-#  
-# Copyright 2017
-# Hernán Asorey
-# Lab DPR (CAB-CNEA), Argentina
-# Grupo Halley (UIS), Colombia
+# /*
+# LICENSE BSD-3-Clause
+# Copyright (c) 2015
+# The LAGO Collaboration
+# https://lagoproject.net
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -51,8 +45,7 @@
 # */
 # /************************************************************************/
 # 
-VERSION="v1r0"; # Tue Aug  6 15:43:52 COT 2013
-
+VERSION="v1r9";
 showhelp() {
   echo 
   echo -e "$0 version $VERSION"
@@ -316,7 +309,7 @@ fi
 if $highsec; then
 	echo -e "#  WARNING: High energy cuts of $ecut GeV for secondaries will be used."
 	if [ $lowppe -lt $ecut ]; then
-			lowppe="$ecut"
+			lowppe=$ecut
 			lppe=true
 			echo -e "#  WARNING: Primary particle low energy limit is below energy cuts for secondaries. Changing to: $lowppe"
 	fi
@@ -325,7 +318,6 @@ fi
 if $slurm; then
 	echo -e "#  WARNING: SLURM mode is enable. Will not work in other environments."
 fi
-
 
 corsika_bin="corsika${ver}Linux_${hig}_gheisha"
 if [ ! -e $wdir/$corsika_bin ]; then
