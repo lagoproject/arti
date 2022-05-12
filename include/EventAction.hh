@@ -13,7 +13,6 @@
 
 // Local Libraries
 //
-#include "CerenkovValidation.hh"
 #include "PrimaryGeneratorAction.hh"
 
 
@@ -48,7 +47,6 @@ class EventAction : public G4UserEventAction
     std::string partId;
     
   private:
-//    CerenkovValidation* validating;
     G4int cerenkovPhontons;
     G4double totalLength;
 };

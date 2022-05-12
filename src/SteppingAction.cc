@@ -22,7 +22,6 @@
 #include "SteppingAction.hh"
 #include "DetectorConstruction.hh"
 #include "PMTSD.hh"
-#include "CerenkovValidation.hh"
 #include "EventAction.hh"
 #include "PrimaryGeneratorAction.hh"
 
@@ -41,7 +40,6 @@ SteppingAction::SteppingAction(EventAction* eventAction)
   fEventNumber = -1;
   initEner = 0.;
   pmtSD = new PMTSD;
- // cerValid = new CerenkovValidation;
 
   
   detectorConstruction 
@@ -181,95 +179,6 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
 
     fEventAction->fRunAction->histRun->trackLengthDetec(5, lengthStep);
   }
-
-
-
-  // *********************
-  // Validating Simulation
-  // *********************
-
-  // -----------------------------------
-  // CerPhoPerCm: Cernkov Photons per cm
-  
-/*  fEventAction->fRunAction->cerVali->CerPhoPerCm(track);
-  if(track->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition())
-    track->SetTrackStatus(fStopAndKill);
-
-  if(track->GetParentID() == 0)
-    if((track->GetTrackLength() / (1.*cm)) >= 10.)
-    {
-      fEventAction->fRunAction->cerVali->CerPhoPerCm(track->GetTrackLength());
-      fEventAction->fRunAction->fillHistPhoVcm();
-      track->SetTrackStatus(fStopAndKill);
-    }*/
-
-  // -------------------------
-  // *** Counting Cerenkov ***
-  /*if ( track->GetCurrentStepNumber() == 1
-     && track->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition() 
-     && track->GetCreatorProcess()->GetProcessName() == "Cerenkov" )
-    fEventAction->fRunAction->cerVali->countingPho(1);
-
-  if ( track->GetCurrentStepNumber() > 1
-      && track->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition()
-      && track->GetCreatorProcess()->GetProcessName() == "Cerenkov"
-      && step->GetPostStepPoint()->GetPhysicalVolume()->GetName() == "pmt_geo" )
-  {
-    fEventAction->fRunAction->cerVali->countingPho(2);
-
-    if ( pmtSD->ProcessHits(step, track->GetGlobalTime()) )
-      fEventAction->fRunAction->cerVali->countingPho(3);
-      
-    track->SetTrackStatus(fStopAndKill);
-   }
-  */
-
-  // -------------------------------------------------
-  // StopPowDist: Stopping Power vs distance in water.
-  
-  /*if(track->GetParentID() == 0)
-    fEventAction->fRunAction->cerVali->StopPowDeepWater(step);
-
-  if(track->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition())
-    track->SetTrackStatus(fStopAndKill);
-    */
-
-  // -----------------------
-  // Muon Scattering in Rock
-  //G4ThreeVector* tmp = new G4ThreeVector(step->GetPreStepPoint()->GetPosition());
-/*  if(track->GetParentID() == 0 
-      && 
-      step->GetPreStepPoint()->GetPhysicalVolume() == detectorConstruction->GetExpHall()
-      )
-  {
-    fEventAction->partMomeDir = step->GetPreStepPoint()->GetMomentumDirection();
-    track->SetTrackStatus(fStopAndKill);
-  }
-*/
-
-  // ---------------------------
-  // Counting photons hit on PMT  
-/*  if(track->GetParentID() == 0 && track->GetCurrentStepNumber() == 1)
-    G4cout << "Begining time: " << track->GetGlobalTime() / (1.*ns) << G4endl;
-
-    if(track->GetParentID() == 0
-      &&
-      step->GetPreStepPoint()->GetPhysicalVolume() == detectorConstruction->GetExpHall()
-    )
-    track->SetTrackStatus(fStopAndKill);
-    */
-
-/*  if(track->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition()
-      && step->GetPostStepPoint()->GetPhysicalVolume()->GetName() == "pmt_geo")
-  {
-    if (track->GetCreatorProcess()->GetProcessName() == "Cerenkov")
-    {
-      //fEventAction->countingCerenkovs(nPhotons); // Counting the Cerenkov-photons produced.
-      phoOnPmt += pmtSD->ProcessHits(step, track->GetGlobalTime());
-      track->SetTrackStatus(fStopAndKill);
-    }
-  }
-*/
 
   fwaterVolume
     = detectorConstruction->GetWaterVolume();

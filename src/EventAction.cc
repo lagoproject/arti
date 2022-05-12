@@ -16,8 +16,6 @@
 //
 #include "EventAction.hh"
 #include "RunAction.hh"
-#include "CerenkovValidation.hh"
-#include "CerValHistograms.hh"
 #include "PrimaryGeneratorAction.hh"
 
 
@@ -73,16 +71,12 @@ void EventAction::BeginOfEventAction(const G4Event* event)
   else 
     fRunAction->histRun->distInject(4);
 
-  //fRunAction->cerVali->resetting();
 }
 
 
 void EventAction::EndOfEventAction(const G4Event* event)
 {
   G4cout << "End Event: " << event->GetEventID() << G4endl;
-
-  fRunAction->cerVali->printtingCerPhoCounting(1); 
-  fRunAction->cerVali->resetting();
 
   if ( muonOk )
   {
