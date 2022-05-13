@@ -47,10 +47,10 @@
 # 
 VERSION="v1r9";
 showhelp() {
-  echo 
   echo -e "$0 version $VERSION"
   echo 
   echo -e "USAGE $0:"
+  echo -e
   echo -e "Simulation parameters"
   echo -e "  -w <working dir>                   : Working directory, where bin (run) files are located"
   echo -e "  -p <project name>                  : Project name (suggested format: NAMEXX)"
@@ -58,6 +58,7 @@ showhelp() {
   echo -e "  -h <HE Int Model (EPOS|QGSII)>     : Define the high interaction model to be used"
   echo -e "  -u <user name>                     : User Name."
   echo -e "  -j <procs>                         : Number of processors to use"
+  echo -e
   echo -e "Physical parameters"
   echo -e "  -t <flux time>                     : Flux time (in seconds) for simulations"
   echo -e "  -m <Low edge zenith angle>         : Low edge of zenith angle."
@@ -66,13 +67,16 @@ showhelp() {
   echo -e "  -i <Upper primary particle energy> : Upper limit of the primary particle energy."
   echo -e "  -a <high energy ecuts>             : High energy cuts for ECUTS; (if set value in GV = enabled)."
   echo -e "  -y                                 : Select volumetric detector mode (default=flat array)"
+  echo -e
   echo -e "Site parameters"
   echo -e "  -s <site>                          : Location (several options)"
   echo -e "  -k <altitude, in cm>               : Fix altitude, even for predefined sites"
   echo -e "  -c <atm_model>                     : Fix Atmospheric Model even for predefined sites."
   echo -e "  -o <BX>                            : Horizontal comp. of the Earth's mag. field."
   echo -e "  -q <BZ>                            : Vertical comp. of the Earth's mag. field."
-  echo -e "  -b <rigidity cutoff>               : Rigidity cutoff; (if set value in GV = enabled)."
+  echo -e "  -b <rigidity cutoff>               : Rigidity cutoff; (if set value in GV = enabled, <0 = disable)."
+  echo -e "  -g <Lat, Lon> *dev                 : Obtain the current values of BX and BZ for a site located at (Lat,Lon,Alt), -k option is mandatory. If -s is used, then (Lat,Lon,Alt) will be taken from the standard characterization of the site."
+  echo -e
   echo -e "Modifiers"
   echo -e "  -l                                 : Enables SLURM cluster compatibility (with sbatch)."
   echo -e "  -e                                 : Enable CHERENKOV mode"
@@ -418,9 +422,8 @@ if $slurm; then
 fi
 
 rain="$rain -r $wdir -v $ver -h $hig -b $prj/\$i-*.run"
-
-echo -e "#  INFO   : rain command: $rain"
-
+# echo -e "#  INFO   : rain command: $rain"
+echo -e "#  INFO   : Calculations done. Now run the go_${prj}_* scripts in $wdir/"
 basenice=19
 if $slurm; then
   basenice=0;

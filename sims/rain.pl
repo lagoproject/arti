@@ -1,5 +1,4 @@
 #!/usr/bin/perl -w
-#!/usr/bin/perl -w
 # /************************************************************************/
 # /* Package:  ARTI                                                       */
 # /* Module:   rain.pl                                                    */
@@ -50,6 +49,8 @@
 use strict;
 use warnings;
 use Cwd;
+use JSON;
+use LWP::Simple;
 
 my $VERSION="v1r9";
 my $tmp = "";
@@ -67,6 +68,7 @@ my $halley = 0;
 my $ithin = 0;
 my $ithinh = 0;
 my $ithine = 0;
+my $gensite = 0;
 my $thin = " \n";
 my $thine = " \n";
 my $thinh = " \n";
@@ -77,7 +79,7 @@ my $thinrath = 0.;
 my $thinrate = 0.;
 my $weitrath = 0.;
 my $weitrate = 0.;
-my $site = "";
+my $site = "unk";
 my $monoe = 0.;
 my $monoq = 0;
 my $monot = 0.;
@@ -88,14 +90,15 @@ my $imuaddi = 0;
 my $nofruns = 1;
 my $ecutshe = 800.;
 
-sub get {
+sub get_answer {
   my $question = $_[0];
   my $default = $_[1];
   my $param = $_[2];
   my $get_tmp;
   print "$question?\n<$param $default>: " unless ($batch > 0);
   chomp ($get_tmp = <>);
-  $get_tmp = $default if ($get_tmp eq "");
+  $get_tmp = $default unless ($get_tmp);
+  print "Fixed param: $param $get_tmp\n\n" if ($batch == 0);
   return $get_tmp;
 }
 
@@ -198,13 +201,9 @@ while ($_ = $ARGV[0]) {
 
 my $package="corsika".$crk_ver."Linux_".$heim."_gheisha";
 $package = $package . "_thin" if ($ithin != 0);
-
 my $usage="
        $0 $VERSION\n
-       A simple input files generator for CORSIKA
-       (C) 2013 - H. Asorey - asoreyh\@cab.cnea.gov.ar
-       Usage: See $0 -?  - If you enjoy it, please send me an email\n
-       $0\n
+       Usage: $0 options\n
        -b                                  Activates batch mode
        -i                                  Disable PLOTSH and PLOTSH2 modes (usual simms production)
        -d                                  Debug mode: only shows what it should do. Don't start simulation
@@ -223,13 +222,13 @@ my $usage="
        -m <energy>                         Defines energy (in GeV) for monoenergetic showers (CHERENKOV)
        -q <theta>                          Defines zenith angle (in degs) for fixed angle showers (CHERENKOV)
        -p <prmpar>                         Defines primary particle (see table 4 pg 87) (CHERENKOV)
-
        \n";
 die "$usage\n" if ($help != 0);
 
 print STDERR "\nWARNING! You are running in DEBUG mode. I'll only show what I should do\n\n" if ($debug != 0);
 print STDERR "\nWARNING! CHERENKOV mode is enabled.\n\n" if ($cherenkov != 0);
 print STDERR "\nWARNING! Site selected for simulation: $site.\n\n" unless ($site eq "");
+
 if ($runmode != 0) {
   die "\n\nERROR: You selected run mode without indicate working directory.\n$usage\n" if ($wdir eq "x");
 }
@@ -248,22 +247,22 @@ if ($ithinh != 0) {
   $thinh="THINH       $thinrath $weitrath\n";
 }
 ## ready to start
-$nofruns = get("Number of runs", $nofruns, "RUNS") unless ($monoe || $monoq);
+$nofruns = get_answer("Number of runs", $nofruns, "RUNS") unless ($monoe || $monoq);
 my $w_dir_tmp;
 if ($wdir eq "x") {
-  $w_dir_tmp=getcwd() . "/run";
+  $w_dir_tmp=getcwd();
 } else {
   $w_dir_tmp = $wdir;
 }
 if ($batch != 0) {
-  $w_dir_tmp=get("Working directory (where CORSIKA run files are located)", "$w_dir_tmp", "WDIR");
+  $w_dir_tmp=get_answer("Working directory (where CORSIKA run files are located)", "$w_dir_tmp", "WDIR");
 } else {
-  $wdir=get("Working directory (where CORSIKA run files are located)", "$w_dir_tmp", "WDIR");
+  $wdir=get_answer("Working directory (where CORSIKA run files are located)", "$w_dir_tmp", "WDIR");
 }
 my $def_prj="sims";
 $def_prj = "mono" . $site if (int($monoe) || $monoq);
-my $prj=get("Project name (Results will go into $wdir/<project> dir)", "$def_prj", "DIRECT");
-my $user=get("User name", "LAGO", "USER");
+my $prj=get_answer("Project name (Results will go into $wdir/<project> dir)", "$def_prj", "DIRECT");
+my $user=get_answer("User name", "LAGO", "USER");
 my $bin=$wdir."/".$package;
 my $direct="$wdir/$prj";
 my $home = $wdir;
@@ -280,7 +279,7 @@ unless ($batch != 0) {
   $tmp=<>;
 }
 for (my $i=0; $i < $nofruns; $i++) {
-  my $index=$i+1;
+  my $index = $i + 1;
   unless ($batch != 0) {
     system("clear");
     print "###################################################################\n";
@@ -294,9 +293,10 @@ for (my $i=0; $i < $nofruns; $i++) {
   my $evt_nr;
   my $prmpar;
   unless ($monop != 0) {
-    $run_nr=get("Corsika run number", $index, "RUNNR");
-    $evt_nr=get("number of first shower event", 0 ,"EVTNR");
-  } else {
+    $run_nr = get_answer("Corsika run number", $index, "RUNNR");
+    $evt_nr = get_answer("number of first shower event", 0, "EVTNR");
+  }
+  else {
     $evt_nr = 1;
     $prmpar = $monop;
     $monop = 9 if ($monop > 6); # 9=hadrons
@@ -304,7 +304,7 @@ for (my $i=0; $i < $nofruns; $i++) {
     $monoename = 999 if ($monoename > 999);
     $run_nr = int($monot + $monoename * 100. + $monop * 1e5);
   }
-  my $N_show=get("number of showers to generate", 1, "NSHOW");
+  my $N_show = get_answer("number of showers to generate", 1, "NSHOW");
   unless ($batch != 0) {
     system("clear");
     print "###################################################################\n";
@@ -312,197 +312,113 @@ for (my $i=0; $i < $nofruns; $i++) {
     print "###################################################################\n";
   }
 
-  $prmpar = get("Primary particle identification (see table 4 pg 87)", 14, "PRMPAR") unless ($monop != 0);
+  $prmpar = get_answer("Primary particle identification (see table 4 pg 87)", 14, "PRMPAR") unless ($monop != 0);
   my $e_slope;
   my $e_low;
   my $e_high;
   unless ($monoe != 0) {
-    $e_slope=get("Spectral index of primary energy spectrum", -2.7, "ESLOPE");
-    $e_low=get("Lower limit of the primary particle energy (ERANGE) [GeV]", 1e4, "LLIMIT");
-    $e_high=get("Upper limit of the primary particle energy (ERANGE) [GeV]", 1e4, "ULIMIT");
-  } else {
+    $e_slope = get_answer("Spectral index of primary energy spectrum", -2.7, "ESLOPE");
+    $e_low = get_answer("Lower limit of the primary particle energy (ERANGE) [GeV]", 1e4, "LLIMIT");
+    $e_high = get_answer("Upper limit of the primary particle energy (ERANGE) [GeV]", 1e4, "ULIMIT");
+  }
+  else {
     $e_slope = -2.7; # don't used for mono-energetic showers but needed
     $e_low = $e_high = $monoe;
   }
   my $t_low;
   my $t_high;
   unless ($monoq != 0) {
-    $t_low=get("Low edge of zenith angle (THETAP) [deg]", 0, "THETPR(1)");
-    $t_high=get("High edge of zenith angle (THETAP) [deg]", 90, "THETPR(2)");
-  } else {
+    $t_low = get_answer("Low edge of zenith angle (THETAP) [deg]", 0, "THETPR(1)");
+    $t_high = get_answer("High edge of zenith angle (THETAP) [deg]", 90, "THETPR(2)");
+  }
+  else {
     $t_low = $t_high = $monot;
   }
-  my $f_low=get("Low edge of azimuth angle (PHIP) [deg]", -180, "PHIPR(1)");
-  my $f_high=get("High edge of azimuth angle (PHIP) [deg]", 180, "PHIPR(2)");
+  my $f_low = get_answer("Low edge of azimuth angle (PHIP) [deg]", -180, "PHIPR(1)");
+  my $f_high = get_answer("High edge of azimuth angle (PHIP) [deg]", 180, "PHIPR(2)");
   unless ($batch != 0) {
     system("clear");
     print "###################################################################\n";
     print "# Observatory parameters\n";
     print "###################################################################\n";
   }
-  my $atmcrd="ATMOD";
+  my $atmcrd = "ATMOD";
   my $modatm = "";
   my $altitude = 0.;
   my $bx = 0.;
   my $bz = 0.;
   my $arrang = 0.;
-  unless ($batch != 0) {
-    if ($site eq "hess") {
-        $modatm=get("Atmospheric model selection ($site)", "E10", "ATMOSPHERE");
-        $altitude=1800e2;
-        $bx=12.5;
-        $bz=-25.9;
-        $arrang="-14";
-	} elsif ($site eq "sac") {
-        $modatm=get("Atmospheric model selection (E30=wi,E31=sp,E32=su,E33=au)", "E32", "ATMOSPHERE");
-        $altitude=3700e2;
-        $bx=20.94;
-        $bz=-8.91;
-        $arrang="0";
-	} elsif ($site eq "chi") {
-      $modatm="E1";
-      $altitude=500000;
-      $bx=26.56;
-      $bz=8.758;
-	  $arrang="0";
-	} elsif ($site eq "ata") {
-      $modatm="";
-      $altitude=510500;
-      $bx=20.638;
-      $bz=-8.598;
-	} elsif ($site eq "ima") {
-      $modatm="E1";
-      $altitude=460000;
-      $bx=22.935;
-      $bz=-3.823;
-	} elsif ($site eq "sng") {
-      $modatm="E2";
-      $altitude=455000;
-      $bx=27.333;
-      $bz=27.989;
-	} elsif ($site eq "etn") {
-        $modatm=get("Atmospheric model selection ", "E2", "ATMOSPHERE");
-        $altitude=3000e2;
-        $bx=27.7623;
-        $bz=36.0667;
-        $arrang="0";
-	} elsif ($site eq "ber") {
-        $modatm=get("Atmospheric model selection ", "E1", "ATMOSPHERE");
-        $altitude=3450e2;
-        $bx=26.9814;
-        $bz=17.1054;
-        $arrang="0";
-    } elsif ($site eq "bga") {
-        $modatm=get("Atmospheric model selection ", "E1", "ATMOSPHERE");
-        $altitude=950e2;
-        $bx=27.0263;
-        $bz=17.1760;
-        $arrang="0";
-    } elsif ($site eq "lim") {
-        $modatm=get("Atmospheric model selection ", "E2", "ATMOSPHERE");
-        $altitude=168e2;
-        $bx=25.28;
-        $bz=-0.046;
-        $arrang="0";
-    } elsif ($site eq "glr") {
-        $modatm=get("Atmospheric model selection ", "E1", "ATMOSPHERE");
-        $altitude=4276e2;
-        $bx=27.0750;
-        $bz=11.7728;
-        $arrang="0";
-    } elsif ($site eq "mch") {
-        $modatm=get("Atmospheric model selection ", "E1", "ATMOSPHERE");
-        $altitude=2650e2;
-        $bx=27.1762;
-        $bz=14.6184;
-        $arrang="0";
-    } elsif ($site eq "mge") {
-        $modatm=get("Atmospheric model selection ", "19", "$atmcrd");
-        $altitude=1400e2;
-        $bx=20.4367;
-        $bz=-11.8217;
-        $arrang="0";
-    } elsif ($site eq "brc") {
-        $modatm=get("Atmospheric model selection ", "E3", "$atmcrd");
-        $altitude=800e2;
-        $bx=19.234;
-        $bz=-17.068;
-        $arrang="0";
-    } elsif ($site eq "and") {
-      $modatm=get("Atmospheric model selection ", "19", "$atmcrd");
-      $altitude=4200e2;
-      $bx=19.6922;
-      $bz=-14.2420;
-      $arrang="0";
-    } elsif ($site eq "mpc") {
-      $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
-      $altitude=4500e2;
-      $bx=24.9599;
-      $bz=+0.4124;
-    } elsif ($site eq "cha") {
-      $modatm=get("Atmospheric model selection ", "E2", "$atmcrd");
-      $altitude=5230e2;
-      $bx=23.0386;
-      $bz=-3.9734;
-    } elsif ($site eq "cid") {
-      $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
-      $altitude=3600e2;
-      $bx=26.8464;
-      $bz=+18.1604;
-    } elsif ($site eq "mor") {
-      $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
-      $altitude=4400e2;
-      $bx=26.8340;
-      $bz=+18.2004;
-    } elsif ($site eq "lsc") {
-      $modatm=get("Atmospheric model selection ", "E2", "$atmcrd");
-      $altitude=28e2;
-      $bx=20.29;
-      $bz=-11.74;
-    } elsif ($site eq "mbo") {
-      $modatm=get("Atmospheric model selection ", "E5", "$atmcrd");
-      $altitude=196e2;
-      $bx=19.6571;
-      $bz=-30.5809;
-    } elsif ($site eq "ccs") {
-      $modatm=get("Atmospheric model selection ", "E1", "$atmcrd");
-      $altitude=900E2;
-      $bx=26.7364;
-      $bz=+18.6777;
-    } else {
-      $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
-      $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
+
+  if ($batch == 0) {
+    if ($site ne "unk") {
+      # first, read the jsonld and build the sites hash
+      my $url = "https://lagoproject.github.io/DMP/defs/sitesLago.jsonld";
+      my $jsonld;
+      die "could not get $url\n" unless (defined($jsonld = get $url));
+      my $decoded = decode_json($jsonld);
+      my @sites_json = @{$decoded->{'@graph'}};
+      my %sites = ();
+      foreach my $s (@sites_json) {
+        $sites{ $s->{'@id'} } = [
+            $s->{'lago:atmcrd'}{'lago:modatm'}{'@default'},
+            $s->{'lago:obsLev'}{'@default'},
+            $s->{'lago:magnet'}{'@default'}{'lago:bx'},
+            $s->{'lago:magnet'}{'@default'}{'lago:bz'}
+        ]; # 0: atm; 1: obslev(cm); 2: bx; 3: bz;
+      }
+      # second, check if
+      if (defined $sites{"$site"}) {
+        $modatm = $sites{"$site"}[0];
+        $altitude = $sites{"$site"}[1];
+        $bx = $sites{"$site"}[2];
+        $bz = $sites{"$site"}[3];
+      }
+      else {
+        if ($site eq "gen" || $site eq "air" || $site eq "unk") {
+          print STDERR "WARNING: $site is generic. Some defaults needs to be used\n";
+          $gensite = 1;
+        }
+        else {
+          # completely unknown site. print a warning and go for unk
+          print STDERR "WARNING: site $site is unknown. Back to manual selection\n";
+          $site = "unk";
+        }
+      }
+    }
+    else {
+      $altitude = get_answer("Observation level above sea level [cm]", 0, "OBSLEV");
       while ($altitude == 0) {
-        print STDERR "ERROR: Observation level is mandatory\n";
-        $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
+        print STDERR "Observation level is mandatory\n";
       }
-      $bx=get("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM",0,"BX");
+      $modatm = get_answer("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
+      $bx = get_answer("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM", 0, "BX");
       while ($bx == 0) {
-        print STDERR "ERROR: BX is mandatory\n";
-        $bx=get("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM",0,"BX");
+        print STDERR "BX is mandatory\n";
+        $bx = get_answer("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM", 0, "BX");
       }
-      $bz=get("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]",0,"BZ");
+      $bz = get_answer("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]", 0, "BZ");
       while ($bz == 0) {
-        print STDERR "ERROR: BZ is mandatory\n";
-        $bz=get("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]",0,"BZ");
+        print STDERR "BZ is mandatory\n";
+        $bz = get_answer("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]", 0, "BZ");
       }
     }
-  } else {
-    $altitude = get("Observation level above sea level [cm]", 0, "OBSLEV");
-    $modatm = get("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
+  }
+  else {
+    $altitude = get_answer("Observation level above sea level [cm]", 0, "OBSLEV");
     while ($altitude == 0) {
-      print STDERR "ERROR: Observation level is mandatory\n";
-      $altitude = get("Observation level above sea level [cm]",0,"OBSLEV");
+      print STDERR "Observation level is mandatory\n";
+      $altitude = get_answer("Observation level above sea level [cm]", 0, "OBSLEV");
     }
-    $bx=get("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM",0,"BX");
+    $modatm = get_answer("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
+    $bx = get_answer("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM", 0, "BX");
     while ($bx == 0) {
-      print STDERR "ERROR: BX is mandatory\n";
-      $bx=get("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM",0,"BX");
+      print STDERR "BX is mandatory\n";
+      $bx = get_answer("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM", 0, "BX");
     }
-    $bz=get("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]",0,"BZ");
+    $bz = get_answer("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]", 0, "BZ");
     while ($bz == 0) {
-      print STDERR "ERROR: BZ is mandatory\n";
-      $bz=get("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]",0,"BZ");
+      print STDERR "BZ is mandatory\n";
+      $bz = get_answer("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]", 0, "BZ");
     }
   }
   if (uc(substr($modatm,0,1)) eq "E") { # using external atmospheres bernlhor
@@ -514,8 +430,8 @@ for (my $i=0; $i < $nofruns; $i++) {
 		$atmcrd = "ATMFILE";
 		$modatm = "'atm" . lc($modatm) . ".dat'";
 		$package = $package . "-atmfile";
-		$bin=$wdir."/".$package;
-      die "\n\nERROR: Couldn't find corsika excecutable $package at $bin. Please check\n$usage\n" unless (-e $bin);
+		$bin=$wdir . "/" . $package;
+      die "\n\nERROR: Couldn't find corsika executable $package at $bin. Please check\n$usage\n" unless (-e $bin);
     }
   }
   # LAGO ECUTS, minimum possible values as for the current corsika version
@@ -532,15 +448,15 @@ for (my $i=0; $i < $nofruns; $i++) {
   my $muaddi=""; # MUADDI. For v<7.4005, EMADDI AND NUADDI does not work, only MUADDI
   if ($imuaddi != 0) {
     if ($crk_ver eq "73500") {
-      $muaddi=get("Get additional info for muons",'F',"MUADDI");
+      $muaddi=get_answer("Get additional info for muons",'F',"MUADDI");
     } else {
-      $muaddi=get("Get additional info for muons, EM and neutrinos",'F',"MUADDI, EMADDI, NUADDI");
+      $muaddi=get_answer("Get additional info for muons, EM and neutrinos",'F',"MUADDI, EMADDI, NUADDI");
     }
   }
-  my $plotsh=get("Write add- files for track plot of secondaries",'F',"PLOTSH");
-  my $datbas=get("Write .dbase file",'T',"DATBAS");
-  my $llongi=get("Track longitudinal development of secondaries (LONGI)", 'F',"LLONGI");
-  my $ftabout=get("Write tab output of charged particle dev file (PAROUT)",'F',"FTABOUT");
+  my $plotsh=get_answer("Write add- files for track plot of secondaries",'F',"PLOTSH");
+  my $datbas=get_answer("Write .dbase file",'T',"DATBAS");
+  my $llongi=get_answer("Track longitudinal development of secondaries (LONGI)", 'F',"LLONGI");
+  my $ftabout=get_answer("Write tab output of charged particle dev file (PAROUT)",'F',"FTABOUT");
   my $s1 = int(rand(1e7));
   my $s2 = int(rand(1e7));
   my $s3 = int(rand(1e7));
