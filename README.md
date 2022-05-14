@@ -25,9 +25,10 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
+    <li><a href="#about-arti">About ARTI</a></li>
     <li><a href="#getting-started">Getting Started</a></li>
     <li><a href="#usage">Usage</a></li>
+    <li><a href="#related-projects">Related projects</a></li>
     <li><a href="#proposed-features">Proposed Features</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
@@ -36,7 +37,7 @@
 </details>
 
 <!-- ABOUT THE PROJECT -->
-## About The Project
+## About ARTI
 <style>
 html, body {height: 100%;}
 img {
@@ -57,6 +58,13 @@ Formulated through a sequence of scripts coded in C++, Fortran, and Perl, it pro
 With ARTI it is also possible to calculate the flux of the expected signals produced by the sudden occurrence of a gamma-ray bursts or the flux of energetic photons originating in steady gamma sources. It also compares these fluxes with the expected background to detect these phenomena in a single water Cherenkov detector (WCD).
 
 Even more, by using ARTI, it is possible to calculate in a very precise way the expected flux of high energetic muons and other secondaries on the ground and to inject it over a geological structure for muography applications.
+
+### ARTI main reference and citation
+
+When using ARTI, please cite the reference reported below:
+
+Christian Sarmiento-Cano, Mauricio Suárez-Durán, Rolando Calderón-Ardila, Adriana Vásquez-Ramírez, Andrei Jaimes-Motta, Luis A. Núñez, Sergio Dasso, Iván Sidelnik and Asorey (for the LAGO Collaboration), _"The ARTI Framework: Cosmic Rays Atmospheric Background Simulations"_, _European Journal of Physics_ **C**, submitted, [arXiv:2010.14591[astro-ph.IM]](https://arxiv.org/abs/2010.14591), [doi:10.48550/arXiv.2010.14591](https://doi.org/10.48550/arXiv.2010.14591) (2022).
+[(bibtex)](docs/references/arti.bib)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -249,6 +257,16 @@ wcd -m input.in
 The documentation is currently under preparation and will be released in July 2022. A brief description of the action of each code and the available options and modifiers can be seen by calling them with the `-? modifier`.
 
 _For more examples, please refer to the [ARTI Documentation](docs)._
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+## Related projects
+
+ARTI has several options and internal configurations to automatically run at different types of computing facilities: from personal notebooks or desktops up to high performance computing clusters. 
+
+More recently, [oneDataSim](https://github.com/lagoproject/onedataSim), a cloud-based implementation of ARTI, has been developed under the [LAGO Thematic Service](https://www.eosc-synergy.eu/supporting-astrophysics/) at the [_European Open Science Cloud - Expanding Capacities by building Capabilities_](https://www.eosc-synergy.eu/) project.
+
+By using [oneDataSim](https://github.com/lagoproject/onedataSim), currently available through the [EOSC Marketplace](https://marketplace.eosc-portal.eu/services/onedatasim), it is possible to run the ARTI simulations at federated clouds, such as the [European Open Scientific Cloud (EOSC](https://eosc-portal.eu/)) and other public clouds, such as the [Google cloud](https://cloud.google.com/),[ Amazon web services](https://aws.amazon.com/) and [Microsoft Azure](https://azure.microsoft.com/).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
