@@ -1,7 +1,7 @@
 #!/bin/bash
 # /************************************************************************/
 # /* Package:  ARTI                                                       */
-# /* Module:   lago_arti.sh									                              */
+# /* Module:   arti.sh									                              */
 # /************************************************************************/
 # /* Authors:  Hernán Asorey                                              */
 # /* e-mail:   hernan.asoreyh@iteda.cnea.gov.ar                           */
@@ -16,12 +16,12 @@
 # All rights reserved.
 #   -*- coding: utf8 -*-
 VERSION="v1r9"
-export LAGO_ARTI=${PWD}
+export ARTI=${PWD}
 date=$(date -u)
 echo "
 #
-## Changes added by the LAGO ARTI suite $VERSION on $date
+## Changes added by the ARTI suite $VERSION on $date
 #
-export LAGO_ARTI=\"${LAGO_ARTI}\"
-export PATH=\"\${LAGO_ARTI}/sims/:\${LAGO_ARTI}/analysis:\$PATH\"
+export ARTI=\"${ARTI}\"
+export PATH=\"\${ARTI}/sims/:\${ARTI}/analysis:\$PATH\"
 " >> ${HOME}/.bashrc
