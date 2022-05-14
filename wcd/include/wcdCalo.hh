@@ -1,5 +1,5 @@
-#ifndef wcdLagoCalo_h
-#define wcdLagoCalo_h 1
+#ifndef wcdCalo_h
+#define wcdCalo_h 1
 
 
 // Geant4 Libraries
@@ -15,11 +15,11 @@
 //
 
 
-class wcdLagoCalo
+class wcdCalo
 {
   public:
-    wcdLagoCalo();
-    virtual ~wcdLagoCalo();
+    wcdCalo();
+    virtual ~wcdCalo();
 
     void DefineMaterials();
     void buildDetector(G4LogicalVolume* log_mother, G4VPhysicalVolume* tank_phys, G4bool* overLaps, G4double radius, G4double hight);

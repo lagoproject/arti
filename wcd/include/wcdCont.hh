@@ -1,5 +1,5 @@
-#ifndef wcdLagoCont_h
-#define wcdLagoCont_h 1
+#ifndef wcdCont_h
+#define wcdCont_h 1
 
 
 // Geant4 Libraries
@@ -15,11 +15,11 @@
 //
 
 
-class wcdLagoCont 
+class wcdCont 
 {
   public:
-    wcdLagoCont();
-    virtual ~wcdLagoCont();
+    wcdCont();
+    virtual ~wcdCont();
 
     void DefineMaterials();
     void buildDetector(G4LogicalVolume* log_mother, G4bool* overLaps, G4double radius, G4double hight);

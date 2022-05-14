@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------
 # Setup the project
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(lago)
+project(wcd)
 
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
@@ -42,21 +42,21 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(lago lago.cc ${sources} ${headers})
-target_link_libraries(lago ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+add_executable(wcd wcd.cc ${sources} ${headers})
+target_link_libraries(wcd ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
 # build OpNovice. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
-set(lago_SCRIPTS
+set(wcd_SCRIPTS
     input.in
     gui.mac
     vis.mac
   )
 
-foreach(_script ${lago_SCRIPTS})
+foreach(_script ${wcd_SCRIPTS})
   configure_file(
     ${PROJECT_SOURCE_DIR}/${_script}
     ${PROJECT_BINARY_DIR}/${_script}
@@ -67,4 +67,4 @@ endforeach()
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS lago DESTINATION bin)
+install(TARGETS wcd DESTINATION bin)

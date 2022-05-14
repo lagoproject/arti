@@ -17,19 +17,19 @@
 
 // Local Libraries
 //
-#include "wcdLagoCalo.hh"
+#include "wcdCalo.hh"
 #include "water.hh"
 
 
-wcdLagoCalo::wcdLagoCalo()
+wcdCalo::wcdCalo()
 {}
 
 
-wcdLagoCalo::~wcdLagoCalo()
+wcdCalo::~wcdCalo()
 {}
 
 
-void wcdLagoCalo::DefineMaterials()
+void wcdCalo::DefineMaterials()
 {
   water* tmp = new water();
   wcdWater = tmp->doWater();
@@ -37,7 +37,7 @@ void wcdLagoCalo::DefineMaterials()
 }
 
 
-void wcdLagoCalo::buildDetector(G4LogicalVolume* log_mother, G4VPhysicalVolume* tank_phys, G4bool* overLaps, G4double radius, G4double hight)
+void wcdCalo::buildDetector(G4LogicalVolume* log_mother, G4VPhysicalVolume* tank_phys, G4bool* overLaps, G4double radius, G4double hight)
 {
   water_geo = 
     new G4Tubs("watervol",
@@ -85,13 +85,13 @@ void wcdLagoCalo::buildDetector(G4LogicalVolume* log_mother, G4VPhysicalVolume* 
 }
 
 
-G4VPhysicalVolume* wcdLagoCalo::getPhysVolume()
+G4VPhysicalVolume* wcdCalo::getPhysVolume()
 {
   return water_phys;
 }
 
 
-G4LogicalVolume* wcdLagoCalo::getLogVolume()
+G4LogicalVolume* wcdCalo::getLogVolume()
 {
   return water_log;
 }

@@ -16,12 +16,12 @@
 
 // Local Libraries
 //
-#include "wcdLagoCont.hh"
+#include "wcdCont.hh"
 
 
-wcdLagoCont::wcdLagoCont()
+wcdCont::wcdCont()
 {
-  G4cout << "...wcdLago..." << G4endl;
+  G4cout << "...wcd..." << G4endl;
 
   // Initializing for mechanical detector
   //
@@ -35,11 +35,11 @@ wcdLagoCont::wcdLagoCont()
 }
 
 
-wcdLagoCont::~wcdLagoCont()
+wcdCont::~wcdCont()
 {}
 
 
-void wcdLagoCont::DefineMaterials()
+void wcdCont::DefineMaterials()
 {
   G4NistManager* nist = G4NistManager::Instance();
 
@@ -47,7 +47,7 @@ void wcdLagoCont::DefineMaterials()
     = nist->FindOrBuildMaterial("G4_STAINLESS-STEEL");
 }
 
-void wcdLagoCont::buildDetector(G4LogicalVolume* log_mother, G4bool* overLaps, G4double radius, G4double hight)
+void wcdCont::buildDetector(G4LogicalVolume* log_mother, G4bool* overLaps, G4double radius, G4double hight)
 {
  tank_geo = 
     new G4Tubs("wcdTank",
@@ -82,13 +82,13 @@ void wcdLagoCont::buildDetector(G4LogicalVolume* log_mother, G4bool* overLaps, G
 }
 
 
-G4VPhysicalVolume* wcdLagoCont::getPhysVolume()
+G4VPhysicalVolume* wcdCont::getPhysVolume()
 {
   return tank_phys;
 }
 
 
-G4LogicalVolume* wcdLagoCont::getLogVolume()
+G4LogicalVolume* wcdCont::getLogVolume()
 {
   return tank_log;
 }

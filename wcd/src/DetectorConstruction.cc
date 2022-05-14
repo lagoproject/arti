@@ -38,8 +38,8 @@
 #include "DetectorMessenger.hh"
 #include "PMTSD.hh"
 #include "world.hh"
-#include "wcdLagoCont.hh"
-#include "wcdLagoCalo.hh"
+#include "wcdCont.hh"
+#include "wcdCalo.hh"
 #include "wcdpmt.hh"
 #include "worldGround.hh"
 #include "grdFloor.hh"
@@ -58,8 +58,8 @@ DetectorConstruction::DetectorConstruction()
   groundBase = new worldGround();
   grd = new grdFloor();
 
-  wcdCont = new wcdLagoCont(); 
-  wcdCalo = new wcdLagoCalo(); 
+  wcdCont = new wcdCont(); 
+  wcdCalo = new wcdCalo(); 
   pmt_det = new wcdpmt(); 
  
   wcdRadius = 93.*cm; 

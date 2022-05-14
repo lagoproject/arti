@@ -20,8 +20,8 @@
 // Local Libraries
 //
 #include "world.hh"
-#include "wcdLagoCont.hh"
-#include "wcdLagoCalo.hh"
+#include "wcdCont.hh"
+#include "wcdCalo.hh"
 #include "wcdpmt.hh"
 #include "worldGround.hh"
 #include "grdFloor.hh"
@@ -67,8 +67,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     worldGround* groundBase;
     grdFloor* grd;
 
-    wcdLagoCont* wcdCont;
-    wcdLagoCalo* wcdCalo;
+    wcdCont* wcdCont;
+    wcdCalo* wcdCalo;
     wcdpmt* pmt_det;
 
     G4VPhysicalVolume* fwaterVolume;
