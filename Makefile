@@ -46,7 +46,7 @@
 #
 VERSION="v1r9";
 CODE_DIR = analysis
-TESTS = check-lago 
+TESTS = check-arti
 
 all: $(TESTS)
 	$(MAKE) -C $(CODE_DIR)
@@ -56,9 +56,9 @@ all: $(TESTS)
 clean:
 	$(MAKE) -C $(CODE_DIR) clean
 
-check-lago:
-ifndef LAGO_ARTI
-	$(info LAGO_ARTI is not set.)
+check-arti:
+ifndef ARTI
+	$(info ARTI is not set.)
 	$(info I will define it to $PWD, and modify the .bashrc)
 	$(shell $(PWD)/lago-arti.sh)
 	$(info Done. Now open a new terminal or execute source $(HOME)/.bashrc)
