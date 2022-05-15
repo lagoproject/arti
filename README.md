@@ -307,7 +307,7 @@ ARTI is distributed under the [BSD-3 License](https://opensource.org/licenses/BS
 
 The ARTI framework is developed by the LAGO simulation group. If you need to contact us, please complete our [contact form](https://lagoproject.net/contact.html). 
 
-ARTI main contributor: [Dr. Hernán Asorey (@asoreyh)](https://github.com/asoreyh)
+ARTI principal contact: [Dr. Hernán Asorey (@asoreyh)](https://github.com/asoreyh)
 
 Project Link: [https://github.com/lagoproject/arti](https://github.com/lagoproject/arti)
 
