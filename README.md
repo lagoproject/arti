@@ -66,7 +66,7 @@ Even more, by using ARTI, it is possible to calculate in a very precise way the 
 
 When using ARTI, please cite the reference reported below:
 
-Christian Sarmiento-Cano, Mauricio Suárez-Durán, Rolando Calderón-Ardila, Adriana Vásquez-Ramírez, Andrei Jaimes-Motta, Luis A. Núñez, Sergio Dasso, Iván Sidelnik and Asorey (for the LAGO Collaboration), _"The ARTI Framework: Cosmic Rays Atmospheric Background Simulations"_, _European Journal of Physics_ **C**, submitted, [arXiv:2010.14591[astro-ph.IM]](https://arxiv.org/abs/2010.14591), [doi:10.48550/arXiv.2010.14591](https://doi.org/10.48550/arXiv.2010.14591) (2022).
+Christian Sarmiento-Cano, Mauricio Suárez-Durán, Rolando Calderón-Ardila, Adriana Vásquez-Ramírez, Andrei Jaimes-Motta, Luis A. Núñez, Sergio Dasso, Iván Sidelnik and Hernán Asorey (for the LAGO Collaboration), _"The ARTI Framework: Cosmic Rays Atmospheric Background Simulations"_, _European Journal of Physics_ **C**, submitted, [arXiv:2010.14591[astro-ph.IM]](https://arxiv.org/abs/2010.14591), [doi:10.48550/arXiv.2010.14591](https://doi.org/10.48550/arXiv.2010.14591) (2022).
 [(bibtex)](docs/references/arti.bib)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
@@ -82,7 +82,7 @@ To get a local copy up and running follow these simple example steps.
 
 ARTI runs in any Linux based system, including iOS. For Windows user, we strongly recommend to install some of your preferred linux distribution using virtualbox. Additionally, we are developing a docker-based ARTI implementation. 
 
-In Fedora, Scientific Linux and CentOS, use `sudo yum install <package>`. In Ubuntu/Debian,  use `sudo apt install <package>. In both cases, you can also use the graphic package manager included in your preferred distro. 
+In Fedora, Scientific Linux and CentOS, use `sudo yum install <package>`. In Ubuntu/Debian,  use `sudo apt install <package>`. In both cases, you can also use the graphic package manager included in your preferred distro. 
 
 ARTI requires the installation of the following packages: 
 
