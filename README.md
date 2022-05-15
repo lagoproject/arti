@@ -24,6 +24,7 @@
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
+<br />
   <ol>
     <li><a href="#about-arti">About ARTI</a></li>
     <li><a href="#getting-started">Getting Started</a></li>
@@ -38,6 +39,7 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About ARTI
+<!--
 <style>
 html, body {height: 100%;}
 img {
@@ -48,6 +50,7 @@ img.rel {
   width: 33%;
 }
 </style>
+-->
 
 <img class="rel" src="./docs/images/flux-chacaltaya.png" alt="The seconday particle flux at Chacaltaya" width="200"><img class="rel" src="./docs/images/geomagnetic.png" alt="Charged particles trajectories" width="200"><img class="rel" src="./docs/images/wcd-muon.png" alt="A muon traversing the WCD " width="200">
 
