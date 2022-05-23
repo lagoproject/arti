@@ -1,0 +1,13 @@
+The bash scrip maketable-forRun-magcos.sh sets the parameters for
+run MAGNETOCOSMICS: Tsyganenkov (G1 and G2), DST. Pdyn, and
+geomagnetic components magnitude (By and Bz) according with
+time/date. All these parameter are reading from wghour.d
+(decompress before use it).
+
+How to run:
+
+Search in wghour.d the line(s) of time wanted to simulate, for
+instances, if the date wanted to simulate is March 23th, 2014 at
+01:00 hours, so the line inside wghour.d containing this date is 441085.
+
+Iterate over different dates is possible.
