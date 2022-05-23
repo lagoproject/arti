@@ -1,23 +1,19 @@
 /************************************************************************/
-/*                                                                      */
 /* Package:  ARTI                                                       */
-/* Module:   showers.cc                                                 */
-/*                                                                      */
+/* Module:   primaries.cc                                               */
 /************************************************************************/
 /* Authors:  Hernán Asorey                                              */
-/* e-mail:   hernan.asorey@iteda.cnea.gov.ar                            */
-/*                                                                      */
+/* e-mail:   hernan.asoreyh@iteda.cnea.gov.ar                           */
 /************************************************************************/
-/* Comments: Change showers Id to avoid repeated numbers                */
-/*                                                                      */
-/*                                                                      */
 /************************************************************************/
-/* 
- 
-Copyright 2013
-Hernán Asorey
-Lab DPR (CAB-CNEA), Argentina
-Grupo Halley (UIS), Colombia
+/* Comments: Get the primaries injected by ARTI, producing the injected */ 
+/*           primaries distribution                                     */
+/************************************************************************/
+/*
+LICENSE BSD-3-Clause
+Copyright (c) 2015
+The LAGO Collaboration
+https://lagoproject.net
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -45,11 +41,10 @@ POSSIBILITY OF SUCH DAMAGE.
 
 The views and conclusions contained in the software and documentation are
 those of the authors and should not be interpreted as representing
-official policies, either expressed or implied, of Lab DPR.
-
+official policies, either expressed or implied, of the LAGO Collaboration.
 */
 /************************************************************************/
-#define VERSION "v1r0"
+#define VERSION "v1r9"
 
 #define _FILE_OFFSET_BITS 64
 #include <string.h>
