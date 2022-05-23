@@ -1,23 +1,20 @@
 c /************************************************************************/
-c /*                                                                      */
 c /* Package:  ARTI                                                       */
 c /* Module:   lagocrkread.f                                              */
-c /*                                                                      */
 c /************************************************************************/
-c /* Authors:  Hernán Asorey                                              */
-c /* e-mail:   asoreyh@cab.cnea.gov.ar                                    */
-c /*                                                                      */
+c /* Authors:  J.Oehlschlaeger, D. Heck, 01 Sep 2011, see below           */
+c /* Adapted:  Hernán Asorey, with permission                             */
+c /* e-mail:   hernan.asoreyh@iteda.cnea.gov.ar                           */
+c /************************************************************************/
 c /************************************************************************/
 c /* Comments: Read corsika output (DAT files, full mode, not compact)    */
-c /*           and print block to stdout and info data to stderr          */
-c /*           gfortran -fbounds-check lagocrkread.f -o lagocrkread       */
+c /*           and print all blocks to stdout and info data to stderr     */
 c /************************************************************************/
-c /* 
-c  
-c Copyright 2013
-c Hernán Asorey
-c Lab DPR (CAB-CNEA), Argentina
-c Grupo Halley (UIS), Colombia
+c /*
+c LICENSE BSD-3-Clause
+c Copyright (c) 2015
+c The LAGO Collaboration
+c https://lagoproject.net
 c All rights reserved.
 c 
 c Redistribution and use in source and binary forms, with or without
@@ -45,9 +42,7 @@ c POSSIBILITY OF SUCH DAMAGE.
 c 
 c The views and conclusions contained in the software and documentation are
 c those of the authors and should not be interpreted as representing
-c official policies, either expressed or implied, of Lab DPR.
-c 
-c */
+c official policies, either expressed or implied, of the LAGO Collaboration.
 c /************************************************************************/
 c  based on:
 c  c o r s i k a r e a d . f  (without THINNING)
@@ -61,7 +56,7 @@ c     each block consists of 21 subblocks of 273 words.
 c----------------------------------------------------------------------
 c     J.Oehlschlaeger, D. Heck, 01 Sep 2011 
 c=======================================================================
-c     VERSION=v1r0
+c     VERSION=v1r9
       PROGRAM LAGOCRKREAD
       CHARACTER CHV(5733)*4,CIDENT*4,CDAT*70,CBLK*70
       DIMENSION PDATA(5733)
