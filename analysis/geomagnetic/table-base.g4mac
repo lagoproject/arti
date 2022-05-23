@@ -1,0 +1,75 @@
+################################################################
+#MAGNETOCOSMICS Macro file for computing                       #
+#cutoff rigidities for  a given direction of incidence in      #
+#function of position	                                       #
+#No visualisation is possible for such type of application     #
+#							       #
+################################################################
+
+#
+#It is important to set storeTrajectory to 0 otherwise trajectories are stored 
+#and it can lead to core dump
+
+/tracking/storeTrajectory 0
+/tracking/verbose 0
+/run/verbose 0
+
+#
+#Define particle type
+#
+/gps/particle proton
+
+#
+#Define integration parameters and user limit
+#
+
+# /MAGCOS/USERLIMIT/SetMaxStepLength 5. Re
+# /MAGCOS/USERLIMIT/SetMaxTrajectoryLength 100. Re
+
+/MAGCOS/INTEGRATION/SetPrecision 1e-6
+/MAGCOS/INTEGRATION/SetG4MaxStep 1e-2 re
+/MAGCOS/INTEGRATION/SetBSMaxStep 0.5 re
+/MAGCOS/INTEGRATION/SetDeltaIntersection 1e-3 re
+/MAGCOS/INTEGRATION/SelectG4IntegrationMethod
+
+# /MAGCOS/INTEGRATION/SelectG4IntegrationMethod
+# /MAGCOS/INTEGRATION/SetPrecision 1e-5 re
+# /MAGCOS/INTEGRATION/SetG4MaxStep 1e-1 re
+# /MAGCOS/INTEGRATION/SetDeltaIntersection 1e-2 re
+
+#
+# Magnetic feild model IGRF for 12th decembre 1989
+#
+/MAGCOS/BFIELD/SetGeomagneticFieldModel IGRF
+/MAGCOS/BFIELD/SetExternalFieldModel TSY2001
+# /MAGCOS/BFIELD/SetShiftedGeodipoleFromIGRF
+#/MAGCOS/BFIELD/SetStartDate 2010 01 01 04 0 0
+
+/MAGCOS/BFIELD/SetPdyn 0.0
+/MAGCOS/BFIELD/SetDst 0.0 nT
+
+/MAGCOS/BFIELD/SetImfBy 0.0 nT
+/MAGCOS/BFIELD/SetImfBz 0.0 nT
+
+/MAGCOS/BFIELD/SetG1 0.0
+/MAGCOS/BFIELD/SetG2 0.0
+
+/MAGCOS/SCENARIO/AutomaticDetectionOfPenumbra true
+#
+# Define rigidity vector only needed if the automatic detection of the penumbra
+# is not considered (/MAGCOS/SCENARIO/AutomaticDetectionOfPenumbra false)
+#
+
+/MAGCOS/RIGIDITYVECTOR/Reset 
+# /MAGCOS/RIGIDITYVECTOR/AddValues 20 -1. 15
+# /MAGCOS/RIGIDITYVECTOR/AddValues 5 -.01 450 
+
+/tracking/verbose 0
+
+# /MAGCOS/SCENARIO/RCutoffVsPosition  GEOID 20 km -75. 15. 6 0. 90. 4 0. 0. degree CutoffVsPosition.out
+
+# OPA
+/MAGCOS/SOURCE/SetPosition GEO 112.8 km 4.48 -75.37 degree
+
+/MAGCOS/SCENARIO/RCutoffVsDirection GEO 0.0 3.0 31 0.0 15.0 25 panini.out
+
