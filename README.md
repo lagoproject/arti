@@ -252,8 +252,10 @@ Before to run, the file containing the secondaries at ground resulting of the pr
 
 Again, depending on the environment, it could run automatically during runtime or has to be called by the user once the previous stages are completed, by doing:
 ```bash
-wcd -m input.in
+wcd -m input.in > run.log
 ```
+
+Additional information can be found in the wcd module [´README.md´](wcd/README.md) and in the [ARTI Documentation](docs).
 
 ### General help and documentation
 

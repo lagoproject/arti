@@ -23,5 +23,5 @@ echo "
 ## Changes added by the ARTI suite $VERSION on $date
 #
 export ARTI=\"${ARTI}\"
-export PATH=\"\${ARTI}/sims/:\${ARTI}/analysis:\$PATH\"
+export PATH=\"\${ARTI}/sims/:\${ARTI}/eas:\${ARTI}/analysis:\$PATH\"
 " >> ${HOME}/.bashrc
