@@ -255,7 +255,7 @@ Again, depending on the environment, it could run automatically during runtime o
 wcd -m input.in > run.log
 ```
 
-Additional information can be found in the wcd module [´README.md´](wcd/README.md) and in the [ARTI Documentation](docs).
+Additional information can be found in the wcd module [`README.md`](wcd/README.md) and in the [ARTI Documentation](docs).
 
 ### General help and documentation
 
