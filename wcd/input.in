@@ -13,7 +13,7 @@
 /wcd/phys/verbose 0
 
 /spectrum/readfile pao-fluxSec-geo-2006-d347-h0.out.shw.bz2
-/spectrum/iniposZ 50. cm
+/spectrum/iniposZ 121. cm
 /spectrum/radArea 0.3 m # No more than 45 m
 
 /detect/radio 45. cm
