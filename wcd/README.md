@@ -1,7 +1,6 @@
 # WCD Simulation
 
-# ===================
-# *** How to Run: ***
+## How to Run
 
 1. Compile the code, from build directory:
   
@@ -38,8 +37,7 @@ make -jN // Where N number of cores
 
 4. Remember, the data is saved in the `.root` file `histosOutput.root`.
 
-# =====================================
-# *** How to read `histosOutput.root` ***
+## How to read `histosOutput.root`
 
 1. Check the histograms names from TBrowser.
 
