@@ -111,7 +111,9 @@ Additionally, ARTI depends on the previous installation of the following framewo
 * [Geant v4.10.03.p03](https://geant4.web.cern.ch/support/download_archive?page=4)
 * [Geant v4.10.03 Data Libraries](https://geant4.web.cern.ch/support/download_archive?page=4)
 
-CORSIKA should be compiled with the following options: 
+Plese notice this list corresponds to the set of external dependencies of ARTI v1r9. Backward compatibility within previous minor versions and patches of the external dependencies is assured, i.e., ARTI will run with any older versions of CORSIKA v7.xxxx, ROOT v6.xx.xx and GEANT4.10.xx.xx.pxx.
+
+CORSIKA should be compiled with the following options:
 ```
 Compiler: 64bits 
 High Energy Hadronic Model: QGSJETII-04
