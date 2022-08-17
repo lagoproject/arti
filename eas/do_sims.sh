@@ -333,7 +333,7 @@ echo -e "#  INFO   : Executable file is ($corsika_bin)"
 
 
 direct=$wdir/$prj
-basearti=${LAGO_ARTI}
+basearti=${ARTI}
 #helium -> Usually for 1 hour flux, 4 different procces is enough
 prcHe=$procs
 

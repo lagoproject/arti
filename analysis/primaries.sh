@@ -48,7 +48,7 @@
 VERSION="v1r9";
 
 wdir=${PWD}
-arti_path=${LAGO_ARTI}
+arti_path=${ARTI}
 prj=""
 prims=10
 
@@ -59,7 +59,7 @@ showhelp() {
 	echo -e "USAGE $0:"
 	echo
 	echo -e "  -w <working directory>    : Working directory, where the pri.bz2 iles are located"
-	echo -e "  -r <ARTI directory>       : ARTI installation directory, generally pointed by \$LAGO_ARTI (default)"
+	echo -e "  -r <ARTI directory>       : ARTI installation directory, generally pointed by \$ARTI (default)"
 	echo -e "  -m <bins per decade>      : Produce files with the energy distribution of the primary flux per nuclei. Not compatible with parallel"
 	echo -e "  -?                        : Shows this help and exit."
 	echo

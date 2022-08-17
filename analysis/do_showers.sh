@@ -47,7 +47,7 @@
 # 
 VERSION="v1r9";
 
-arti_path="${LAGO_ARTI}"
+arti_path="${ARTI}"
 odir=""
 wdir="${PWD}"
 dirlw=0
@@ -74,7 +74,7 @@ showhelp() {
 	echo -e "USAGE $0:"
 	echo
 	echo -e "  -o <origin directory>     : Origin dir, where the DAT files are located"
-	echo -e "  -r <ARTI directory>       : ARTI installation directory, generally pointed by \$LAGO_ARTI (default)"
+	echo -e "  -r <ARTI directory>       : ARTI installation directory, generally pointed by \$ARTI (default)"
 	echo -e "  -w <working directory>    : Working dir, where the analysis will be done (default is current directory, ${wdir})"
 	echo -e "  -e <energy bins>          : Number of energy secondary bins (default: $energy_bins)"
 	echo -e "  -d <distance bins>        : Number of distance secondary bins (default: $distance_bins)"
