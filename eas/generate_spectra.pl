@@ -271,7 +271,7 @@ my $atmcrd = "ATMOSPHERE";
 
 if ($site ne "unk") {
     # first, read the jsonld and build the sites hash
-    my $url = "https://lagoproject.github.io/DMP/defs/sitesLago.jsonld";
+    my $url = "https://lagoproject.github.io/DMP/defs/sitesLago.1.1.jsonld";
     my $jsonld;
     die "could not get $url\n" unless (defined($jsonld = get $url));
     my $decoded = decode_json($jsonld);
@@ -291,6 +291,7 @@ if ($site ne "unk") {
         $altitude = $sites{"$site"}[1];
         $bx = $sites{"$site"}[2];
         $bz = $sites{"$site"}[3];
+        print STDERR "INFO: $site parameters were obtained from the LAGO DMP\n";
     } else {
         if ($site eq "gen" || $site eq "air" || $site eq "unk") {
             print STDERR "WARNING: $site is generic. Some defaults needs to be used\n";
