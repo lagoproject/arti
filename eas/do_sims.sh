@@ -194,11 +194,11 @@ while getopts 'w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:a:?lydex' opt; do
       ;;
     e)
       cta=true
-      echo -e "#  Cherenkov mode enabled for    = $site"
+      echo -e "#  Cherenkov mode                = $cta"
       ;;
     y)
       vol=true
-      echo -e "#  Volumetric detector mode for  = $site"
+      echo -e "#  Volumetric detector mode      = $vol"
       ;;
     l)
       slurm=true
@@ -234,42 +234,42 @@ fi
 
 if [ "X$tim" == "X" ]; then
   tim=3600;
-  echo -e "#  WARNING: Time was not provided. Using default time: $tim s"
+  echo -e "#  INFO: Time was not provided. Using default time: $tim s"
 fi
 
 if [ "X$procs" == "X0" ]; then
   procs=4;
-  echo -e "#  WARNING: Processors should be >0, using default: $procs"
+  echo -e "#  INFO: Processors should be >0, using default: $procs"
 fi
 
 if [ "X$ver" == "X" ]; then
   ver="77402"
-  echo -e "#  WARNING: CORSIKA version was not provided. Using default: $ver"
+  echo -e "#  INFO: CORSIKA version was not provided. Using default: $ver"
 fi
 
 if [ "X$hig" == "X" ]; then
   hig="QGSII"
-  echo -e "#  WARNING: High energy interaction model was not provided. Using default: $hig"
+  echo -e "#  INFO: High energy interaction model was not provided. Using default: $hig"
 fi
 
 if [ "X$atm_model" == "X" ]; then
   atm_model="E1"
-  echo -e "#  WARNING: Atmospheric Model was not provided. Using default: $atm_model"
+  echo -e "#  INFO: Atmospheric Model was not provided. Using default: $atm_model"
 fi
 
 if [ "X$rigididy" == "X" ]; then
   rigididy="0"
-  echo -e "#  WARNING: Rigidity cutoff was not provided. Using default (disabled): $rigididy"
+  echo -e "#  INFO: Rigidity cutoff was not provided. Using default (disabled): $rigididy"
 fi
 
 if [ "X$lowez" == "X" ]; then
   lowez="0"
-  echo -e "#  WARNING: Low edge of zenith angle was not provided. Using default: $lowez"
+  echo -e "#  INFO: Low edge of zenith angle was not provided. Using default: $lowez"
 fi
 
 if [ "X$highez" == "X" ]; then
   highez="90"
-  echo -e "#  WARNING: High edge of zenith angle was not provided. Using default: $highez"
+  echo -e "#  INFO: High edge of zenith angle was not provided. Using default: $highez"
 fi
 
 if [ "X$lowppe" == "X" ]; then
@@ -279,30 +279,30 @@ fi
 
 if [ "X$upperppe" == "X" ]; then
   upperppe="1e6"
-  echo -e "#  WARNING: Primary particle high energy limit was not provided. Using default: $upperppe"
+  echo -e "#  INFO: Primary particle high energy limit was not provided. Using default: $upperppe"
 fi
 
 if [ "X$BX" == "X" ]; then
   BX="12.5"
-  echo -e "#  WARNING: Horizontal comp. Earth's mag. field was not provided. Using default: $BX"
+  echo -e "#  INFO: Horizontal comp. Earth's mag. field was not provided. Using default: $BX"
 fi
 
 if [ "X$BZ" == "X" ]; then
   BZ="25.5"
-  echo -e "#  WARNING: Vertical comp. Earth's mag. field was not provided. Using default: $BZ"
+  echo -e "#  INFO: Vertical comp. Earth's mag. field was not provided. Using default: $BZ"
 fi
 
 if $debug; then
-  echo -e "#  WARNING: You are running in DEBUG mode."
+  echo -e "#  INFO: You are running in DEBUG mode."
 fi
 
 if $defaults; then
-  echo -e "#  WARNING: You are using some default vaules that will not be prompted."
+  echo -e "#  INFO: You are using some default vaules that will not be prompted."
 fi
 
 if $cta; then
   if $sites; then
-    echo -e "#  WARNING: Cherenkov mode is enabled."
+    echo -e "#  INFO: Cherenkov mode is enabled."
   else
     echo; echo -e "ERROR: You have to provide a site location in CHERENKOV mode"
     showhelp
@@ -311,16 +311,16 @@ if $cta; then
 fi
 
 if $highsec; then
-	echo -e "#  WARNING: High energy cuts of $ecut GeV for secondaries will be used."
+	echo -e "#  INFO: High energy cuts of $ecut GeV for secondaries will be used."
 	if [ $lowppe -lt $ecut ]; then
 			lowppe=$ecut
 			lppe=true
-			echo -e "#  WARNING: Primary particle low energy limit is below energy cuts for secondaries. Changing to: $lowppe"
+			echo -e "#  INFO: Primary particle low energy limit is below energy cuts for secondaries. Changing to: $lowppe"
 	fi
 fi
 
 if $slurm; then
-	echo -e "#  WARNING: SLURM mode is enable. Will not work in other environments."
+	echo -e "#  INFO: SLURM mode is enable. Will not work in other environments."
 fi
 
 corsika_bin="corsika${ver}Linux_${hig}_gheisha"

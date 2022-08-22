@@ -348,11 +348,12 @@ for (my $i=0; $i < $nofruns; $i++) {
   my $bx = 0.;
   my $bz = 0.;
   my $arrang = 0.;
+  my $getjson = "";
 
   if ($batch == 0) {
     if ($site ne "unk") {
       # first, read the jsonld and build the sites hash
-      my $url = "https://lagoproject.github.io/DMP/defs/sitesLago.jsonld";
+      my $url = "https://lagoproject.github.io/DMP/defs/sitesLago.1.1.jsonld";
       my $jsonld;
       die "could not get $url\n" unless (defined($jsonld = get $url));
       my $decoded = decode_json($jsonld);
@@ -372,6 +373,7 @@ for (my $i=0; $i < $nofruns; $i++) {
         $altitude = $sites{"$site"}[1];
         $bx = $sites{"$site"}[2];
         $bz = $sites{"$site"}[3];
+        $getjson="parameters for site $site were obtained from DMP";
       }
       else {
         if ($site eq "gen" || $site eq "air" || $site eq "unk") {
@@ -592,6 +594,7 @@ EXIT
   unless ($grid != 0) {
     print "###################################################################\n";
     print "# Starting simulations $name\n";
+    print "# $getjson\n";
     if ($slurm != 0) {
       print "###################################################################\n";
       $cmd="sbatch -p highpri2 -o ${name}_srun_%j.log ${script}";
