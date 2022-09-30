@@ -388,39 +388,39 @@ for (my $i=0; $i < $nofruns; $i++) {
       }
     }
     else {
-      $altitude = get_answer("Observation level above sea level [cm]", 0, "OBSLEV");
+      $altitude = get_answer("Observation level above sea level [cm]", 1, "OBSLEV");
       while ($altitude == 0) {
-        print STDERR "Observation level is mandatory\n";
+        print STDERR "Observation level can't be zero due to CORSIKA requirements. For sea level use 1 (1 cm ~ sea level!)\n";
       }
       $modatm = get_answer("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
-      $bx = get_answer("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM", 0, "BX");
+      $bx = get_answer("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nget the values from https://geomag.bgs.ac.uk/data_service/models_compass/igrf_calc.html", 0.1, "BX");
       while ($bx == 0) {
-        print STDERR "BX is mandatory\n";
-        $bx = get_answer("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM", 0, "BX");
+        print STDERR "BX can't be zero\n";
+        $bx = get_answer("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nget the values from https://geomag.bgs.ac.uk/data_service/models_compass/igrf_calc.html", 0.1, "BX");
       }
-      $bz = get_answer("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]", 0, "BZ");
+      $bz = get_answer("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]", 0.1, "BZ");
       while ($bz == 0) {
-        print STDERR "BZ is mandatory\n";
-        $bz = get_answer("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]", 0, "BZ");
+        print STDERR "BZ can't be zero\n";
+        $bz = get_answer("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]", 0.1, "BZ");
       }
     }
   }
   else {
-    $altitude = get_answer("Observation level above sea level [cm]", 0, "OBSLEV");
+    $altitude = get_answer("Observation level above sea level [cm]", 1, "OBSLEV");
     while ($altitude == 0) {
-      print STDERR "Observation level is mandatory\n";
-      $altitude = get_answer("Observation level above sea level [cm]", 0, "OBSLEV");
+      print STDERR "Observation level can't be zero due to CORSIKA requirements. For sea level use 1 (1 cm ~ sea level!)\n";
+      $altitude = get_answer("Observation level above sea level [cm]", 1, "OBSLEV");
     }
     $modatm = get_answer("Atmospheric model selection. Start number with 'E' to use external atmospheres module, or 'G' for GDAS module", 19, "$atmcrd");
-    $bx = get_answer("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM", 0, "BX");
+    $bx = get_answer("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nget the values from https://geomag.bgs.ac.uk/data_service/models_compass/igrf_calc.html", 0.1, "BX");
     while ($bx == 0) {
-      print STDERR "BX is mandatory\n";
-      $bx = get_answer("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nsee values at http://www.ngdc.noaa.gov/geomagmodels/struts/calcIGRFWMM", 0, "BX");
+      print STDERR "BX can't be zero\n";
+      $bx = get_answer("Horizontal comp. of the Earth's mag. field (MAGNET) [North,muT],\nget the values from https://geomag.bgs.ac.uk/data_service/models_compass/igrf_calc.html", 0.1, "BX");
     }
-    $bz = get_answer("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]", 0, "BZ");
+    $bz = get_answer("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]", 0.1, "BZ");
     while ($bz == 0) {
-      print STDERR "BZ is mandatory\n";
-      $bz = get_answer("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]", 0, "BZ");
+      print STDERR "BZ can't be zero\n";
+      $bz = get_answer("Vertical comp. of the Earth's mag. field (MAGNET) [downwards,muT]", 0.1, "BZ");
     }
   }
   if (uc(substr($modatm,0,1)) eq "E") { # using external atmospheres bernlhor
