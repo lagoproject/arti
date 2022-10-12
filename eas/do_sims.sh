@@ -55,7 +55,8 @@ showhelp() {
   echo -e "  -w <working dir>                   : Working directory, where bin (run) files are located"
   echo -e "  -p <project name>                  : Project name (suggested format: NAMEXX)"
   echo -e "  -v <CORSIKA version>               : CORSIKA version"
-  echo -e "  -h <HE Int Model (EPOS|QGSII)>     : Define the high interaction model to be used"
+  echo -e "  -h <HE Int Model (EPOS|QGSII)>     : Define the high energy interaction model to be used. Default: QGSJET-II-04"
+  echo -e "  -f <LE Int Model (gheisha|fluka)>  : Define the lown energy interaction model to be used. Default: gheisha"
   echo -e "  -u <user name>                     : User Name."
   echo -e "  -j <procs>                         : Number of processors to use"
   echo -e
@@ -89,7 +90,7 @@ cta=false
 debug=false
 highsec=false
 sites=false
-usr="LAGO";
+usr="LAGO"
 vol=false
 alt=false
 altitude=0.
@@ -106,8 +107,9 @@ defaults=false
 ecut=800
 slurm=false
 
+
 echo
-while getopts 'w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:a:?lydex' opt; do
+while getopts 'w:k:p:t:v:u:f:h:s:j:c:b:m:n:r:i:o:q:a:?lydex' opt; do
   case $opt in
     w)
       wdir=$OPTARG
@@ -137,6 +139,10 @@ while getopts 'w:k:p:t:v:u:h:s:j:c:b:m:n:r:i:o:q:a:?lydex' opt; do
     h)
       hig=$OPTARG
       echo -e "#  High Energy Interaction Model = $hig"
+      ;;
+    f)
+      lemodel=$OPTARG
+      echo -e "#  Lew Energy Interaction Model = $lemodel"
       ;;
     s)
       site=$OPTARG
@@ -252,6 +258,11 @@ if [ "X$hig" == "X" ]; then
   echo -e "#  INFO: High energy interaction model was not provided. Using default: $hig"
 fi
 
+if [ "X$lemodel" == "X" ]; then
+  lemodel="gheisha"
+  echo -e "#  INFO: Low energy interaction model was not provided. Using default: $lemodel"
+fi
+
 if [ "X$atm_model" == "X" ]; then
   atm_model="E1"
   echo -e "#  INFO: Atmospheric Model was not provided. Using default: $atm_model"
@@ -323,7 +334,7 @@ if $slurm; then
 	echo -e "#  INFO: SLURM mode is enable. Will not work in other environments."
 fi
 
-corsika_bin="corsika${ver}Linux_${hig}_gheisha"
+corsika_bin="corsika${ver}Linux_${hig}_${lemodel}"
 if [ ! -e $wdir/$corsika_bin ]; then
 	echo; echo -e "ERROR: Can't locate corsika executable file ($corsika_bin) in the working dir you provided. Please check."
     showhelp
@@ -421,7 +432,7 @@ if $slurm; then
 	rain="$rain -l"
 fi
 
-rain="$rain -r $wdir -v $ver -h $hig -b $prj/\$i-*.run"
+rain="$rain -r $wdir -v $ver -h $hig -f $lemodel -b $prj/\$i-*.run"
 # echo -e "#  INFO   : rain command: $rain"
 echo -e "#  INFO   : Calculations done. Now run the go_${prj}_* scripts in $wdir/"
 basenice=19

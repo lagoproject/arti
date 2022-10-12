@@ -89,6 +89,7 @@ my $grid = 0;
 my $imuaddi = 0;
 my $nofruns = 1;
 my $ecutshe = 800.;
+my $lemodel = "gheisha";
 
 sub get_answer {
   my $question = $_[0];
@@ -197,9 +198,13 @@ while ($_ = $ARGV[0]) {
     $heim = $ARGV[0];
     shift;
   }
+  if (/-f$/i) {
+    $lemodel = $ARGV[0];
+    shift;
+  }
 }
 
-my $package="corsika".$crk_ver."Linux_".$heim."_gheisha";
+my $package="corsika".$crk_ver."Linux_".$heim."_".$lemodel;
 $package = $package . "_thin" if ($ithin != 0);
 my $usage="
        $0 $VERSION\n
@@ -210,6 +215,7 @@ my $usage="
        -r  <working directory>             Specify where corsika bin files are located
        -v  <version>                       Corsika version number
        -h  <high energy interaction model> High energy interaction model used for compilation of CORSIKA (EPOS|QGSII|SIBYLL)
+       -f  <low energy interaction model>  Low energy interaction model used for compilation of CORSIKA (gheisha|fluka)
        -l                                  Enables SLURM cluster compatibility (with sbatch). 
        -t  <EFRCTHN> <WMAX> <RMAX>         Enables THIN Mode (see manual for pg 62 for values)
        -th <THINRAT> <WEITRAT>             If THIN Mode, select different thining levels for Hadronic (THINH) ...
@@ -438,6 +444,9 @@ for (my $i=0; $i < $nofruns; $i++) {
   }
   # LAGO ECUTS, minimum possible values as for the current corsika version
   my @ecuts=(0.05, 0.01, 0.00005, 0.00005);
+  if ($lemodel eq "fluka") {
+    $ecuts[0]=0.02;
+  }
   if ($highsec != 0) {
     @ecuts=($ecutshe, $ecutshe, $ecutshe, $ecutshe);
     $e_low = $ecutshe if ($e_low < $ecutshe);
