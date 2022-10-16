@@ -431,7 +431,7 @@ if $sites; then
   rain="$rain -s ${site}"
 fi
 
-if $debug; then
+if $docker; then
   rain="$rain -d"
 fi
 
