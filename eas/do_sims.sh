@@ -359,7 +359,7 @@ fi
 echo -e "#  INFO: Executable file is ($corsika_bin)"
 
 # It is important to now the total time in onedata. Adding total simulation time to the project name...
-prj="${prj}_$(printf "%06d" ${tim})"
+prj="${prj}_$(printf "%06d" ${tim})_$(printf "%06d" ${altitude})"
 direct=$wdir/$prj
 basearti=${ARTI}
 #helium -> Usually for 1 hour flux, 4 different procces is enough
