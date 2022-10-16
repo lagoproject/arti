@@ -420,9 +420,9 @@ a=$(echo $prj)
 
 cp $basearti/sims/rain.pl $wdir/
 if $cta; then 
-    rain="./rain.pl -z"
+    rain="${wdir}/rain.pl -z"
 else
-    rain="./rain.pl "
+    rain="${wdir}/rain.pl "
 fi
 
 rain="$rain -i" # disable PLOT mode (not use PLOTSH and COMOUT)
