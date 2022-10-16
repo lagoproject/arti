@@ -90,6 +90,7 @@ my $imuaddi = 0;
 my $nofruns = 1;
 my $ecutshe = 800.;
 my $lemodel = "gheisha";
+my $onedataBase = "/mnt/datahub.egi.eu/test8/fluka/"; 
 
 sub get_answer {
   my $question = $_[0];
@@ -576,6 +577,7 @@ EXIT
   my $binout = sprintf("$direct/DAT%06d",$run_nr);
   my $out = "$direct/DAT$name.lst";
   my $script = "$home/run-$prj-$name.sh";
+  my $oneout = "$onedataBase/S3_$prj_$site_$lemodel";
   unless ($debug != 0) {
     opendir(IMD, "$direct/") or system("mkdir $direct/");
     closedir(IMD);
@@ -593,6 +595,11 @@ EXIT
       print $fh "echo \"compressing output files...\"\n";
       print $fh "bzip2 -9v $binout\n";
       print $fh "bzip2 -9v $out\n";
+      print $fh "echo \"tranferring to onedata...\"\n";
+	  print $fg "echo \"[[ ! -d $oneout ]] && mkdir $oneout\"\n";
+	  print $fg "echo \"while ! cp -av $binout.bz2 $wdir/; do sleep 5; done\"\n";
+	  print $fg "echo \"while ! cp -av $out.bz2 $wdir/; do sleep 5; done\"\n";
+	  print $fg "echo \"rm $binout.bz2 $out.bz2\"\n";
       print $fh "rm $script\n";
       close($fh);
       system("chmod 777 $script");
