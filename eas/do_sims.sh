@@ -247,7 +247,7 @@ if ! $docker; then
 		exit 1;
 	fi
 else
-	$wdir="/opt/corsika-${ver}/run"
+	wdir="/opt/corsika-${ver}/run"
 	echo -e "#  INFO: Working directory fixed by DOCKER: $wdir"
 fi
 
