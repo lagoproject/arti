@@ -420,9 +420,9 @@ a=$(echo $prj)
 
 cp $basearti/sims/rain.pl $wdir/
 if $cta; then 
-    rain="${wdir}/rain.pl -z"
+    rain="./rain.pl -z"
 else
-    rain="${wdir}/rain.pl "
+    rain="./rain.pl "
 fi
 
 rain="$rain -i" # disable PLOT mode (not use PLOTSH and COMOUT)
@@ -604,5 +604,8 @@ if $docker; then
     echo -e "mv $wdir/go-dockerslurm-$prj.sh $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
     echo -e "chmod 644 $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
 	chmod 744 $wdir/go-docker-$prj.sh
+	cd $wdir
 	eval $wdir/go-docker-$prj.sh
+	ls -l $oneout/
+	cd ${HOME}
 fi
