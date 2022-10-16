@@ -234,10 +234,21 @@ if [ "X$prj" == "X" ]; then
   exit 1;
 fi
 
-if [ "X$wdir" == "X" ]; then
-  echo; echo -e "ERROR: You have to set the working directory (where corsika bin files are located)"
-  showhelp
-  exit 1;
+if [ "X$ver" == "X" ]; then
+  ver="77402"
+  echo -e "#  INFO: CORSIKA version was not provided. Using default: $ver"
+fi
+
+
+if ! $docker; then
+	if [ "X$wdir" == "X" ]; then
+		echo; echo -e "ERROR: You have to set the working directory (where corsika bin files are located)"
+		showhelp
+		exit 1;
+	fi
+else
+	$wdir="/opt/corsika-${ver}/run"
+	echo -e "#  INFO: Working directory fixed by DOCKER: $wdir"
 fi
 
 if [ "X$tim" == "X" ]; then
@@ -248,11 +259,6 @@ fi
 if [ "X$procs" == "X0" ]; then
   procs=4;
   echo -e "#  INFO: Processors should be >0, using default: $procs"
-fi
-
-if [ "X$ver" == "X" ]; then
-  ver="77402"
-  echo -e "#  INFO: CORSIKA version was not provided. Using default: $ver"
 fi
 
 if [ "X$hig" == "X" ]; then
