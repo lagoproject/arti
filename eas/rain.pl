@@ -613,7 +613,7 @@ EXIT
     print "# $getjson\n";
     if ($slurm != 0) {
       print "###################################################################\n";
-      $cmd="sbatch -p highpri2 -o ${name}_srun_%j.log ${script}";
+      $cmd="sbatch -p debug -o ${name}_srun_%j.log ${script}";
     }
     else {
       print "# in screen $name\n";
