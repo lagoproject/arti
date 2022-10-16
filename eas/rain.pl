@@ -60,6 +60,7 @@ my $wdir = "x";
 my $crk_ver = "77402";
 my $heim = "QGSII";
 my $debug = 0;
+my $docker = 0;
 my $help = 0;
 my $slurm = 0;
 my $highsec = 0;
@@ -169,7 +170,7 @@ while ($_ = $ARGV[0]) {
     $help++;
   }
   if (/-d$/i) {
-    $debug++;
+    $docker++;
   }
   if (/-mu$/i) {
     $imuaddi=1;
@@ -210,30 +211,31 @@ $package = $package . "_thin" if ($ithin != 0);
 my $usage="
        $0 $VERSION\n
        Usage: $0 options\n
-       -b                                  Activates batch mode
-       -i                                  Disable PLOTSH and PLOTSH2 modes (usual simms production)
-       -d                                  Debug mode: only shows what it should do. Don't start simulation
        -r  <working directory>             Specify where corsika bin files are located
        -v  <version>                       Corsika version number
        -h  <high energy interaction model> High energy interaction model used for compilation of CORSIKA (EPOS|QGSII|SIBYLL)
        -f  <low energy interaction model>  Low energy interaction model used for compilation of CORSIKA (gheisha|fluka)
-       -l                                  Enables SLURM cluster compatibility (with sbatch). 
-       -t  <EFRCTHN> <WMAX> <RMAX>         Enables THIN Mode (see manual for pg 62 for values)
-       -th <THINRAT> <WEITRAT>             If THIN Mode, select different thining levels for Hadronic (THINH) ...
-       -te <THINRAT> <WEITRAT>             ... and electromagnetic particles (THINEM)
-       -a <high energy ecuts (GeV)>        Enables and set high energy cuts for ECUTS
-       -z                                  Enables CHERENKOV mode
-       -mu                                 Enables additional information from muons and EM particles
-       -g                                  Enables GRID mode
        -s <site>                           Choice site for simulation (some predefined sites: hess|sac|etn|ber|bga|lim|glr|mch|mge|and|mpc|cha|cid|mor|ccs|lsc|mbo)
+       -a <high energy ecuts (GeV)>        Enables and set high energy cuts for ECUTS
        -m <energy>                         Defines energy (in GeV) for monoenergetic showers (CHERENKOV)
        -q <theta>                          Defines zenith angle (in degs) for fixed angle showers (CHERENKOV)
        -p <prmpar>                         Defines primary particle (see table 4 pg 87) (CHERENKOV)
+       -t  <EFRCTHN> <WMAX> <RMAX>         Enables THIN Mode (see manual for pg 62 for values)
+       -th <THINRAT> <WEITRAT>             If THIN Mode, select different thining levels for Hadronic (THINH) ...
+       -te <THINRAT> <WEITRAT>             ... and electromagnetic particles (THINEM)
+       -b                                  Activates batch mode
+       -i                                  Disable PLOTSH and PLOTSH2 modes (usual simms production)
+       -l                                  Enables SLURM cluster compatibility (with sbatch). 
+       -d                                  Enables DOCKER mode (oneclient should be running)
+       -z                                  Enables CHERENKOV mode
+       -mu                                 Enables additional information from muons and EM particles
+       -g                                  Enables GRID mode
        \n";
 die "$usage\n" if ($help != 0);
 
 print STDERR "\nWARNING! You are running in DEBUG mode. I'll only show what I should do\n\n" if ($debug != 0);
 print STDERR "\nWARNING! CHERENKOV mode is enabled.\n\n" if ($cherenkov != 0);
+print STDERR "\nWARNING! DOCKER mode is enabled.\n\n" if ($docker != 0);
 print STDERR "\nWARNING! Site selected for simulation: $site.\n\n" unless ($site eq "");
 
 if ($runmode != 0) {
@@ -577,7 +579,6 @@ EXIT
   my $binout = sprintf("$direct/DAT%06d",$run_nr);
   my $out = "$direct/DAT$name.lst";
   my $script = "$home/run-$prj-$name.sh";
-  my $oneout = "$onedataBase/S3_${prj}_${site}_${lemodel}";
   unless ($debug != 0) {
     opendir(IMD, "$direct/") or system("mkdir $direct/");
     closedir(IMD);
@@ -595,11 +596,14 @@ EXIT
       print $fh "echo \"compressing output files...\"\n";
       print $fh "bzip2 -9v $binout\n";
       print $fh "bzip2 -9v $out\n";
-      print $fh "echo \"tranferring to onedata...\"\n";
-      print $fh "while ! cp -v $binout.bz2 $oneout; do sleep 5; done\n";
-      print $fh "while ! cp -v $file $oneout; do sleep 5; done\n";
-      print $fh "while ! cp -v $out.bz2 $oneout; do sleep 5; done\n";
-      print $fh "rm $binout.bz2 $file $out.bz2\n";
+	  if ($docker != 0) {
+		  my $oneout = "$onedataBase/S3_${prj}_${site}_${lemodel}";
+		  print $fh "echo \"tranferring to onedata...\"\n";
+	      print $fh "while ! cp -v $binout.bz2 $oneout; do sleep 5; done\n";
+		  print $fh "while ! cp -v $file $oneout; do sleep 5; done\n";
+	      print $fh "while ! cp -v $out.bz2 $oneout; do sleep 5; done\n";
+	      print $fh "rm $binout.bz2 $file $out.bz2\n";
+	  }
       print $fh "rm $script\n";
       close($fh);
       system("chmod 777 $script");
@@ -613,7 +617,7 @@ EXIT
     print "# $getjson\n";
     if ($slurm != 0) {
       print "###################################################################\n";
-      $cmd="sbatch -p debug -o ${name}_srun_%j.log ${script}";
+      $cmd="sbatch -p cpu36c -o ${name}_srun_%j.log ${script}";
     }
     else {
       print "# in screen $name\n";
@@ -627,9 +631,4 @@ EXIT
       system($cmd);
     }
   }
-}
-unless ($grid != 0) {
-  print "###################################################################\n";
-  print "# BYE BYE\n";
-  print "###################################################################\n";
 }

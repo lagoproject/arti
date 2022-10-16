@@ -80,8 +80,8 @@ showhelp() {
   echo -e
   echo -e "Modifiers"
   echo -e "  -l                                 : Enables SLURM cluster compatibility (with sbatch)."
+  echo -e "  -d                                 : Enable DOCKER compatible mode"
   echo -e "  -e                                 : Enable CHERENKOV mode"
-  echo -e "  -d                                 : Enable DEBUG mode"
   echo -e "  -x                                 : Enable other defaults (It doesn't prompt user for unset parameters)"
   echo -e "  -?                                 : Shows this help and exit."
   echo
@@ -107,6 +107,8 @@ defaults=false
 ecut=800
 slurm=false
 onedataBase="/mnt/datahub.egi.eu/test8/fluka"; # need to change also at rain.pl
+nprocs=$(/usr/bin/nproc)   # number of simultaneous process for paralllel local processing
+docker=false
 
 echo
 while getopts 'w:k:p:t:v:u:f:h:s:j:c:b:m:n:r:i:o:q:a:?lydex' opt; do
@@ -210,7 +212,7 @@ while getopts 'w:k:p:t:v:u:f:h:s:j:c:b:m:n:r:i:o:q:a:?lydex' opt; do
       slurm=true
       ;;
     d)
-      debug=true
+	  docker=true
       ;;
     x)
       defaults=true
@@ -331,7 +333,15 @@ if $highsec; then
 fi
 
 if $slurm; then
-	echo -e "#  INFO: SLURM mode is enable. Will not work in other environments."
+	echo -e "#  INFO: SLURM mode is enabled. Will not work in other environments."
+fi
+if $docker; then
+	if [ ! -d $onedataBase ]; then
+		echo; echo -e "ERROR: You are running in DOCKER enabled mode but onedata is not accessible"
+		showhelp
+		exit 1;
+	fi
+	echo -e "#  INFO: DOCKER mode is enabled."
 fi
 
 corsika_bin="corsika${ver}Linux_${hig}_${lemodel}"
@@ -340,7 +350,7 @@ if [ ! -e $wdir/$corsika_bin ]; then
     showhelp
     exit 1;
 fi
-echo -e "#  INFO   : Executable file is ($corsika_bin)"
+echo -e "#  INFO: Executable file is ($corsika_bin)"
 
 # It is important to now the total time in onedata. Adding total simulation time to the project name...
 prj="${prj}_$(printf "%06d" ${tim})"
@@ -435,12 +445,14 @@ fi
 
 rain="$rain -r $wdir -v $ver -h $hig -f $lemodel -b $prj/\$i-*.run"
 echo -e "#  INFO   : rain command: $rain"
-oneout="$onedataBase/S3_${prj}_${site}_${lemodel}"
-[[ ! -d $oneout ]] && mkdir $oneout
-while ! cp -v $wdir/$prj/inject $oneout; do 
-	sleep 5
-done
-echo -e "#  INFO   : Results will be transferred to $oneout"
+if $docker; then
+	oneout="$onedataBase/S3_${prj}_${site}_${lemodel}"
+	[[ ! -d $oneout ]] && mkdir $oneout
+	while ! cp -v $wdir/$prj/inject $oneout; do 
+		sleep 5
+	done
+	echo -e "#  INFO   : Results will be transferred to $oneout"
+fi
 echo -e "#  INFO   : Calculations done. Now run the go_${prj}_* scripts in $wdir/"
 
 basenice=19
@@ -453,6 +465,9 @@ if $slurm; then
 	echo -e "# go slurm $prj" >> $wdir/go-slurm-$prj.sh
 	echo -e "" >> $wdir/go-slurm-$prj.sh
     chmod 744 $wdir/go-slurm-$prj.sh
+fi
+if $docker; then
+	echo -n > $wdir/go-docker-$prj.run
 fi
 
 stuff=(001206 001608 000703 002412 001105 002814 001407 002010 005626 000904 003216 002713 002311 004020 001909 005224 004018 004822 005525 003919 005123 003115 003517 004521)
@@ -478,12 +493,18 @@ mv $wdir/go-$prj-all-$n.sh $wdir/go-$prj-all-$n.run
 		echo $wdir/go-$prj-all-$n.sh >> $wdir/go-slurm-$prj.sh
 	fi
 done
-
+if $docker; then
+	for i in $(seq 0 $[${#stuff[@]}-1]); do
+		nuc=${stuff[$i]}
+		r=${rain/\$i/${nuc}}
+		echo -e "$r" >> $wdir/go-docker-$prj.run
+	done
+	rm $wdir/go-$prj-all-*.sh
+fi
 #helium
 b=$(basename $(ls -1 $wdir/$prj/000402-*) .run | sed -e "s/000402-//" | awk '{print $1*1.0}')
 c=$(basename $(ls -1 $wdir/$prj/000402-*) .run | sed -e "s/000402-//" | awk -v p=${prcHe} '{print int($1/p+0.5)}')
 printf -v k "%011d" $c
-
 for i in $(seq 1 $prcHe); do
   u="0${i}0402"
   cat $wdir/$prj/000402-*.run | sed -e "s/000402/$u/" | sed -e "s/$b/$c/" > $wdir/$prj/$u-$k.run
@@ -503,6 +524,14 @@ chmod 744 $wdir/go-${prj}-he.sh
 rm $wdir/$prj/000402-*.run
 if $slurm; then
 	echo $wdir/go-${prj}-he.sh >> $wdir/go-slurm-$prj.sh
+fi
+if $docker; then
+	for i in $(seq 1 $prcHe); do
+		u="0${i}0402"
+        r=${rain/\$i/${u}}
+        echo -e "$r" >> $wdir/go-docker-$prj.run
+	done
+	rm $wdir/go-$prj-he.sh
 fi
 
 #protons
@@ -531,9 +560,17 @@ for j in \$(seq $ii $ff); do
 done
 chmod 644 $wdir/go-$prj-pr-$i.sh
 mv $wdir/go-$prj-pr-$i.sh $wdir/go-$prj-pr-$i.run" > $wdir/go-${prj}-pr-$i.sh
-if $slurm; then
-    echo $wdir/go-${prj}-pr-$i.sh >> $wdir/go-slurm-$prj.sh
-fi
+	if $slurm; then
+		echo $wdir/go-${prj}-pr-$i.sh >> $wdir/go-slurm-$prj.sh
+	fi
+	if $docker; then
+		for j in $(seq $ii $ff); do
+			printf -v n "%02d" $j
+			u="${n}0014"
+			r=${rain/\$i/${u}}
+			echo -e "$r" >> $wdir/go-docker-$prj.run
+		done
+	fi
 done
 rm $wdir/$prj/000014-*.run
 for i in $(seq 1 $multPr); do
@@ -543,4 +580,29 @@ if $slurm; then
     echo -e "squeue -u \$USER" >> $wdir/go-slurm-$prj.sh
     echo -e "mv $wdir/go-slurm-$prj.sh $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
     echo -e "chmod 644 $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
+fi
+if $docker; then
+	rm $wdir/go-${prj}-pr-*.sh
+	rm -r 
+ 	echo -e "#!/bin/bash" > $wdir/go-docker-$prj.sh
+ 	echo -e "# go docker $prj" >> $wdir/go-docker-$prj.sh
+ 	echo -e "" >> $wdir/go-docker-$prj.sh
+	echo -e "N=\$(/usr/bin/nproc)" >> $wdir/go-docker-$prj.sh
+ 	echo -e "nl=\$(cat $wdir/go-docker-$prj.run | wc -l)" >> $wdir/go-docker-$prj.sh
+	echo -e "np=0" >> $wdir/go-docker-$prj.sh
+	echo -e "nr=0" >> $wdir/go-docker-$prj.sh
+	echo -e "while IFS= read -r line; do" >> $wdir/go-docker-$prj.sh
+    echo -e "    eval \${line}" >> $wdir/go-docker-$prj.sh
+	echo -e "    ((nr++))" >> $wdir/go-docker-$prj.sh
+    echo -e "    np=\$(ps aux | grep corsika77402 | grep -v grep | wc -l)" >> $wdir/go-docker-$prj.sh
+    echo -e "    echo \$np: \$nr/\$nl" >> $wdir/go-docker-$prj.sh
+    echo -e "    while [ \$np -ge \$N ]; do" >> $wdir/go-docker-$prj.sh
+	echo -e "        sleep 3;" >> $wdir/go-docker-$prj.sh
+    echo -e "        np=\$(ps aux | grep corsika77402 | grep -v grep | wc -l)" >> $wdir/go-docker-$prj.sh
+    echo -e "    done" >> $wdir/go-docker-$prj.sh
+	echo -e "done < $wdir/go-docker-$prj.run" >> $wdir/go-docker-$prj.sh
+    echo -e "mv $wdir/go-dockerslurm-$prj.sh $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
+    echo -e "chmod 644 $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
+	chmod 744 $wdir/go-docker-$prj.sh
+	eval $wdir/go-docker-$prj.sh
 fi
