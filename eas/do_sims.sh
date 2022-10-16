@@ -106,7 +106,7 @@ BZcomp=false
 defaults=false
 ecut=800
 slurm=false
-
+onedataBase="/mnt/datahub.egi.eu/test8/fluka"; # need to change also at rain.pl
 
 echo
 while getopts 'w:k:p:t:v:u:f:h:s:j:c:b:m:n:r:i:o:q:a:?lydex' opt; do
@@ -343,7 +343,7 @@ fi
 echo -e "#  INFO   : Executable file is ($corsika_bin)"
 
 # It is important to now the total time in onedata. Adding total simulation time to the project name...
-prj="$prj_$(printf "%06d" $tim)"
+prj="${prj}_$(printf "%06d" ${tim})"
 direct=$wdir/$prj
 basearti=${ARTI}
 #helium -> Usually for 1 hour flux, 4 different procces is enough
@@ -434,8 +434,15 @@ if $slurm; then
 fi
 
 rain="$rain -r $wdir -v $ver -h $hig -f $lemodel -b $prj/\$i-*.run"
-# echo -e "#  INFO   : rain command: $rain"
+echo -e "#  INFO   : rain command: $rain"
+oneout="$onedataBase/S3_${prj}_${site}_${lemodel}"
+[[ ! -d $oneout ]] && mkdir $oneout
+while ! cp -v $wdir/$prj/inject $oneout; do 
+	sleep 5
+done
+echo -e "#  INFO   : Results will be transferred to $oneout"
 echo -e "#  INFO   : Calculations done. Now run the go_${prj}_* scripts in $wdir/"
+
 basenice=19
 if $slurm; then
   basenice=0;
