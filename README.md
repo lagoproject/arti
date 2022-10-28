@@ -66,7 +66,7 @@ Even more, by using ARTI, it is possible to calculate in a very precise way the 
 
 When using ARTI, please cite the reference reported below:
 
-Christian Sarmiento-Cano, Mauricio Suárez-Durán, Rolando Calderón-Ardila, Adriana Vásquez-Ramírez, Andrei Jaimes-Motta, Luis A. Núñez, Sergio Dasso, Iván Sidelnik and Hernán Asorey (for the LAGO Collaboration), _"The ARTI Framework: Cosmic Rays Atmospheric Background Simulations"_, _European Journal of Physics_ **C**, submitted, [arXiv:2010.14591[astro-ph.IM]](https://arxiv.org/abs/2010.14591), [doi:10.48550/arXiv.2010.14591](https://doi.org/10.48550/arXiv.2010.14591) (2022).
+Christian Sarmiento-Cano, Mauricio Suárez-Durán, Rolando Calderón-Ardila, Adriana Vásquez-Ramírez, Andrei Jaimes-Motta, Luis A. Núñez, Sergio Dasso, Iván Sidelnik and Hernán Asorey (for the LAGO Collaboration), _"The ARTI Framework: Cosmic Rays Atmospheric Background Simulations"_, _European Journal of Physics_ **C**, ***accepted***, [arXiv:2010.14591[astro-ph.IM]](https://arxiv.org/abs/2010.14591), [doi:10.48550/arXiv.2010.14591](https://doi.org/10.48550/arXiv.2010.14591) (2022).
 [(bibtex)](docs/references/arti.bib)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
@@ -88,6 +88,8 @@ ARTI requires the installation of the following packages:
 
 * bash
 * perl 5.0 
+* perl LWD::simple module
+* perl JSON module
 * gcc
 * make
 * screen
@@ -97,7 +99,7 @@ ARTI requires the installation of the following packages:
 As a one-liner for Ubuntu/Debian:
 
 ```bash 
-sudo apt install build-essential screen rsync git
+sudo apt install build-essential perl screen rsync git
 ```
 (git is optional).
 
