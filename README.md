@@ -20,6 +20,7 @@
     <a href="#Contact">Contact us</a>
 </p>
 </div>
+[![DOI](https://zenodo.org/badge/28657065.svg)](https://zenodo.org/badge/latestdoi/28657065)
 
 <!-- TABLE OF CONTENTS -->
 <details>
