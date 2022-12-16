@@ -59,7 +59,7 @@ my $runmode = 0;
 my $wdir = "x";
 my $crk_ver = "77402";
 my $heim = "QGSII";
-my $debug = 0;
+my $debug = 1;
 my $docker = 0;
 my $help = 0;
 my $slurm = 0;
@@ -92,7 +92,7 @@ my $nofruns = 1;
 my $ecutshe = 800.;
 my $lemodel = "gheisha";
 my $onedataBase = "/mnt/datahub.egi.eu/test8/fluka"; # need to change also at do_sims.sh
-
+my $partition = "";
 sub get_answer {
   my $question = $_[0];
   my $default = $_[1];
@@ -134,7 +134,7 @@ while ($_ = $ARGV[0]) {
     shift;
     $rmax = $ARGV[0];
     shift;
-  }
+}
   if (/-s$/i) {
     $site = $ARGV[0];
     shift;
@@ -151,6 +151,11 @@ while ($_ = $ARGV[0]) {
     $monoq = 1;
     $monot = $ARGV[0];
     shift;
+  }
+  if (/-l$/i) {
+    $slurm++;
+	$partition = $ARGV[0];
+	shift;
   }
   if (/-th$/i) {
     $ithinh=1;
@@ -174,9 +179,6 @@ while ($_ = $ARGV[0]) {
   }
   if (/-mu$/i) {
     $imuaddi=1;
-  }
-  if (/-l$/i) {
-    $slurm++;
   }
   if (/-g$/i) {
     $grid=1;
@@ -215,9 +217,10 @@ my $usage="
        -v  <version>                       Corsika version number
        -h  <high energy interaction model> High energy interaction model used for compilation of CORSIKA (EPOS|QGSII|SIBYLL)
        -f  <low energy interaction model>  Low energy interaction model used for compilation of CORSIKA (gheisha|fluka)
-       -s <site>                           Choice site for simulation (some predefined sites: hess|sac|etn|ber|bga|lim|glr|mch|mge|and|mpc|cha|cid|mor|ccs|lsc|mbo)
+       -s <site>                           Choice site for simulation (see the LAGO DMP for a complete description of the sites https://lagoproject.github.io/DMP/defs/)
        -a <high energy ecuts (GeV)>        Enables and set high energy cuts for ECUTS
        -m <energy>                         Defines energy (in GeV) for monoenergetic showers (CHERENKOV)
+       -l <partition>                      Enables SLURM cluster compatibility (with sbatch), and deploy the simulations at the partition <partition> (Mandatory). 
        -q <theta>                          Defines zenith angle (in degs) for fixed angle showers (CHERENKOV)
        -p <prmpar>                         Defines primary particle (see table 4 pg 87) (CHERENKOV)
        -t  <EFRCTHN> <WMAX> <RMAX>         Enables THIN Mode (see manual for pg 62 for values)
@@ -225,18 +228,12 @@ my $usage="
        -te <THINRAT> <WEITRAT>             ... and electromagnetic particles (THINEM)
        -b                                  Activates batch mode
        -i                                  Disable PLOTSH and PLOTSH2 modes (usual simms production)
-       -l                                  Enables SLURM cluster compatibility (with sbatch). 
        -d                                  Enables DOCKER mode (oneclient should be running)
        -z                                  Enables CHERENKOV mode
        -mu                                 Enables additional information from muons and EM particles
        -g                                  Enables GRID mode
        \n";
 die "$usage\n" if ($help != 0);
-
-print STDERR "\nWARNING! You are running in DEBUG mode. I'll only show what I should do\n\n" if ($debug != 0);
-print STDERR "\nWARNING! CHERENKOV mode is enabled.\n\n" if ($cherenkov != 0);
-print STDERR "\nWARNING! DOCKER mode is enabled.\n\n" if ($docker != 0);
-print STDERR "\nWARNING! Site selected for simulation: $site.\n\n" unless ($site eq "");
 
 if ($runmode != 0) {
   die "\n\nERROR: You selected run mode without indicate working directory.\n$usage\n" if ($wdir eq "x");
@@ -255,7 +252,18 @@ if ($ithinh != 0) {
   die "\n\nERROR: You have to specify two paramters for THINH (-th).\n$usage\n" unless ($thinrath && $weitrath);
   $thinh="THINH       $thinrath $weitrath\n";
 }
+if ($slurm != 0) {
+	if ($partition eq "") {
+		die "\n\nERROR: You have to specifiy the partition in the slurm server (-l)\n$usage\n";
+	}
+}
 ## ready to start
+print STDERR "\nWARNING! You are running in DEBUG mode. I'll only show what I should do\n\n" if ($debug != 0);
+print STDERR "\nWARNING! CHERENKOV mode is enabled.\n\n" if ($cherenkov != 0);
+print STDERR "\nWARNING! DOCKER mode is enabled.\n\n" if ($docker != 0);
+print STDERR "\nWARNING! Site selected for simulation: $site.\n\n" unless ($site eq "");
+print STDERR "\nWARNING! Slurm partition selected: $partition.\n\n" unless ($slurm == 0);
+
 $nofruns = get_answer("Number of runs", $nofruns, "RUNS") unless ($monoe || $monoq);
 my $w_dir_tmp;
 if ($wdir eq "x") {
@@ -617,7 +625,7 @@ EXIT
     print "# $getjson\n";
     if ($slurm != 0) {
       print "###################################################################\n";
-      $cmd="sbatch -p cpu36c -o ${name}_srun_%j.log ${script}";
+      $cmd="sbatch -p $partition -t 5-12:00 -o ${name}_srun_%j.log ${script}";
     }
     else {
       print "# in screen $name\n";

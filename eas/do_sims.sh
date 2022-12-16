@@ -59,6 +59,7 @@ showhelp() {
   echo -e "  -f <LE Int Model (gheisha|fluka)>  : Define the lown energy interaction model to be used. Default: gheisha"
   echo -e "  -u <user name>                     : User Name."
   echo -e "  -j <procs>                         : Number of processors to use"
+  echo -e "  -l <partition>                     : Enables SLURM cluster compatibility using partition <partition> (with sbatch)."
   echo -e
   echo -e "Physical parameters"
   echo -e "  -t <flux time>                     : Flux time (in seconds) for simulations"
@@ -79,7 +80,6 @@ showhelp() {
   echo -e "  -g <Lat, Lon> *dev                 : Obtain the current values of BX and BZ for a site located at (Lat,Lon,Alt), -k option is mandatory. If -s is used, then (Lat,Lon,Alt) will be taken from the standard characterization of the site."
   echo -e
   echo -e "Modifiers"
-  echo -e "  -l                                 : Enables SLURM cluster compatibility (with sbatch)."
   echo -e "  -d                                 : Enable DOCKER compatible mode"
   echo -e "  -e                                 : Enable CHERENKOV mode"
   echo -e "  -x                                 : Enable other defaults (It doesn't prompt user for unset parameters)"
@@ -106,12 +106,13 @@ BZcomp=false
 defaults=false
 ecut=800
 slurm=false
+partition=""
 onedataBase="/mnt/datahub.egi.eu/test8/fluka"; # need to change also at rain.pl
 nprocs=$(/usr/bin/nproc)   # number of simultaneous process for paralllel local processing
 docker=false
 
 echo
-while getopts 'w:k:p:t:v:u:f:h:s:j:c:b:m:n:r:i:o:q:a:?lydex' opt; do
+while getopts 'w:k:p:t:v:u:f:h:s:j:c:b:m:n:r:i:o:q:a:l:?ydex' opt; do
   case $opt in
     w)
       wdir=$OPTARG
@@ -145,6 +146,11 @@ while getopts 'w:k:p:t:v:u:f:h:s:j:c:b:m:n:r:i:o:q:a:?lydex' opt; do
     f)
       lemodel=$OPTARG
       echo -e "#  Lew Energy Interaction Model = $lemodel"
+      ;;
+    l)
+      slurm=true
+	  partition=$OPTARG
+      echo -e "#  Slurm partition               = $partition"
       ;;
     s)
       site=$OPTARG
@@ -208,9 +214,6 @@ while getopts 'w:k:p:t:v:u:f:h:s:j:c:b:m:n:r:i:o:q:a:?lydex' opt; do
       vol=true
       echo -e "#  Volumetric detector mode      = $vol"
       ;;
-    l)
-      slurm=true
-      ;;
     d)
 	  docker=true
       ;;
@@ -232,6 +235,14 @@ if [ "X$prj" == "X" ]; then
   echo; echo -e "ERROR: You have to provide a project name (suggested format: NAMEXX, where XX is a number between 0 and 99)"
   showhelp
   exit 1;
+fi
+
+if $slurm; then 
+	if [[ "X$partition" == "X" || "X${partition:0:1}" == "X-" ]]; then
+		echo; echo -e "ERROR: In slurm mode, you need to provide the partition name"
+		showhelp
+		exit 1;
+	fi
 fi
 
 if [ "X$ver" == "X" ]; then
@@ -339,7 +350,7 @@ if $highsec; then
 fi
 
 if $slurm; then
-	echo -e "#  INFO: SLURM mode is enabled. Will not work in other environments."
+	echo -e "#  INFO: SLURM mode is enabled (it will not work in other environments). Partition: $partition"
 fi
 if $docker; then
 	if [ ! -d $onedataBase ]; then
@@ -446,7 +457,7 @@ if $highsec; then
 fi
 
 if $slurm; then
-	rain="$rain -l"
+	rain="$rain -l $partition"
 fi
 
 rain="$rain -r $wdir -v $ver -h $hig -f $lemodel -b $prj/\$i-*.run"
