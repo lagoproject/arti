@@ -517,7 +517,7 @@ NUADDI      $muaddi";
   my $obsLevCmd = "OBSLEV        $altitude";
   if ($obsLevVar != 0) {
 	  $obsLevCmd = "";
-      $curvout="CURVOUT     F";
+      $curvout="";
 	  for (my $i=9; $i >= 0; $i--) {
 		  my $obsLevAlt = $altitude + ($i * $obsLevSep * 100.);
 		  $obsLevCmd .= "OBSLEV        $obsLevAlt\n";
