@@ -266,7 +266,7 @@ if $obsLev; then
 		showhelp
 		exit 1;
 	else
-    highez="80"
+    highez="70"
     echo -e "#  INFO: A maximum value for zenith angle of $highez was automatically set up due to multiple OBSLEVs requirements"
   fi
 fi

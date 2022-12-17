@@ -277,7 +277,7 @@ print STDERR "\nWARNING! DOCKER mode is enabled.\n\n" if ($docker != 0);
 print STDERR "\nWARNING! Site selected for simulation: $site.\n\n" unless ($site eq "");
 print STDERR "\nWARNING! Slurm partition selected: $partition.\n\n" unless ($slurm == 0);
 print STDERR "\nWARNING! Multiple OBSLEV were set separated by: $obsLevSep m.\n" unless ($obsLevVar == 0);
-print STDERR "WARNING! On multiple OBSLEV, CURVATURE was set for FALSE and THETA<=80º\n\n" unless ($obsLevVar == 0);
+print STDERR "WARNING! On multiple OBSLEV, CURVATURE was set for FALSE and THETA<=70\n\n" unless ($obsLevVar == 0);
 
 $nofruns = get_answer("Number of runs", $nofruns, "RUNS") unless ($monoe || $monoq);
 my $w_dir_tmp;
@@ -522,7 +522,7 @@ NUADDI      $muaddi";
 		  my $obsLevAlt = $altitude + ($i * $obsLevSep * 100.);
 		  $obsLevCmd .= "OBSLEV        $obsLevAlt\n";
 	  }
-      $t_high = 80 if ($t_high >= 85);
+      $t_high = 70 if ($t_high > 70);
   }
   if ($cherenkov != 0) {
     $cards="RUNNR         $run_nr
