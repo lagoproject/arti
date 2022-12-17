@@ -68,6 +68,7 @@ showhelp() {
   echo -e "  -r <Low primary particle energy>   : Lower limit of the primary particle energy."
   echo -e "  -i <Upper primary particle energy> : Upper limit of the primary particle energy."
   echo -e "  -a <high energy ecuts>             : High energy cuts for ECUTS; (if set value in GV = enabled)."
+  echo -e "  -z <sep>                           : Enable 9 additional OBSLEV placed at OBSLEV_SITE + i * sep, i=1...9. Does not work with CURVED CORSIKA"
   echo -e "  -y                                 : Select volumetric detector mode (default=flat array)"
   echo -e
   echo -e "Site parameters"
@@ -107,12 +108,15 @@ defaults=false
 ecut=800
 slurm=false
 partition=""
+obsLev=false
+obsLevSep=0.
+
 onedataBase="/mnt/datahub.egi.eu/test8/fluka"; # need to change also at rain.pl
 nprocs=$(/usr/bin/nproc)   # number of simultaneous process for paralllel local processing
 docker=false
 
 echo
-while getopts 'w:k:p:t:v:u:f:h:s:j:c:b:m:n:r:i:o:q:a:l:?ydex' opt; do
+while getopts 'w:k:p:t:v:u:f:h:s:j:c:b:m:n:r:i:o:q:a:l:z:?ydex' opt; do
   case $opt in
     w)
       wdir=$OPTARG
@@ -145,11 +149,16 @@ while getopts 'w:k:p:t:v:u:f:h:s:j:c:b:m:n:r:i:o:q:a:l:?ydex' opt; do
       ;;
     f)
       lemodel=$OPTARG
-      echo -e "#  Lew Energy Interaction Model = $lemodel"
+      echo -e "#  Lew Energy Interaction Model  = $lemodel"
+      ;;
+    z)
+      obsLevSep=$OPTARG
+      obsLev=true
+      echo -e "#  OBSLEV Separation             = $obsLevSep"
       ;;
     l)
       slurm=true
-	  partition=$OPTARG
+  	  partition=$OPTARG
       echo -e "#  Slurm partition               = $partition"
       ;;
     s)
@@ -250,6 +259,17 @@ if [ "X$ver" == "X" ]; then
   echo -e "#  INFO: CORSIKA version was not provided. Using default: $ver"
 fi
 
+if $obsLev; then
+  # second condition is to check if obsLevSep is a number
+  if [ "X$obsLevSep" == "X0" ] || ! [ "$obsLevSep" -eq "$obsLevSep" ]; then
+		echo; echo -e "ERROR: You have to define the separation between OBSLEV"
+		showhelp
+		exit 1;
+	else
+    highez="80"
+    echo -e "#  INFO: A maximum value for zenith angle of $highez was automatically set up due to multiple OBSLEVs requirements"
+  fi
+fi
 
 if ! $docker; then
 	if [ "X$wdir" == "X" ]; then
@@ -423,7 +443,7 @@ fi
 if $defaults; then
   options=${options}"-x "
 fi
-  
+
 options=${options}"-f $basearti/sims/spectra.dat"
 
 echo
@@ -458,6 +478,10 @@ fi
 
 if $slurm; then
 	rain="$rain -l $partition"
+fi
+
+if $obsLev; then
+	rain="$rain -o $obsLevSep"
 fi
 
 rain="$rain -r $wdir -v $ver -h $hig -f $lemodel -b $prj/\$i-*.run"

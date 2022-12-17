@@ -52,6 +52,8 @@ use Cwd;
 use JSON;
 use LWP::Simple;
 
+my $debug = 0; # equals to 1 for debugging
+
 my $VERSION="v1r9";
 my $tmp = "";
 my $batch = 0;
@@ -59,7 +61,6 @@ my $runmode = 0;
 my $wdir = "x";
 my $crk_ver = "77402";
 my $heim = "QGSII";
-my $debug = 1;
 my $docker = 0;
 my $help = 0;
 my $slurm = 0;
@@ -93,6 +94,9 @@ my $ecutshe = 800.;
 my $lemodel = "gheisha";
 my $onedataBase = "/mnt/datahub.egi.eu/test8/fluka"; # need to change also at do_sims.sh
 my $partition = "";
+my $obsLevVar = 0;
+my $obsLevSep = 0.;
+
 sub get_answer {
   my $question = $_[0];
   my $default = $_[1];
@@ -156,6 +160,11 @@ while ($_ = $ARGV[0]) {
     $slurm++;
 	$partition = $ARGV[0];
 	shift;
+  }
+  if (/-o$/i) {
+	$obsLevVar++;
+    $obsLevSep = $ARGV[0];
+    shift;
   }
   if (/-th$/i) {
     $ithinh=1;
@@ -226,6 +235,7 @@ my $usage="
        -t  <EFRCTHN> <WMAX> <RMAX>         Enables THIN Mode (see manual for pg 62 for values)
        -th <THINRAT> <WEITRAT>             If THIN Mode, select different thining levels for Hadronic (THINH) ...
        -te <THINRAT> <WEITRAT>             ... and electromagnetic particles (THINEM)
+       -o <sep>                            Generate 9 extra observation levels at SITE_OBSLEV+i*<sep>, for i in 1...9 (<sep> in m)
        -b                                  Activates batch mode
        -i                                  Disable PLOTSH and PLOTSH2 modes (usual simms production)
        -d                                  Enables DOCKER mode (oneclient should be running)
@@ -257,12 +267,17 @@ if ($slurm != 0) {
 		die "\n\nERROR: You have to specifiy the partition in the slurm server (-l)\n$usage\n";
 	}
 }
+if ($obsLevVar != 0) {
+	die "\n\nERROR: You have to provide a separation between additional OBSLEV (-o).\n$usage\n" unless ($obsLevSep > 0);
+}
 ## ready to start
 print STDERR "\nWARNING! You are running in DEBUG mode. I'll only show what I should do\n\n" if ($debug != 0);
 print STDERR "\nWARNING! CHERENKOV mode is enabled.\n\n" if ($cherenkov != 0);
 print STDERR "\nWARNING! DOCKER mode is enabled.\n\n" if ($docker != 0);
 print STDERR "\nWARNING! Site selected for simulation: $site.\n\n" unless ($site eq "");
 print STDERR "\nWARNING! Slurm partition selected: $partition.\n\n" unless ($slurm == 0);
+print STDERR "\nWARNING! Multiple OBSLEV were set separated by: $obsLevSep m.\n" unless ($obsLevVar == 0);
+print STDERR "WARNING! On multiple OBSLEV, CURVATURE was set for FALSE and THETA<=80º\n\n" unless ($obsLevVar == 0);
 
 $nofruns = get_answer("Number of runs", $nofruns, "RUNS") unless ($monoe || $monoq);
 my $w_dir_tmp;
@@ -499,6 +514,16 @@ NUADDI      $muaddi";
   }
   $plotshs = "PLOTSH      $plotsh" unless ($halley != 0);
   $plotshs = "" if ($plotsh eq "F");
+  my $obsLevCmd = "OBSLEV        $altitude";
+  if ($obsLevVar != 0) {
+	  $obsLevCmd = "";
+      $curvout="CURVOUT     F";
+	  for (my $i=9; $i >= 0; $i--) {
+		  my $obsLevAlt = $altitude + ($i * $obsLevSep * 100.);
+		  $obsLevCmd .= "OBSLEV        $obsLevAlt\n";
+	  }
+      $t_high = 80 if ($t_high >= 85);
+  }
   if ($cherenkov != 0) {
     $cards="RUNNR         $run_nr
 EVTNR         $evt_nr
@@ -509,7 +534,7 @@ ERANGE        $e_low $e_high
 THETAP        $t_low $t_high
 PHIP          $f_low $f_high
 VIEWCONE      0. 0.
-OBSLEV        $altitude
+$obsLevCmd
 $atmcrd       $modatm
 MAGNET        $bx $bz
 ARRANG        $arrang
@@ -546,7 +571,7 @@ ESLOPE      $e_slope
 ERANGE      $e_low $e_high
 THETAP      $t_low $t_high
 PHIP        $f_low $f_high
-OBSLEV      $altitude
+$obsLevCmd
 $atmcrd     $modatm
 MAGNET      $bx $bz
 FIXCHI      0.
