@@ -640,6 +640,11 @@ if $docker; then
     echo -e "        np=\$(ps aux | grep corsika77402 | grep -v grep | wc -l)" >> $wdir/go-docker-$prj.sh
     echo -e "    done" >> $wdir/go-docker-$prj.sh
 	echo -e "done < $wdir/go-docker-$prj.run" >> $wdir/go-docker-$prj.sh
+	echo -e "# wait for completition to avoid docker closure" >> $wdir/go-docker-$prj.sh
+	echo -e "while [ \$(ls -1 *.kk 2> /dev/null | wc -l) -gt 0 ]; do " >> $wdir/go-docker-$prj.sh
+	echo -e "    sleep 3" >> $wdir/go-docker-$prj.sh
+	echo -e "done" >> $wdir/go-docker-$prj.sh
+	echo -e "echo \"Everything ready at \$(date)\" " >> $wdir/go-docker-$prj.sh 
     echo -e "mv $wdir/go-dockerslurm-$prj.sh $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
     echo -e "chmod 644 $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
 	chmod 744 $wdir/go-docker-$prj.sh
