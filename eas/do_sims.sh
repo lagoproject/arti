@@ -483,6 +483,9 @@ rain="$rain -r $wdir -v $ver -h $hig -f $lemodel -b $prj/\$i-*.run"
 echo -e "#  INFO   : rain command: $rain"
 if $docker; then
 	oneout="$onedataBase/S3_${prj}_${site}_${lemodel}"
+	if $obsLev; then
+		oneout="${oneout}_obslev"
+	fi
 	[[ ! -d $oneout ]] && mkdir $oneout
 	while ! cp -v $wdir/$prj/inject $oneout; do 
 		sleep 5
