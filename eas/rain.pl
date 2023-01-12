@@ -631,6 +631,9 @@ EXIT
       print $fh "bzip2 -9v $out\n";
 	  if ($docker != 0) {
 		  my $oneout = "$onedataBase/S3_${prj}_${site}_${lemodel}";
+		  if ($obsLevVar != 0) {
+			  $oneout = "$oneout_obslev";
+		  }
 		  print $fh "echo \"tranferring to onedata...\"\n";
 	      print $fh "while ! cp -v $binout.bz2 $oneout; do sleep 5; done\n";
 		  print $fh "while ! cp -v $file $oneout; do sleep 5; done\n";
