@@ -484,7 +484,7 @@ echo -e "#  INFO   : rain command: $rain"
 if $docker; then
 	oneout="$onedataBase/S3_${prj}_${site}_${lemodel}"
 	if $obsLev; then
-		oneout="${oneout}_obslev"
+		oneout="${oneout}_obsl_$(printf "%04d" ${obsLevSep})"
 	fi
 	[[ ! -d $oneout ]] && mkdir $oneout
 	while ! cp -v $wdir/$prj/inject $oneout; do 
