@@ -271,15 +271,10 @@ if $obsLev; then
   fi
 fi
 
-if ! $docker; then
-	if [ "X$wdir" == "X" ]; then
-		echo; echo -e "ERROR: You have to set the working directory (where corsika bin files are located)"
-		showhelp
-		exit 1;
-	fi
-else
-	wdir="/opt/corsika-${ver}/run"
-	echo -e "#  INFO: Working directory fixed by DOCKER: $wdir"
+if [ "X$wdir" == "X" ]; then
+	echo; echo -e "ERROR: You have to set the working directory (where corsika bin files are located)"
+	showhelp
+	exit 1;
 fi
 
 if [ "X$tim" == "X" ]; then
