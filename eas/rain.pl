@@ -632,7 +632,7 @@ EXIT
 	  if ($docker != 0) {
 		  my $oneout = "$onedataBase/S3_${prj}_${site}_${lemodel}";
 		  if ($obsLevVar != 0) {
-			  $oneout = "$oneout_obslev";
+			  $oneout = "${oneout}_obslev";
 		  }
 		  print $fh "echo \"tranferring to onedata...\"\n";
 	      print $fh "while ! cp -v $binout.bz2 $oneout; do sleep 5; done\n";
