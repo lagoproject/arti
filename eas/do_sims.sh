@@ -483,7 +483,7 @@ fi
 rain="$rain -r $wdir -v $ver -h $hig -f $lemodel -b $prj/\$i-*.run"
 echo -e "#  INFO   : rain command: $rain"
 if $docker; then
-	oneout="$onedataBase/S3_${prj}_${site}_${lemodel}"
+	oneout="$onedataBase/S3_${prj}_${lemodel}"
 	if $obsLev; then
 		oneout="${oneout}_obsl_$(printf "%04d" ${obsLevSep})"
 	fi
