@@ -655,15 +655,15 @@ EXIT
       my $tmpSep = sprintf("%04d", $obsLevSep);
       $oneout = "${oneout}_obsl_$tmpSep";
     }
-    my $dat="$oneout/$binout.bz2";
-    my $lst="$oneout/DAT$name.lst.bz2";
-    my $inp="$oneout/DAT$name.input";
+    my $dat = sprintf("$oneout/DAT%06d.bz2", $run_nr);
+    my $lst = "$oneout/DAT$name.lst.bz2";
+    my $inp = "$oneout/DAT$name.input";
     # -s  The file exists and has non-zero size, it is a good indicator
     print "files $dat // $lst // $inp\n";
     if (-s "$dat") { # DAT file exists and it is non-zero size, good
       if (-s "$inp") { # input file exists and it is non-zero size, good
         if (-s "$lst") { # lst file exists and it is non-zero size, good, need to check for "END OF RUN"
-          my $end =  `bzcat $file | tail -n 1 | grep "END OF RUN" | sed -e "s/=//g; s/ //g"`;
+          my $end = `bzcat $file | tail -n 1 | grep "END OF RUN" | sed -e "s/=//g; s/ //g"`;
           chomp $end;
           if ("$end" eq "ENDOFRUN") { # everthing looks correct, the we should not run this script but report
             print "$end\n";
