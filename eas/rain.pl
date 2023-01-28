@@ -630,7 +630,7 @@ EXIT
       print $fh "bzip2 -9v $binout\n";
       print $fh "bzip2 -9v $out\n";
 	  if ($docker != 0) {
-		  my $oneout = "$onedataBase/S3_${prj}_${site}_${lemodel}";
+		  my $oneout = "$onedataBase/S3_${prj}_${lemodel}";
 		  if ($obsLevVar != 0) {
 			  my $tmpSep = sprintf("%04d",$obsLevSep);
 			  $oneout = "${oneout}_obsl_$tmpSep";
@@ -650,7 +650,7 @@ EXIT
   # erased before to start... so
   my $should_run = 1;
   if ($docker != 0) {
-    my $oneout = "$onedataBase/S3_${prj}_${site}_${lemodel}";
+    my $oneout = "$onedataBase/S3_${prj}_${lemodel}";
 	if ($obsLevVar != 0) {
       my $tmpSep = sprintf("%04d", $obsLevSep);
       $oneout = "${oneout}_obsl_$tmpSep";
