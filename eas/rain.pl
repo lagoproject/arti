@@ -518,8 +518,8 @@ NUADDI      $muaddi";
   if ($obsLevVar != 0) {
 	  $obsLevCmd = "";
       $curvout="";
-	  for (my $i=9; $i >= 0; $i--) {
-		  my $obsLevAlt = $altitude + ($i * $obsLevSep * 100.);
+	  for (my $k=9; $k >= 0; $k--) {
+		  my $obsLevAlt = $altitude + ($k * $obsLevSep * 100.);
 		  $obsLevCmd .= "OBSLEV        $obsLevAlt\n";
 	  }
       $t_high = 70 if ($t_high > 70);
@@ -636,9 +636,9 @@ EXIT
 			  $oneout = "${oneout}_obsl_$tmpSep";
 		  }
 		  print $fh "echo \"tranferring to onedata...\"\n";
-	      print $fh "while ! cp -v $binout.bz2 $oneout; do sleep 5; done\n";
-		  print $fh "while ! cp -v $file $oneout; do sleep 5; done\n";
-	      print $fh "while ! cp -v $out.bz2 $oneout; do sleep 5; done\n";
+	      print $fh "while ! cp -v --remove-destination $binout.bz2 $oneout; do sleep 5; done\n";
+		  print $fh "while ! cp -v --remove-destination $file $oneout; do sleep 5; done\n";
+	      print $fh "while ! cp -v --remove-destination $out.bz2 $oneout; do sleep 5; done\n";
 	      print $fh "rm $binout.bz2 $file $out.bz2\n";
 	  }
       print $fh "rm $script\n";
@@ -646,26 +646,61 @@ EXIT
       system("chmod 777 $script");
     }
   }
+  # in docker mode, we should run the script only if the file does not exist, of it exist, it is corrupted and should be
+  # erased before to start... so
+  my $should_run = 1;
+  if ($docker != 0) {
+    my $oneout = "$onedataBase/S3_${prj}_${site}_${lemodel}";
+	if ($obsLevVar != 0) {
+      my $tmpSep = sprintf("%04d", $obsLevSep);
+      $oneout = "${oneout}_obsl_$tmpSep";
+    }
+    my $dat="$oneout/$binout.bz2";
+    my $lst="$oneout/DAT$name.lst.bz2";
+    my $inp="$oneout/DAT$name.input";
+    # -s  The file exists and has non-zero size, it is a good indicator
+    print "files $dat // $lst // $inp\n";
+    if (-s $dat) { # DAT file exists and it is non-zero size, good
+      if (-s $inp) { # input file exists and it is non-zero size, good
+        if (-s $lst) { # lst file exists and it is non-zero size, good, need to check for "END OF RUN"
+          my $end = `bzcat $lst | tail -n 1 | grep "END OF RUN" | sed -e 's/=//g; s/ //g'`;
+          if ($end == "ENDOFRUN") { # everthing looks correct, the we should not run this script but report
+            print "$end\n";
+            $should_run = 0;
+            print "files $dat // $lst // $inp exist. I will not erase\n";
+          }
+        }
+      }
+    }
+  }
+
   $name = $name . "-$prj";
   my $cmd = "";
-  unless ($grid != 0) {
-    print "###################################################################\n";
-    print "# Starting simulations $name\n";
-    print "# $getjson\n";
-    if ($slurm != 0) {
+  if ($should_run > 0) {
+    unless ($grid != 0) {
       print "###################################################################\n";
-      $cmd="sbatch -p $partition -t 5-12:00 -o ${name}_srun_%j.log ${script}";
+      print "# Starting simulations $name\n";
+      print "# $getjson\n";
+      if ($slurm != 0) {
+        print "###################################################################\n";
+        $cmd = "sbatch -p $partition -t 5-12:00 -o ${name}_srun_%j.log ${script}";
+      }
+      else {
+        print "# in screen $name\n";
+        print "###################################################################\n";
+        $cmd = "screen -d -m -a -S $name $script; screen -ls";
+      }
+      if ($debug != 0) {
+        print "$cmd\n";
+      }
+      else {
+        system($cmd);
+      }
     }
-    else {
-      print "# in screen $name\n";
-      print "###################################################################\n";
-      $cmd = "screen -d -m -a -S $name $script; screen -ls";
-    }
-    if ($debug != 0) {
-      print "$cmd\n";
-    }
-    else {
-      system($cmd);
-    }
+  } else { # the final files exists are looks good. We should report and close
+    print "INFO: The files $binout.bz2, DAT$name.lst.bz2 and DAT$name.input exists in onedatasim and no need to create them again\n";
+    print "INFO: Continue with the next file.\n";
+    system ("rm -v $script");
+    system ("date -u");
   }
 }
