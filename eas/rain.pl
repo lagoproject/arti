@@ -659,16 +659,13 @@ EXIT
     my $lst = "$oneout/DAT$name.lst.bz2";
     my $inp = "$oneout/DAT$name.input";
     # -s  The file exists and has non-zero size, it is a good indicator
-    print "files $dat // $lst // $inp\n";
     if (-s "$dat") { # DAT file exists and it is non-zero size, good
       if (-s "$inp") { # input file exists and it is non-zero size, good
         if (-s "$lst") { # lst file exists and it is non-zero size, good, need to check for "END OF RUN"
           my $end = `bzcat $lst | tail -n 1 | grep "END OF RUN" | sed -e "s/=//g; s/ //g"`;
           chomp $end;
           if ("$end" eq "ENDOFRUN") { # everthing looks correct, the we should not run this script but report
-            print "$end\n";
             $should_run = 0;
-            print "files $dat // $lst // $inp exist. I will not erase\n";
           }
         }
       }
@@ -699,9 +696,13 @@ EXIT
       }
     }
   } else { # the final files exists are looks good. We should report and close
-    print "INFO: The files $binout.bz2, DAT$name.lst.bz2 and DAT$name.input exists in onedatasim and no need to create them again\n";
-    print "INFO: Continue with the next file.\n";
+    print "\n";
+    print "###################################################################\n";
+    print "# INFO: The files of the run $name exists. Skipping\n";
+    print "# INFO: ";
     system ("rm -v $script");
+    print "# INFO: ";
     system ("date -u");
+    print "###################################################################\n";
   }
 }
