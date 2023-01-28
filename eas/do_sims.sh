@@ -110,6 +110,7 @@ slurm=false
 partition=""
 obsLev=false
 obsLevSep=0.
+waittime=300.
 
 onedataBase="/mnt/datahub.egi.eu/test8/fluka"; # need to change also at rain.pl
 nprocs=$(/usr/bin/nproc)   # number of simultaneous process for paralllel local processing
@@ -640,10 +641,10 @@ if $docker; then
     echo -e "        np=\$(ps aux | grep corsika77402 | grep -v grep | wc -l)" >> $wdir/go-docker-$prj.sh
     echo -e "    done" >> $wdir/go-docker-$prj.sh
 	echo -e "done < $wdir/go-docker-$prj.run" >> $wdir/go-docker-$prj.sh
-	echo -e "# wait for completition to avoid docker closure" >> $wdir/go-docker-$prj.sh
+	echo -e "# wait for completion to avoid docker closure" >> $wdir/go-docker-$prj.sh
 	echo -e "while [ \$(ls -1 run*.sh 2> /dev/null | wc -l) -gt 0 ]; do " >> $wdir/go-docker-$prj.sh
 	echo -e "    echo \"Waiting for completion \$(date)\"" >> $wdir/go-docker-$prj.sh
-	echo -e "    sleep 300" >> $wdir/go-docker-$prj.sh
+	echo -e "    sleep ${waittime}" >> $wdir/go-docker-$prj.sh
 	echo -e "done" >> $wdir/go-docker-$prj.sh
 	echo -e "echo \"Everything ready at \$(date)\" " >> $wdir/go-docker-$prj.sh 
     echo -e "mv $wdir/go-dockerslurm-$prj.sh $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
