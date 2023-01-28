@@ -663,7 +663,7 @@ EXIT
     if (-s "$dat") { # DAT file exists and it is non-zero size, good
       if (-s "$inp") { # input file exists and it is non-zero size, good
         if (-s "$lst") { # lst file exists and it is non-zero size, good, need to check for "END OF RUN"
-          my $end = `bzcat $file | tail -n 1 | grep "END OF RUN" | sed -e "s/=//g; s/ //g"`;
+          my $end = `bzcat $lst | tail -n 1 | grep "END OF RUN" | sed -e "s/=//g; s/ //g"`;
           chomp $end;
           if ("$end" eq "ENDOFRUN") { # everthing looks correct, the we should not run this script but report
             print "$end\n";
