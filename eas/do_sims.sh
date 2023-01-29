@@ -644,6 +644,7 @@ if $docker; then
 	echo -e "# wait for completion to avoid docker closure" >> $wdir/go-docker-$prj.sh
 	echo -e "while [ \$(ls -1 run*.sh 2> /dev/null | wc -l) -gt 0 ]; do " >> $wdir/go-docker-$prj.sh
 	echo -e "    echo \"Waiting for completion \$(date)\"" >> $wdir/go-docker-$prj.sh
+	echo -e "    screen -ls | grep -v screen | grep -v socket" >> $wdir/go-docker-$prj.sh
 	echo -e "    sleep ${waittime}" >> $wdir/go-docker-$prj.sh
 	echo -e "done" >> $wdir/go-docker-$prj.sh
 	echo -e "echo \"Everything ready at \$(date)\" " >> $wdir/go-docker-$prj.sh 
