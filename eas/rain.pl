@@ -624,7 +624,7 @@ EXIT
       print $fh "echo $name\n";
       print $fh "echo -n \"Starting simulation on \"; date\n";
       print $fh "cd $wdir\n";
-      print $fh "$bin < $file > $out\n";
+      print $fh "$bin < $file | sed -e '/PRIMARY/,+1d' > $out\n"; # with this sed lst size should be largerly reduced
       print $fh "echo -n \"Simulation ended on \"; date\n";
       print $fh "echo \"compressing output files...\"\n";
       print $fh "bzip2 -9v $binout\n";
