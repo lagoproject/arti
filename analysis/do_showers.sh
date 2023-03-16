@@ -54,7 +54,9 @@ dirlw=0
 energy_bins=20
 distance_bins=20
 altitude=0
-filter=0
+slurm=""
+useslurm=false
+slurmparameters=""
 tim=0
 prj=""
 cmd="showers"
@@ -80,11 +82,11 @@ showhelp() {
 	echo -e "  -d <distance bins>        : Number of distance secondary bins (default: $distance_bins)"
 	echo -e "  -p <project base name>    : Base name for identification of S1 files (don't use spaces). Default: odir basename"
 	echo -e "  -k <site altitude, in m>  : For curved mode (default), site altitude in m a.s.l. (mandatory)"
-	echo -e "  -s <type>                 : Filter secondaries by type: 1: EM, 2: MU, 3: HD"
 	echo -e "  -t <time>                 : Normalize energy distribution in particles/(m2 s bin), S=1 m2; <t> = flux time (s)."
 	echo -e "  -m <bins per decade>      : Produce files with the energy distribution of the primary flux per nuclei."
-	echo -e "  -j                        : Produce a batch file for parallel processing. Not compatible with local (-l)"
-	echo -e "  -l                        : Enable parallel execution locally ($N procs). Not compatible with parallel (-j)"
+	echo -e "  -j                        : Produce a batch file for parallel processing. Not compatible with -l and -s."
+	echo -e "  -l                        : Enable parallel execution locally ($N procs). Not compatible with -j and -s."
+	echo -e "  -s <partition>            : Perform the analysis in slurm based clusters. Not compatible with -j or -l."
 	echo -e "  -v                        : Enable verbosity. Will write .log processing files."
 	echo -e "  -?                        : Shows this help and exit."
 	echo
@@ -114,7 +116,8 @@ while getopts 'o:r:w:e:d:p:k:s:t:m:jlv?' opt; do
 			altitude=$OPTARG
 			;;
 		s)
-			filter=$OPTARG
+			useslurm=true
+			slurm=$OPTARG
 			;;
 		m)
 			prims=$OPTARG
@@ -197,9 +200,9 @@ if [ $tim -gt 0 ]; then
 	cmd+=" -n 1. $tim"
 fi
 
-if [ $filter -gt 0 ]; then
-	echo; echo -e "#  WARNING: Will filter by secondary type $filter (1: EM, 2: MU, 3: HD)"
-	cmd+=" -s $filter"
+if [ "X$slurm" == "X" ]; then
+	echo; echo -e "#  WARNING: Slurm mode is enable but no partition was provided. Using defautl (cpu36c)"
+	slurm="cpu36c"
 fi
 
 if [ $prims -gt 0 ]; then
@@ -228,9 +231,6 @@ if [ $loc -gt 0 ]; then
 fi
 
 ## finally...
-wdir=$wdir/$prj
-mkdir $wdir
-cd $wdir
 echo
 echo -e "#  Path to ARTI directory        = $arti_path"
 echo -e "#  Path to DAT files             = $odir"
@@ -239,17 +239,31 @@ echo -e "#  Project base_name             = $prj"
 echo -e "#  Energy bins                   = $energy_bins"
 echo -e "#  Distance bins                 = $distance_bins"
 echo -e "#  Altitude                      = $altitude"
-echo -e "#  Filtering by type             = $filter"
+echo -e "#  Slurm partition               = $slurm"
 echo -e "#  Normalize flux, S=1 m2; time  = $tim"
 echo -e "#  Energy bins for primaries     = $prims"
 echo -en "#  Parallel mode (local)         = "
 if [ $loc -gt 0 ]; then
 	echo -e "Local - $N processes"
-else
+elif $useslurm; then
+	echo -e "Slurm, partitition $slurm"
+elif [ $parallel -gt 0 ]; then
 	echo -e "Remote"
+else
+	echo -e "No parallel analysis. Running locally one by one"
 fi
 
+wdir=$wdir/$prj
+if [[ -d $wdir ]]; then
+	echo; echo -e "#  ERROR: Working directory $widr exits. Please check and try again"
+#	exit 1
+else 
+	mkdir $wdir
+fi
+cd $wdir
+
 # primaries
+rm -f $prj.run
 for i in ${odir}/DAT??????.bz2; do
 	j=$(basename $i .bz2)
  	u=${j/DAT/}
@@ -260,6 +274,8 @@ for i in ${odir}/DAT??????.bz2; do
 	fi	
 	echo $run >> $prj.run
 done
+
+# Proceed depending on parallel type environment
 nl=$(cat $prj.run | wc -l)
 if [ $parallel -gt 0 ]; then
 	# parallel mode, just produce the shower analysis file and exit
@@ -279,6 +295,27 @@ elif [ $loc -gt 0 ]; then
 		else
 			eval ${line} &>> /dev/null &
 		fi
+	done < $prj.run
+elif $useslurm; then
+	# slurm mode
+	if [[ "X$slurm" == "Xcpu36c" ]]; then
+		slurmparameters="module load gcc/11.2.0"
+	fi
+	while IFS= read -r line; do
+		((nr++))
+		nrp=$(printf %03d $nr)
+		script="$wdir/run-${prj}-${nrp}.sbatch"
+		echo "#!/bin/bash" > $script
+		echo "#SBATCH --export=ALL" >> $script
+		echo "#SBATCH --exclusive" >> $script
+		echo "#SBATCH -o $wdir/$prj-${nrp}_srun_%j.log" >> $script
+		echo "echo -n \"Start: \"; date" >> $script
+		echo "hostname" >> $script
+		echo "$slurmparameters" >> $script
+		echo "echo \"$line\"" >> $script
+		echo "$line" >> $script
+		echo "echo -n \"End: \"; date" >> $script
+		sbatch -p $slurm -t 5-12:00 ${script};
 	done < $prj.run
 else
 	# it's local and not parallel
@@ -301,7 +338,26 @@ if [ $loc -gt 0 ]; then
 		fi
 	done
 fi
+
 echo "Shower analysis ..."
+if $useslurm; then
+	script="$wdir/run-${prj}.sbatch"
+	echo "#!/bin/bash" > $script
+	echo "#SBATCH --export=ALL" >> $script
+	echo "#SBATCH --exclusive" >> $script
+	echo "#SBATCH --partition $slurm" >> $script
+	echo "#SBATCH --time 5-12:00" >> $script
+	echo "#SBATCH -o $wdir/$prj_srun_%j.log" >> $script
+	echo "echo -n \"Start: \"; date" >> $script
+	echo "$slurmparameters" >> $script
+	echo "bzcat ${wdir}/*.sec.bz2 | ${arti_path}/analysis/${cmd}" >> $script
+        echo "echo -n \"End: \"; date" >> $script
+
+	echo "Once completed all the analysis, run the shower analysis with: ";
+	echo "sbatch ${script}";
+	echo "Done"
+	exit
+fi
 # showers
 echo "Showers: $cmd"
 bzcat ${wdir}/*.sec.bz2 | ${arti_path}/analysis/${cmd}
