@@ -307,7 +307,7 @@ elif $useslurm; then
 		script="$wdir/run-${prj}-${nrp}.sbatch"
 		echo "#!/bin/bash" > $script
 		echo "#SBATCH --export=ALL" >> $script
-		echo "#SBATCH --exclusive" >> $script
+		# echo "#SBATCH --exclusive" >> $script
 		echo "#SBATCH -o $wdir/$prj-${nrp}_srun_%j.log" >> $script
 		echo "echo -n \"Start: \"; date" >> $script
 		echo "hostname" >> $script
@@ -344,7 +344,7 @@ if $useslurm; then
 	script="$wdir/run-${prj}.sbatch"
 	echo "#!/bin/bash" > $script
 	echo "#SBATCH --export=ALL" >> $script
-	echo "#SBATCH --exclusive" >> $script
+	# echo "#SBATCH --exclusive" >> $script
 	echo "#SBATCH --partition $slurm" >> $script
 	echo "#SBATCH --time 5-12:00" >> $script
 	echo "#SBATCH -o $wdir/$prj_srun_%j.log" >> $script
