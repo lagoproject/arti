@@ -1,0 +1,15 @@
+#pragma once
+
+#include "WCDTypes.hh"
+
+#include <filesystem>
+#include <string>
+#include <vector>
+
+namespace WCDConfig {
+std::string ReadText(const std::string& path);
+Settings LoadSettings(const std::string& path);
+std::vector<Tank> LoadTanks(const std::string& path);
+std::vector<Primary> LoadPrimaries(const Settings& settings);
+std::string ResolvePath(const std::filesystem::path& configFile, const std::string& value);
+}  // namespace WCDConfig

@@ -1,0 +1,21 @@
+#pragma once
+
+#include "G4VUserPrimaryGeneratorAction.hh"
+#include "WCDTypes.hh"
+
+#include <memory>
+#include <vector>
+
+class G4ParticleGun;
+class WCDPrimaryGeneratorAction final : public G4VUserPrimaryGeneratorAction {
+ public:
+  WCDPrimaryGeneratorAction(std::shared_ptr<const std::vector<Primary>> inputs, Injection injection,
+                            long baseSeed);
+  ~WCDPrimaryGeneratorAction() override;
+  void GeneratePrimaries(G4Event* event) override;
+ private:
+  std::shared_ptr<const std::vector<Primary>> inputs_;
+  Injection injection_;
+  long baseSeed_;
+  G4ParticleGun* gun_;
+};

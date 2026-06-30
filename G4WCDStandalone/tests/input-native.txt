@@ -1,0 +1,5 @@
+# pdg px py pz x y z
+# An entering vertical muon, one injected in water, then one that misses.
+13 0 0 -1 0 0 3
+13 0 0 -1 0 0 0
+13 0 0 -1 10 0 3

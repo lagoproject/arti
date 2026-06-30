@@ -1,0 +1,25 @@
+{
+  "Input": 
+  { 
+	  "Mode": "native", 
+	  "File": "input-native.txt" 
+  },
+  "Simulation": 
+  { 
+	  "Threads": 1, 
+	  "BaseSeed": 24681357, 
+	  "CheckOverlaps": false,
+	  "GeoVisOn": true,
+	  "TrajVisOn": true
+  },
+  "Output": 
+  { 
+	  "RootFile": "Detector-1.root" 
+  },
+  "DetectorList": "detector.xml",
+  "PMT": 
+  { 
+	  "Model": "XP1805", 
+	  "CollectionEfficiency": 0.7 
+  }
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<detectorList>
+  <detector id="7" type="WCD">
+    <position unit="m" x="0" y="0" z="0"/>
+    <tank radius="1.8" height="1.2" thickness="0.02" unit="m"/>
+    <numberOfPMTs>1</numberOfPMTs>
+    <pmtRadialDistance unit="m">0.0</pmtRadialDistance>
+  </detector>
+</detectorList>

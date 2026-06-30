@@ -1,0 +1,7 @@
+{
+  "Input": { "Mode": "native", "File": "input-native.txt" },
+  "Simulation": { "Threads": 2, "BaseSeed": 24681357, "CheckOverlaps": false },
+  "Output": { "RootFile": "Detector-2.root" },
+  "DetectorList": "detector.xml",
+  "PMT": { "Model": "XP1805", "CollectionEfficiency": 0.7 }
+}

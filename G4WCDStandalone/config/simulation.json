@@ -1,0 +1,23 @@
+{
+  "Input": {
+    "Mode": "UseARTI",
+    "File": "sanmartin86400.shw"
+  },
+  "Simulation": {
+    "Mode": "fast",
+    "Threads": 20,
+    "BaseSeed": 123456789,
+    "CheckOverlaps": true,
+    "GeoVisOn": false,
+    "TrajVisOn": false,
+    "PhysicsList": "QGSP_BERT_HP"
+  },
+  "Output": {
+    "RootFile": "sanmartin86400.root"
+  },
+  "DetectorList": "detector.xml",
+  "PMT": {
+    "Model": "XP1805",
+    "CollectionEfficiency": 0.7
+  }
+}

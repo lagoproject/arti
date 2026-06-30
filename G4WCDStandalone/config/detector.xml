@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<detectorList>
+  <!-- eCircle height is measured relative to the configured tank height. -->
+  <soil size="5" unit="m"/>
+  <injectionMode type="eCircle">
+    <radius unit="m">2.76</radius>
+    <height unit="m">1.01</height>
+  </injectionMode>
+
+  <detector id="0" type="WCD">
+    <position unit="m" x="0.0" y="0.0" z="0.0"/>
+    <tank radius="0.5" height="1.0" thickness="0.02" unit="m"/>
+    <numberOfPMTs>1</numberOfPMTs>
+    <pmtRadialDistance unit="m">0.0</pmtRadialDistance>
+  </detector>
+</detectorList>
