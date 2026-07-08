@@ -551,8 +551,14 @@ for i in $(seq 1 $multPr); do
 	for j in $(seq 1 $prcHe); do
 		m=$[$l*$prcHe+$j]
 		printf -v n "%02d" $m
-		u=${n}'0014'
-		cat $wdir/$prj/000014-*.run | sed -e "s/000014/$u/" | sed -e "s/$b/$c/" > $wdir/$prj/$u-$k.run
+		# This line avoid Corsika RUNNR violation for j > 20
+		file_id="${n}0014"
+		run_id="${m}014"
+		cat "$wdir/$prj"/000014-*.run \
+		  | sed -e "s/000014/$run_id/" -e "s/$b/$c/" \
+		  > "$wdir/$prj/$file_id-$k.run"
+		#u=${n}'0014'
+		#cat $wdir/$prj/000014-*.run | sed -e "s/000014/$u/" | sed -e "s/$b/$c/" > $wdir/$prj/$u-$k.run
 	done
 	ii=$[$ff+1]
 	ff=$[$ii+$prcHe-1]
@@ -578,6 +584,7 @@ mv $wdir/go-$prj-pr-$i.sh $wdir/go-$prj-pr-$i.run" > $wdir/go-${prj}-pr-$i.sh
 		done
 	fi
 done
+
 rm $wdir/$prj/000014-*.run
 for i in $(seq 1 $multPr); do
   chmod 744 $wdir/go-${prj}-pr-$i.sh

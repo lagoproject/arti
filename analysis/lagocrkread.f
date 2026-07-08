@@ -96,7 +96,7 @@ C-----------loop over subblocks-----------------------------------------
      +      PDATA(LIA).LE.217434.0) THEN
           CIDENT = 'EVTH'
           IEVT = IEVT + 1
-          WRITE(0,*)'     EVTH',IEVT
+c          WRITE(0,*)'     EVTH',IEVT
         ENDIF
         IF (PDATA(LIA).GE. 52814.0.AND.
      +      PDATA(LIA).LE. 52816.0) THEN
@@ -106,7 +106,7 @@ C-----------loop over subblocks-----------------------------------------
         IF (PDATA(LIA).GE.  3396.0.AND.
      +      PDATA(LIA).LE.  3398.0) THEN
           CIDENT = 'EVTE'
-          WRITE(0,*)'     EVTE', IEVT
+c          WRITE(0,*)'     EVTE', IEVT
         ENDIF
         IF (PDATA(LIA).GE.  3300.0.AND.
      +      PDATA(LIA).LE.  3302.0) THEN
