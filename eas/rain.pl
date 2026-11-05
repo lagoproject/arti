@@ -91,6 +91,7 @@ my $imuaddi = 0;
 my $nofruns = 1;
 my $ecutshe = 800.;
 my $lemodel = "gheisha";
+my $noscreen = 0;
 my $onedataBase = "/mnt/datahub.egi.eu/test8/fluka"; # need to change also at do_sims.sh
 
 sub get_answer {
@@ -204,6 +205,9 @@ while ($_ = $ARGV[0]) {
     $lemodel = $ARGV[0];
     shift;
   }
+  if (/-n$/i) {
+    $noscreen = 1;
+  }
 }
 
 my $package="corsika".$crk_ver."Linux_".$heim."_".$lemodel;
@@ -227,6 +231,7 @@ my $usage="
        -i                                  Disable PLOTSH and PLOTSH2 modes (usual simms production)
        -l                                  Enables SLURM cluster compatibility (with sbatch). 
        -d                                  Enables DOCKER mode (oneclient should be running)
+       -n                                  Generate run scripts without launching detached screen sessions
        -z                                  Enables CHERENKOV mode
        -mu                                 Enables additional information from muons and EM particles
        -g                                  Enables GRID mode
@@ -278,8 +283,8 @@ my $home = $wdir;
 unless ($grid != 0) {
   die "\n\nERROR: Couldn't find corsika at $bin. Please check\n$usage\n" unless (-e $bin);
 }
-system("clear");
 unless ($batch != 0) {
+  system("clear") if ($ENV{'TERM'});
   print "###################################################################\n";
   print "# I will run this script $nofruns times\n";
   print "# in $direct/\n";
@@ -361,10 +366,28 @@ for (my $i=0; $i < $nofruns; $i++) {
 
   if ($batch == 0) {
     if ($site ne "unk") {
-      # first, read the jsonld and build the sites hash
+      # first, read the jsonld and build the sites hash (with offline fallback)
       my $url = "https://lagoproject.github.io/DMP/defs/sitesLago.1.1.jsonld";
       my $jsonld;
-      die "could not get $url\n" unless (defined($jsonld = get $url));
+      $jsonld = get $url unless ($ENV{'ARTI_OFFLINE'});
+      unless (defined($jsonld)) {
+        my @fallback_paths = (
+            ($ENV{'ARTI'} ? "$ENV{'ARTI'}/eas/sitesLago.1.1.jsonld" : ()),
+            ($ENV{'ARTI'} ? "$ENV{'ARTI'}/sims/sitesLago.1.1.jsonld" : ()),
+            "sitesLago.1.1.jsonld"
+        );
+        foreach my $local_sites (@fallback_paths) {
+          if (-e $local_sites) {
+            print STDERR "INFO: Using local offline sites database ($local_sites)\n";
+            open(my $jfh, "<", $local_sites) or die "Could not open local sites file $local_sites\n";
+            local $/;
+            $jsonld = <$jfh>;
+            close($jfh);
+            last;
+          }
+        }
+        die "could not get $url and no local fallback sitesLago.1.1.jsonld found\n" unless (defined($jsonld));
+      }
       my $decoded = decode_json($jsonld);
       my @sites_json = @{$decoded->{'@graph'}};
       my %sites = ();
@@ -615,20 +638,28 @@ EXIT
     print "###################################################################\n";
     print "# Starting simulations $name\n";
     print "# $getjson\n";
-    if ($slurm != 0) {
+    if ($noscreen != 0 || $ENV{'ARTI_NOSCREEN'}) {
+      print "# Script generated (no-screen mode): $script\n";
       print "###################################################################\n";
-      $cmd="sbatch -p cpu36c -o ${name}_srun_%j.log ${script}";
+      $cmd = "";
+    }
+    elsif ($slurm != 0) {
+      print "###################################################################\n";
+      my $spart = $ENV{'SLURM_PARTITION'} ? "-p $ENV{'SLURM_PARTITION'} " : "";
+      $cmd="sbatch ${spart}-o ${name}_srun_%j.log ${script}";
     }
     else {
       print "# in screen $name\n";
       print "###################################################################\n";
       $cmd = "screen -d -m -a -S $name $script; screen -ls";
     }
-    if ($debug != 0) {
-      print "$cmd\n";
-    }
-    else {
-      system($cmd);
+    if ($cmd ne "") {
+      if ($debug != 0) {
+        print "$cmd\n";
+      }
+      else {
+        system($cmd);
+      }
     }
   }
 }

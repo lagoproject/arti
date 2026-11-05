@@ -62,6 +62,9 @@ analysis: analysis.cc
 showers: showers.cc
 	$(CC) -o $@ $< $(CFLAGS)
 
+cherenkov: cherenkov.cc
+	$(CC) -o $@ $< $(CFLAGS)
+
 primaries: primaries.cc
 	$(CC) -o $@ $< $(CFLAGS)
 

@@ -270,10 +270,28 @@ my $userllimit=$llimit;
 my $atmcrd = "ATMOSPHERE";
 
 if ($site ne "unk") {
-    # first, read the jsonld and build the sites hash
+    # first, read the jsonld and build the sites hash (with offline fallback)
     my $url = "https://lagoproject.github.io/DMP/defs/sitesLago.1.1.jsonld";
     my $jsonld;
-    die "could not get $url\n" unless (defined($jsonld = get $url));
+    $jsonld = get $url unless ($ENV{'ARTI_OFFLINE'});
+    unless (defined($jsonld)) {
+        my @fallback_paths = (
+            ($ENV{'ARTI'} ? "$ENV{'ARTI'}/eas/sitesLago.1.1.jsonld" : ()),
+            ($ENV{'ARTI'} ? "$ENV{'ARTI'}/sims/sitesLago.1.1.jsonld" : ()),
+            "sitesLago.1.1.jsonld"
+        );
+        foreach my $local_sites (@fallback_paths) {
+            if (-e $local_sites) {
+                print STDERR "INFO: Using local offline sites database ($local_sites)\n";
+                open(my $jfh, "<", $local_sites) or die "Could not open local sites file $local_sites\n";
+                local $/;
+                $jsonld = <$jfh>;
+                close($jfh);
+                last;
+            }
+        }
+        die "could not get $url and no local fallback sitesLago.1.1.jsonld found\n" unless (defined($jsonld));
+    }
     my $decoded = decode_json($jsonld);
     my @sites_json = @{$decoded->{'@graph'}};
     my %sites = ();

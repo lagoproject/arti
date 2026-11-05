@@ -1,0 +1,160 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%labels
+    Author LAGO Collaboration (https://lagoproject.net)
+    Project ARTI Framework (Lightweight EAS + Analysis)
+    Version v1r9-apptainer
+    License BSD-3-Clause
+
+%help
+    ========================================================================
+    ARTI Framework (v1r9) - Apptainer/Singularity Lightweight Container
+    Includes:
+      - EAS simulation generator and runners (do_sims.sh, rain.pl, etc.)
+      - Secondary particle analysis suite (do_showers.sh, lagocrkread,
+        analysis, showers, cherenkov, primaries, do_test_S0.sh)
+      - Offline LAGO sites database (sitesLago.1.1.jsonld)
+    External CORSIKA is injected at runtime via bind mount:
+      --bind /host/path/to/corsika/run:/opt/corsika/run
+    ========================================================================
+
+    Usage examples:
+      1. Generate EAS simulation files (with external CORSIKA bound):
+         apptainer exec --bind /path/to/corsika/run:/opt/corsika/run \
+             arti.sif do_sims.sh -w /path/to/workdir -p fluxBGA -s bga -v 77402 -t 3600 -u user -y -x
+
+      2. Run generated simulations in parallel (no screen required, HPC-safe):
+         apptainer exec --bind /path/to/corsika/run:/opt/corsika/run \
+             arti.sif bash /path/to/workdir/go-apptainer-fluxBGA_003600.sh
+
+      3. Analyze secondary particle flux (S0 -> S1):
+         apptainer exec arti.sif do_showers.sh \
+             -o /path/to/workdir/fluxBGA_003600 -w /path/to/output -k 965 -t 3600 -l
+
+      4. Validate S0 dataset consistency:
+         apptainer exec arti.sif do_test_S0.sh -o /path/to/workdir/fluxBGA_003600 -m
+
+%files
+    Makefile /opt/arti/Makefile
+    lago-arti.sh /opt/arti/lago-arti.sh
+    LICENSE /opt/arti/LICENSE
+    README.md /opt/arti/README.md
+    eas /opt/arti/eas
+    analysis /opt/arti/analysis
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update && apt-get install -y --no-install-recommends \
+        bash \
+        tcsh \
+        build-essential \
+        gfortran \
+        zlib1g-dev \
+        perl \
+        libwww-perl \
+        liblwp-protocol-https-perl \
+        libjson-perl \
+        bzip2 \
+        gzip \
+        xz-utils \
+        tar \
+        wget \
+        curl \
+        ca-certificates \
+        rsync \
+        screen \
+        procps \
+        coreutils \
+        findutils \
+        gawk \
+        sed \
+        grep \
+    && rm -rf /var/lib/apt/lists/*
+
+    # Create standard symlink sims -> eas
+    ln -sfn /opt/arti/eas /opt/arti/sims
+
+    # Create standard mount point directories for HPC clusters
+    mkdir -p /opt/corsika/run /scratch /work /data
+
+    # Compile ARTI analysis suite (C++ and Fortran tools)
+    export ARTI="/opt/arti"
+    export ARTI_NO_BASHRC=1
+    make -C /opt/arti/analysis clean
+    make -C /opt/arti/analysis
+
+    # Ensure executable permissions
+    chmod 755 /opt/arti/lago-arti.sh \
+              /opt/arti/eas/*.sh \
+              /opt/arti/eas/*.pl \
+              /opt/arti/analysis/*.sh
+
+%environment
+    export LC_ALL=C
+    export ARTI="/opt/arti"
+    export CORSIKA_DIR="/opt/corsika/run"
+    export ARTI_NO_BASHRC=1
+    export PATH="/opt/arti/eas:/opt/arti/sims:/opt/arti/analysis:/opt/corsika/run:${PATH}"
+
+%apprun eas
+    exec /opt/arti/eas/do_sims.sh "$@"
+
+%apprun sims
+    exec /opt/arti/eas/do_sims.sh "$@"
+
+%apprun analysis
+    exec /opt/arti/analysis/do_showers.sh "$@"
+
+%apprun showers
+    exec /opt/arti/analysis/do_showers.sh "$@"
+
+%apprun test_s0
+    exec /opt/arti/analysis/do_test_S0.sh "$@"
+
+%apprun primaries
+    exec /opt/arti/analysis/primaries.sh "$@"
+
+%runscript
+    if [ $# -eq 0 ]; then
+        echo "ARTI Framework (v1r9) - Apptainer Container"
+        echo "ARTI=${ARTI}"
+        echo "Available commands: do_sims.sh, rain.pl, generate_spectra.pl, do_showers.sh, do_test_S0.sh, primaries.sh"
+        echo "Run 'apptainer run-help <image.sif>' for detailed usage instructions."
+        exit 0
+    else
+        exec "$@"
+    fi
+
+%test
+    echo "=== Running ARTI Apptainer self-tests ==="
+    export ARTI="/opt/arti"
+    export PATH="/opt/arti/eas:/opt/arti/sims:/opt/arti/analysis:${PATH}"
+
+    # 1. Check compiled binaries in /opt/arti/analysis
+    for bin in analysis showers cherenkov primaries lagocrkread lagocrkthin onlysecs; do
+        if [ ! -x "/opt/arti/analysis/${bin}" ]; then
+            echo "ERROR: Binary /opt/arti/analysis/${bin} is missing or not executable!"
+            exit 1
+        fi
+        echo "  [OK] Binary /opt/arti/analysis/${bin}"
+    done
+
+    # 2. Check Perl modules and offline sitesLago.1.1.jsonld database
+    perl -MJSON -MLWP::Simple -e '
+        my $f = "/opt/arti/eas/sitesLago.1.1.jsonld";
+        die "Missing $f\n" unless (-e $f);
+        open(my $fh, "<", $f) or die "Cannot open $f\n";
+        local $/;
+        my $data = decode_json(<$fh>);
+        die "Invalid \@graph in $f\n" unless (ref($data->{"\@graph"}) eq "ARRAY");
+        print "  [OK] Perl JSON + LWP::Simple + Offline sitesLago database (" . scalar(@{$data->{"\@graph"}}) . " sites)\n";
+    '
+
+    # 3. Check required system utilities
+    for cmd in bzip2 gfortran g++ screen rsync awk sed; do
+        command -v "$cmd" >/dev/null 2>&1 || { echo "ERROR: Missing $cmd"; exit 1; }
+    done
+    echo "  [OK] System utilities verified"
+    echo "=== All ARTI container self-tests passed ==="
+

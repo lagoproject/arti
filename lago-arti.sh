@@ -17,6 +17,7 @@
 #   -*- coding: utf8 -*-
 VERSION="v1r9"
 export ARTI=${PWD}
+if [ -z "${APPTAINER_CONTAINER}" ] && [ -z "${SINGULARITY_CONTAINER}" ] && [ -z "${ARTI_NO_BASHRC}" ]; then
 date=$(date -u)
 echo "
 #
@@ -25,3 +26,4 @@ echo "
 export ARTI=\"${ARTI}\"
 export PATH=\"\${ARTI}/sims/:\${ARTI}/eas:\${ARTI}/analysis:\$PATH\"
 " >> ${HOME}/.bashrc
+fi

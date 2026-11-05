@@ -58,6 +58,9 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
   G4cout << "number of event = " << aRun->GetNumberOfEvent()
          << " " << *fTimer << G4endl;
 
-  histRun->~histosRun();
+  if (histRun) {
+    delete histRun;
+    histRun = 0;
+  }
 }
 

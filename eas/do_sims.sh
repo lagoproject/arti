@@ -242,9 +242,14 @@ fi
 
 if ! $docker; then
 	if [ "X$wdir" == "X" ]; then
-		echo; echo -e "ERROR: You have to set the working directory (where corsika bin files are located)"
-		showhelp
-		exit 1;
+		if [ -n "${CORSIKA_DIR}" ] || [ -d "/opt/corsika/run" ] || [ -d "/opt/corsika" ]; then
+			wdir="${PWD}"
+			echo -e "#  INFO: Working directory not set (-w). Using current directory: $wdir"
+		else
+			echo; echo -e "ERROR: You have to set the working directory (where corsika bin files are located)"
+			showhelp
+			exit 1;
+		fi
 	fi
 else
 	wdir="/opt/corsika-${ver}/run"
@@ -351,8 +356,18 @@ if $docker; then
 fi
 
 corsika_bin="corsika${ver}Linux_${hig}_${lemodel}"
-if [ ! -e $wdir/$corsika_bin ]; then
-	echo; echo -e "ERROR: Can't locate corsika executable file ($corsika_bin) in the working dir you provided. Please check."
+if [ ! -e "$wdir/$corsika_bin" ]; then
+	for crk_candidate in "${CORSIKA_DIR}" "/opt/corsika/run" "/opt/corsika" "/opt/corsika-${ver}/run"; do
+		if [ -n "$crk_candidate" ] && [ -e "$crk_candidate/$corsika_bin" ]; then
+			echo -e "#  INFO: Found CORSIKA in $crk_candidate. Linking runtime files into $wdir ..."
+			mkdir -p "$wdir"
+			ln -sf "$crk_candidate"/* "$wdir"/
+			break
+		fi
+	done
+fi
+if [ ! -e "$wdir/$corsika_bin" ]; then
+	echo; echo -e "ERROR: Can't locate corsika executable file ($corsika_bin) in the working dir ($wdir) or /opt/corsika/run. Please check."
     showhelp
     exit 1;
 fi
@@ -487,6 +502,7 @@ for i in $(seq 0 $procs $[${#stuff[@]}-1]); do
 	done
 	echo "#!/bin/bash
 #Stuff-$n!
+cd \"$wdir\" || exit 1
 for i in ${nuc}; do
 	r=\"$rain \"
 	nice -n $basenice \${r}
@@ -518,6 +534,7 @@ done
 
 echo "#!/bin/bash
 #Helium
+cd \"$wdir\" || exit 1
 for j in \$(seq 1 $prcHe); do
   i="0\${j}0402"
   r=\"$rain \"
@@ -551,13 +568,18 @@ for i in $(seq 1 $multPr); do
 	for j in $(seq 1 $prcHe); do
 		m=$[$l*$prcHe+$j]
 		printf -v n "%02d" $m
-		u=${n}'0014'
-		cat $wdir/$prj/000014-*.run | sed -e "s/000014/$u/" | sed -e "s/$b/$c/" > $wdir/$prj/$u-$k.run
+		# Avoid CORSIKA 6-digit RUNNR overflow for m > 9
+		file_id="${n}0014"
+		run_id="${m}014"
+		cat "$wdir/$prj"/000014-*.run \
+		  | sed -e "s/000014/$run_id/" -e "s/$b/$c/" \
+		  > "$wdir/$prj/$file_id-$k.run"
 	done
 	ii=$[$ff+1]
 	ff=$[$ii+$prcHe-1]
 	echo "#!/bin/bash
 # Protons!
+cd \"$wdir\" || exit 1
 for j in \$(seq $ii $ff); do
   printf -v n "%02d" \$j
   i="\${n}0014"
@@ -582,6 +604,52 @@ rm $wdir/$prj/000014-*.run
 for i in $(seq 1 $multPr); do
   chmod 744 $wdir/go-${prj}-pr-$i.sh
 done
+
+# Generate Apptainer / HPC batch parallel runner script (no screen required)
+cat << 'EOF_APPTAINER' > "$wdir/go-apptainer-$prj.sh"
+#!/bin/bash
+EOF_APPTAINER
+cat << EOF_APPTAINER_VARS >> "$wdir/go-apptainer-$prj.sh"
+WDIR="$wdir"
+PRJ="$prj"
+DEFAULT_PROCS=$procs
+EOF_APPTAINER_VARS
+cat << 'EOF_APPTAINER_BODY' >> "$wdir/go-apptainer-$prj.sh"
+NPROCS="${ARTI_NPROCS:-${SLURM_CPUS_PER_TASK:-$DEFAULT_PROCS}}"
+cd "$WDIR" || exit 1
+export ARTI_NOSCREEN=1
+
+echo "# [ARTI-Apptainer] Generating CORSIKA input cards and run scripts for $PRJ ..."
+for gscript in "$WDIR"/go-"$PRJ"-all-*.sh "$WDIR"/go-"$PRJ"-he.sh "$WDIR"/go-"$PRJ"-pr-*.sh; do
+	if [ -f "$gscript" ]; then
+		bash "$gscript"
+	fi
+done
+
+shopt -s nullglob
+run_scripts=("$WDIR"/run-"$PRJ"-*.sh)
+total=${#run_scripts[@]}
+echo "# [ARTI-Apptainer] Executing $total CORSIKA tasks using $NPROCS parallel workers ..."
+
+count=0
+running=0
+for rscript in "${run_scripts[@]}"; do
+	count=$((count + 1))
+	echo "# [$count/$total] Starting $(basename "$rscript")"
+	bash "$rscript" > "${rscript%.sh}.log" 2>&1 &
+	running=$((running + 1))
+	if [ "$running" -ge "$NPROCS" ]; then
+		wait -n 2>/dev/null || wait
+		running=$((running - 1))
+	fi
+done
+wait
+echo "# [ARTI-Apptainer] All $total simulations for $PRJ finished."
+chmod 644 "$WDIR/go-apptainer-$PRJ.sh"
+mv "$WDIR/go-apptainer-$PRJ.sh" "$WDIR/go-apptainer-$PRJ.run"
+EOF_APPTAINER_BODY
+chmod 744 "$wdir/go-apptainer-$prj.sh"
+
 if $slurm; then
     echo -e "squeue -u \$USER" >> $wdir/go-slurm-$prj.sh
     echo -e "mv $wdir/go-slurm-$prj.sh $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
@@ -589,7 +657,6 @@ if $slurm; then
 fi
 if $docker; then
 	rm $wdir/go-${prj}-pr-*.sh
-	rm -r 
  	echo -e "#!/bin/bash" > $wdir/go-docker-$prj.sh
  	echo -e "# go docker $prj" >> $wdir/go-docker-$prj.sh
  	echo -e "" >> $wdir/go-docker-$prj.sh
@@ -607,8 +674,8 @@ if $docker; then
     echo -e "        np=\$(ps aux | grep corsika77402 | grep -v grep | wc -l)" >> $wdir/go-docker-$prj.sh
     echo -e "    done" >> $wdir/go-docker-$prj.sh
 	echo -e "done < $wdir/go-docker-$prj.run" >> $wdir/go-docker-$prj.sh
-    echo -e "mv $wdir/go-dockerslurm-$prj.sh $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
-    echo -e "chmod 644 $wdir/go-slurm-$prj.run" >> $wdir/go-slurm-$prj.sh
+    echo -e "mv $wdir/go-docker-$prj.sh $wdir/go-docker-$prj.run" >> $wdir/go-docker-$prj.sh
+    echo -e "chmod 644 $wdir/go-docker-$prj.run" >> $wdir/go-docker-$prj.sh
 	chmod 744 $wdir/go-docker-$prj.sh
 	cd $wdir
 	eval $wdir/go-docker-$prj.sh

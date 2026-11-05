@@ -57,7 +57,7 @@ c----------------------------------------------------------------------
 c     J.Oehlschlaeger, D. Heck, 01 Sep 2011 
 c=======================================================================
 c     VERSION=v1r9
-      PROGRAM LAGOCRKREAD
+      PROGRAM ONLYSECS
       CHARACTER CHV(5733)*4,CIDENT*4,CDAT*70,CBLK*70
       DIMENSION PDATA(5733)
       EQUIVALENCE (CHV(1),PDATA(1))

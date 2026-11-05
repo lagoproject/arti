@@ -105,8 +105,8 @@ if [ ! $file -gt 0 ]; then
 	exit 1
 fi
 
-# is working really local? for now just check for /mnt 
-if [[ $wdir == *"/mnt/"* ]]; then 
+# is working really local? for now just check for /mnt (skip check in Apptainer/Singularity or when ARTI_ALLOW_MOUNTED is set)
+if [[ $wdir == *"/mnt/"* ]] && [ -z "${APPTAINER_CONTAINER}" ] && [ -z "${SINGULARITY_CONTAINER}" ] && [ -z "${ARTI_ALLOW_MOUNTED}" ]; then 
 	echo; echo -e "#  ERROR: working dir (-w) should be local, not mounted. Please check and try again"
 	echo
 	showhelp
@@ -198,7 +198,7 @@ for i in $odir/*.lst.bz2; do
 	j=$(basename $i)
 	p=$((100* ++count / lst))
 	echo -n -e "End of run check: ${BOLD}$count / $lst (${p}%)${NC}\r"
-	tst=$(bzcat $j | tail -1 | grep -c "END OF RUN")
+	tst=$(bzcat "$wdir/$j" | tail -1 | grep -c "END OF RUN")
 	if [ $tst -gt 0 ]; then
 		((good++))
 	fi

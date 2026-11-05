@@ -61,10 +61,19 @@ cmd="showers"
 loc=0
 parallel=0
 prims=0
-N=$(/usr/bin/nproc)   # number of simultaneous process for paralllel local processing
-N=$((N / 2)) # number of simultaneous process for paralllel local processing
-if [ $N -gt 8 ]; then
-        N=8
+if [ -n "${ARTI_NPROCS}" ]; then
+        N=${ARTI_NPROCS}
+elif [ -n "${SLURM_CPUS_PER_TASK}" ]; then
+        N=${SLURM_CPUS_PER_TASK}
+else
+        N=$(/usr/bin/nproc)   # number of simultaneous process for paralllel local processing
+        N=$((N / 2)) # number of simultaneous process for paralllel local processing
+        if [ $N -gt 8 ]; then
+                N=8
+        fi
+fi
+if [ $N -lt 1 ]; then
+        N=1
 fi
 verbose=false
 showhelp() {
@@ -161,8 +170,8 @@ if [ ! $file -gt 0 ]; then
 	exit 1
 fi
 
-# is working really local? for now just check for /mnt 
-if [[ $wdir == *"/mnt/"* ]]; then 
+# is working really local? for now just check for /mnt (skip check in Apptainer/Singularity or when ARTI_ALLOW_MOUNTED is set)
+if [[ $wdir == *"/mnt/"* ]] && [ -z "${APPTAINER_CONTAINER}" ] && [ -z "${SINGULARITY_CONTAINER}" ] && [ -z "${ARTI_ALLOW_MOUNTED}" ]; then 
 	echo; echo -e "#  ERROR: working dir (-w) should be local, not mounted. Please check and try again"
 	echo
 	showhelp
@@ -209,6 +218,9 @@ fi
 if [ "X$prj" == "X" ]; then
 	prj=$(basename $odir)
 	prj=${prj/S0/S1}
+	if [ "${wdir%/}/$prj" == "${odir%/}" ]; then
+		prj="S1_${prj}"
+	fi
 	echo; echo -e "#  WARNING: Project base name not provided. Using $prj"
 fi
 
@@ -229,7 +241,7 @@ fi
 
 ## finally...
 wdir=$wdir/$prj
-mkdir $wdir
+mkdir -p $wdir
 cd $wdir
 echo
 echo -e "#  Path to ARTI directory        = $arti_path"
@@ -294,6 +306,7 @@ else
 fi
 if [ $loc -gt 0 ]; then
 	echo "Wait for parallel execution termination..."
+	wait
 	while true; do
 		f=$(find . -iname 'DAT??????' | wc -l)
 		if [ $f -eq 0 ]; then
