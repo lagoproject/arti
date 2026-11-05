@@ -11,9 +11,12 @@
 # Plantilla SLURM para ejecutar ARTI (EAS + Analysis) sobre Apptainer
 # ==============================================================================
 
+# Load apptainer
+module load apptainer
+
 set -e
 
-# 1. Rutas en el clúster (Ajustar a tu entorno)
+# 1. Rutas en el clúster (IMPORTANTE:Ajustar a tu entorno)
 SIF_IMAGE="${HOME}/arti/arti.sif"
 HOST_CORSIKA_RUN="/girg/amartinez/corsika-76400/run"
 WORK_DIR="${PWD}/workdir_sim"
