@@ -306,9 +306,12 @@ int main (int argc, char *argv[]) {
   int nGeoZ = int(90. / rGeoZ) + 1;
   int nGeoA = int(360. / rGeoA) + 1; 
   double gGeoC[nGeoZ][nGeoA];
+  for (int i=0; i<nGeoZ; i++)
+    for (int j=0; j<nGeoA; j++)
+      gGeoC[i][j] = 0.;
   double g[5];
   if (igeo) {
-    FILE *fg; 
+    FILE *fg;
     // reading geo file
     if((fg=fopen(nfg,"r")) == NULL) {
       fprintf(stderr, "\nError: Can't open geomagnetic file\n\n");
@@ -317,14 +320,21 @@ int main (int argc, char *argv[]) {
     while(fgets(line,250,fg)) {
       if (line[0] == '#')
         continue;
-      do { // read
-        check=sscanf(line, "%le %le %le %le %le\n", &g[0], &g[1], &g[2], &g[3], &g[4]); 
-      } while (check != 5);
+      check=sscanf(line, "%le %le %le %le %le\n", &g[0], &g[1], &g[2], &g[3], &g[4]);
+      if (check != 5) {
+        fprintf(stderr, "Warning: skipping malformed line in geomagnetic file: %s", line);
+        continue;
+      }
       iGeoZ = int(g[0]/rGeoZ);
       iGeoA = int(g[1]/rGeoA);
+      if (iGeoZ < 0 || iGeoZ >= nGeoZ || iGeoA < 0 || iGeoA >= nGeoA) {
+        fprintf(stderr, "Warning: skipping out of range direction in geomagnetic file: %s", line);
+        continue;
+      }
       gGeoC[iGeoZ][iGeoA] = g[cGeoC];
       iGeoN++;
     }
+    fclose(fg);
   }
   if (iverbose && igeo)
     fprintf(stderr,"Read %d rigidity cut-off values from column %d of file '%s'\n",iGeoN, cGeoC+1, nfg);
@@ -494,16 +504,20 @@ int main (int argc, char *argv[]) {
   for (int j=0; j<nlogd; j++)
     nlde[j] = 0;
 
-  long int lines = 0, ps = 0, shower_id = 0;
+  long int lines = 0, ps = 0, shower_id = 0, badlines = 0;
   while(fgets(line,250,fi)) {
     if (!(++lines % 10000))
       fprintf (stderr, "%12ld\r", lines);
     if (line[0] == '#') {  // comments? meta-data? for now, just skipping
       continue;
     }
-    do { // read
-      check=sscanf(line, "%lf %le %le %le %le %le %le %lf %lf %le %lf %lf\n", &d[0], &d[1], &d[2], &d[3], &d[4], &d[5], &d[6], &d[7], &d[8], &d[9], &d[10], &d[11]);
-    } while (check != 12);
+    check=sscanf(line, "%lf %le %le %le %le %le %le %lf %lf %le %lf %lf\n", &d[0], &d[1], &d[2], &d[3], &d[4], &d[5], &d[6], &d[7], &d[8], &d[9], &d[10], &d[11]);
+    if (check != 12) { // malformed or truncated line (e.g. incomplete .bz2): skip it
+      badlines++;
+      if (iverbose)
+        fprintf(stderr, "Warning: skipping malformed line %ld: %s", lines, line);
+      continue;
+    }
 
     if (d[0]<1)
       continue;
@@ -594,9 +608,11 @@ int main (int argc, char *argv[]) {
         z *= cm2m;
       }
       if (print) {
-        do {
-          check=fprintf(shw, "%04d %+.5le %+.5le %+.5le %+.5le %+.5le %+.5le %08ld %04d %+.5le %+07.3lf %+08.3lf\n", id, d[1], d[2], d[3], x, y, z, shower_id, (int)d[8], d[9], d[10], d[11]);
-        } while (check<=0);
+        check=fprintf(shw, "%04d %+.5le %+.5le %+.5le %+.5le %+.5le %+.5le %08ld %04d %+.5le %+07.3lf %+08.3lf\n", id, d[1], d[2], d[3], x, y, z, shower_id, (int)d[8], d[9], d[10], d[11]);
+        if (check < 0) {
+          fprintf(stderr, "Error: can't write to output file (disk full?). Abort.\n");
+          exit(1);
+        }
         totpart++;
       }
       if (ianalysis || idistance) {
@@ -643,15 +659,17 @@ int main (int argc, char *argv[]) {
         if (ianalysis) {
           lp = log10(secp);
           iloge=int(lp*resolution);
-          if (iloge > nloge) {
-            iloge=nloge;
+          if (iloge < 0)
+            iloge=0;
+          if (iloge >= nloge) { // last valid bin is nloge-1
+            iloge=nloge-1;
             maxEerr++;
             if (iverbose>1)
               cerr << "Warning! Particle momentum is " << secp << "which is bigger than " << maxPInGeV << " GeV. Should check. \nLine: " << line << endl;
           }
           if (iloge < minbine)
             minbine=iloge;
-          else if (iloge > maxbine)
+          if (iloge > maxbine)
             maxbine=iloge;
           histoe[iloge][ibin]++;
           nle[iloge]++;
@@ -661,15 +679,15 @@ int main (int argc, char *argv[]) {
           if (ld < 0.)
             ld = 0.;
           ilogd=int(ld*resdist);
-          if (ilogd > nlogd) {
-            ilogd=nlogd;
+          if (ilogd >= nlogd) { // last valid bin is nlogd-1
+            ilogd=nlogd-1;
             maxDerr++;
 	    if (iverbose>1)
-              cerr << "Warning! Particle distance is " << distance(x,y,z) << " m, which is bigger than " << maxDInM << " m. Should check. \nLine: " << line << endl;
+              cerr << "Warning! Particle distance is " << distance(x,y,(z-hInM)) << " m, which is bigger than " << maxDInM << " m. Should check. \nLine: " << line << endl;
           }
           if (ilogd < minbind)
             minbind=ilogd;
-          else if (ilogd > maxbind)
+          if (ilogd > maxbind)
             maxbind=ilogd;
           histod[ilogd][ibin]++;
           nld[ilogd]++;
@@ -779,6 +797,10 @@ int main (int argc, char *argv[]) {
   }
   // say goodbye
   cerr << "Selected particles: " << totpart << ", showers: " << shower_id << ", lines: " << lines << endl;
+  if (badlines) {
+    cerr << "Warning: " << badlines << " malformed lines were skipped" << endl;
+    fprintf(shw, "# # WARNING: %ld malformed lines were skipped\n", badlines);
+  }
   fprintf(shw, "# # Selected particles: %ld, showers: %ld, lines: %ld\n", totpart, shower_id, lines);
   pclose(shw);
   if (ianalysis) {

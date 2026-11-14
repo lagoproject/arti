@@ -244,9 +244,12 @@ int main (int argc, char *argv[]) {
   int nGeoZ = int(90. / rGeoZ) + 1;
   int nGeoA = int(360. / rGeoA) + 1; 
   double gGeoC[nGeoZ][nGeoA];
+  for (int i=0; i<nGeoZ; i++)
+    for (int j=0; j<nGeoA; j++)
+      gGeoC[i][j] = 0.;
   double g[5];
   if (igeo) {
-    FILE *fg; 
+    FILE *fg;
     // reading geo file
     if((fg=fopen(nfg,"r")) == NULL) {
       fprintf(stderr, "\nError: Can't open geomagnetic file\n\n");
@@ -255,14 +258,21 @@ int main (int argc, char *argv[]) {
     while(fgets(line,250,fg)) {
       if (line[0] == '#')
         continue;
-      do { // read
-        check=sscanf(line, "%le %le %le %le %le\n", &g[0], &g[1], &g[2], &g[3], &g[4]); 
-      } while (check != 5);
+      check=sscanf(line, "%le %le %le %le %le\n", &g[0], &g[1], &g[2], &g[3], &g[4]);
+      if (check != 5) {
+        fprintf(stderr, "Warning: skipping malformed line in geomagnetic file: %s", line);
+        continue;
+      }
       iGeoZ = int(g[0]/rGeoZ);
       iGeoA = int(g[1]/rGeoA);
+      if (iGeoZ < 0 || iGeoZ >= nGeoZ || iGeoA < 0 || iGeoA >= nGeoA) {
+        fprintf(stderr, "Warning: skipping out of range direction in geomagnetic file: %s", line);
+        continue;
+      }
       gGeoC[iGeoZ][iGeoA] = g[cGeoC];
       iGeoN++;
     }
+    fclose(fg);
   }
   if (iverbose && igeo)
     fprintf(stderr,"Read %d rigidity cut-off values from column %d of file '%s'\n",iGeoN, cGeoC+1, nfg);
@@ -366,27 +376,32 @@ int main (int argc, char *argv[]) {
   for (int j=0; j<nloge; j++)
     nle[j] = 0;
 
-  long int lines = 0, ps = 0, shower_id = 0;
+  long int lines = 0, ps = 0, shower_id = 0, badlines = 0;
   while(fgets(line,250,fi)) {
     if (!(++lines % 10000))
       fprintf (stderr, "%12ld\r", lines);
     if (line[0] == '#') {  // comments? meta-data? for now, just skipping
       continue;
     }
-    do { // read
-      check=sscanf(line, "%lf %le %le %lf %lf %le %le %le %le %le\n", &d[0], &d[1], &d[2], &d[3], &d[4], &d[5], &d[6], &d[7], &d[8], &d[9]);
-    } while (check != 10);
+    check=sscanf(line, "%lf %le %le %lf %lf %le %le %le %le %le\n", &d[0], &d[1], &d[2], &d[3], &d[4], &d[5], &d[6], &d[7], &d[8], &d[9]);
+    if (check != 10) { // malformed or truncated line (e.g. incomplete .bz2): skip it
+      badlines++;
+      if (iverbose)
+        fprintf(stderr, "Warning: skipping malformed line %ld: %s", lines, line);
+      continue;
+    }
     if (d[0]<1)
       continue;
 
+    // primary id, energy and zenith angle are always written to the output
+    prmId=d[0];
+    prmEn=d[1];
+    prmTh=d[3];
+    prmGeo=true;
+    iprmGeo=1;
     //checking for geomagnetic effects
     if (igeo) {
-      prmId=d[0];
-      prmGeo=true;
-      iprmGeo=1;
       if (prmId>1) { // only check for charged particles (photons=1)
-        prmEn=d[1];
-        prmTh=d[3];
         //CORSIKA System: -180 to +180 , 0=N, +90=E, counterclockwise
         //MAGCOS  System: 0 to 360 , 0=N, +90=E, clockwise.
         //Wonderful...
@@ -424,14 +439,20 @@ int main (int argc, char *argv[]) {
         }
       }
     }
-    do {
-      // fprintf(pri, "# # prm_Crk_id prm_energy prm_x0 prm_theta prm_phi ph_obs_lev el_obs_lev hd_obs_lev mu_obs_lev tot_obs_lev geo_status\n");
-      check=fprintf(pri, "%04d %+.5E %+.5E %+08.3lf %+08.3lf %+.5E %+.5E %+.5E %+.5E %+.5E %d\n", prmId, prmEn, d[2], prmTh, d[4], d[5], d[6], d[7], d[8], d[9], iprmGeo);
-    } while (check<=0);
+    // fprintf(pri, "# # prm_Crk_id prm_energy prm_x0 prm_theta prm_phi ph_obs_lev el_obs_lev hd_obs_lev mu_obs_lev tot_obs_lev geo_status\n");
+    check=fprintf(pri, "%04d %+.5E %+.5E %+08.3lf %+08.3lf %+.5E %+.5E %+.5E %+.5E %+.5E %d\n", prmId, prmEn, d[2], prmTh, d[4], d[5], d[6], d[7], d[8], d[9], iprmGeo);
+    if (check < 0) {
+      fprintf(stderr, "Error: can't write to output file (disk full?). Abort.\n");
+      exit(1);
+    }
     totpart++;
   }
   // say goodbye
   cerr << "From " << totpart << " primaries, in " << lines << " lines, " << geoDisShw << " primaries were discarded" << endl;
+  if (badlines) {
+    cerr << "Warning: " << badlines << " malformed lines were skipped" << endl;
+    fprintf(pri, "# # WARNING: %ld malformed lines were skipped\n", badlines);
+  }
   fprintf(pri, "# # Total primaries: %ld, Discarded primaries: %ld, Allowed primaries: %ld\n", totpart, geoDisShw, (totpart-geoDisShw));
   pclose(pri);
 }
