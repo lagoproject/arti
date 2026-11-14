@@ -75,7 +75,7 @@ showhelp() {
   echo -e "  -c <atm_model>                     : Fix Atmospheric Model even for predefined sites."
   echo -e "  -o <BX>                            : Horizontal comp. of the Earth's mag. field."
   echo -e "  -q <BZ>                            : Vertical comp. of the Earth's mag. field."
-  echo -e "  -b <rigidity cutoff>               : Rigidity cutoff; (if set value in GV = enabled, <0 = disable)."
+  echo -e "  -b <rigidity cutoff>               : Rigidity cutoff in GV for the primary spectrum (default: 5 GV; 0 or <0 = disabled)."
   echo -e "  -g <Lat, Lon> *dev                 : Obtain the current values of BX and BZ for a site located at (Lat,Lon,Alt), -k option is mandatory. If -s is used, then (Lat,Lon,Alt) will be taken from the standard characterization of the site."
   echo -e
   echo -e "Modifiers"
@@ -277,8 +277,9 @@ if [ "X$atm_model" == "X" ]; then
 fi
 
 if [ "X$rigididy" == "X" ]; then
-  rigididy="0"
-  echo -e "#  INFO: Rigidity cutoff was not provided. Using default (disabled): $rigididy"
+  # not passed to generate_spectra.pl, which applies its own default (5 GV)
+  rigididy="5"
+  echo -e "#  INFO: Rigidity cutoff was not provided. Using default: $rigididy GV (use -b 0 to disable)"
 fi
 
 if [ "X$lowez" == "X" ]; then

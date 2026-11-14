@@ -79,6 +79,7 @@ my $tMax = 0;
 my $llimit = 0.;
 my $ulimit = 0.;
 my $rigidity = 0.;
+my $irigidity = 0;
 my $usedefaults=0;
 my $gensite = 0;
 my $modatm="";
@@ -137,7 +138,7 @@ Optional:
                         (Note: Start number with 'E' to use external atmospheres module)
   -y                    Enable volumetric detector for flux calculations (Default: flat)
   -a <HE ecuts (GeV)>   Enables and set high energy cuts for ECUTS
-  -b <rigidity cutoff>  0 = disabled; value in GV = enabled (Default: 5.)
+  -b <rigidity cutoff>  value in GV = enabled; 0 or <0 = disabled (Default: 5.)
   -m                    Low edge of zenith angle (THETAP) [deg] (Default: 0)
   -n                    High edge of zenith angle (THETAP) [deg] (Default: 90)
   -r                    Lower limit of the primary particle energy (ERANGE) [GeV] (Default: 5e0) 
@@ -197,6 +198,7 @@ while (defined($_ = $ARGV[0]) && $_ =~ /^-/) {
     }
     if (/-b$/i) {
         $rigidity = $ARGV[0];
+        $irigidity++;
         shift;
     }
     if (/-m$/i) {
@@ -263,7 +265,9 @@ $ulimit = get_answer("Upper limit of the primary particle energy (ERANGE) [GeV]"
 if ($batch == 0) {
     print STDERR "### Site parameters ###\n\n" unless ($rigidity && $modatm);
 }
-$rigidity = get_answer("Use rigidity cutoff? (no: <0; yes: Rigidity value [GV])", 5., "rigidity", $rigidity);
+# An explicit -b value is always honored, including -b 0 (which get_answer
+# would otherwise treat as unset and replace by the default)
+$rigidity = get_answer("Use rigidity cutoff? (no: 0 or <0; yes: Rigidity value [GV])", 5., "rigidity", $rigidity) unless ($irigidity);
 $rigidity = 0. if ($rigidity < 0);
 my $userllimit=$llimit;
 #all predefined sites seems to be ATMOSPHERE as default mode
@@ -444,7 +448,7 @@ F", $id, $llimit, $ulimit);
 $file = "$direct/inject";
 $altitude /= 100.;
 # building descriptors
-my $rig = " and using rigidity cutoff.";
+my $rig = " and using rigidity cutoff of $rigidity GV.";
 $rig = " and rigidity cutoff was not used." if ($rigidity == 0);
 my $vol=", using volumetric detector for flux calculations";
 $vol = ", using flat detector for flux calculations" if ($flat != 0);
